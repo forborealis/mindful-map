@@ -1,0 +1,27 @@
+const express = require('express');
+const { signup, login } = require('../controllers/authController');
+const authMiddleware = require('../middleware/authMiddleware');
+const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/cloudinaryConfig');
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'avatars',
+    allowedFormats: ['jpg', 'png'],
+  },
+});
+
+const upload = multer({ storage: storage });
+
+const router = express.Router();
+
+router.post('/signup', upload.single('avatar'), signup);
+router.post('/login', login);
+
+router.get('/home', authMiddleware, (req, res) => {
+  res.status(200).json({ success: true, message: 'Welcome to the home page!' });
+});
+
+module.exports = router;
