@@ -28,26 +28,26 @@ const App = () => {
     sleepQuality: '',
   });
 
-  useEffect(() => {
-    const checkMoodLog = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const response = await axios.get('http://localhost:5000/api/mood-logs', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          const today = new Date().toISOString().split('T')[0];
-          const loggedToday = response.data.data.some(log => log.date.split('T')[0] === today);
-          setHasLoggedMood(loggedToday);
-        } catch (error) {
-          console.error('Error checking mood log:', error);
-        }
-      }
-    };
-    checkMoodLog();
-  }, []);
+  // useEffect(() => {
+  //   const checkMoodLog = async () => {
+  //     const token = localStorage.getItem('token');
+  //     if (token) {
+  //       try {
+  //         const response = await axios.get('http://localhost:5000/api/mood-logs', {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         });
+  //         const today = new Date().toISOString().split('T')[0];
+  //         const loggedToday = response.data.data.some(log => log.date.split('T')[0] === today);
+  //         setHasLoggedMood(loggedToday);
+  //       } catch (error) {
+  //         console.error('Error checking mood log:', error);
+  //       }
+  //     }
+  //   };
+  //   checkMoodLog();
+  // }, []);
 
   return (
     <Router>
@@ -75,7 +75,7 @@ const App = () => {
           path="/log-activities"
           element={
             <PrivateRoute>
-              <LogActivities setFormData={setFormData} />
+              <LogActivities formData={formData} setFormData={setFormData} />
             </PrivateRoute>
           }
         />

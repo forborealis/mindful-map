@@ -1,51 +1,97 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const LogActivities = ({ formData, setFormData }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const moodFromState = location.state?.mood;
 
-  const handleActivityClick = (activity) => {
+  // Initialize the formData with the passed mood if not already set
+  React.useEffect(() => {
+    if (moodFromState && !formData.mood) {
+      setFormData((prevData) => ({ ...prevData, mood: moodFromState }));
+    }
+  }, [moodFromState, formData, setFormData]);
+
+  const [selectedItems, setSelectedItems] = useState({
+    mood: '',
+    activities: [],
+    social: [],
+    health: [],
+    sleepQuality: '',
+  });
+
+  const handleSelect = (type, value) => {
+    setSelectedItems((prev) => {
+      if (type === 'sleepQuality') {
+        return { ...prev, sleepQuality: value };
+      }
+
+      const alreadySelected = prev[type].includes(value);
+      const updated = alreadySelected
+        ? prev[type].filter((item) => item !== value)
+        : [...prev[type], value];
+
+      return { ...prev, [type]: updated };
+    });
+
     setFormData((prevData) => ({
       ...prevData,
-      activities: [...prevData.activities, activity],
+      [type]:
+        type === 'sleepQuality'
+          ? value
+          : prevData[type].includes(value)
+          ? prevData[type].filter((item) => item !== value)
+          : [...prevData[type], value],
     }));
   };
 
-  const handleSocialClick = (social) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      social: [...prevData.social, social],
-    }));
-  };
-
-  const handleHealthClick = (health) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      health: [...prevData.health, health],
-    }));
-  };
-
-  const handleSleepQualityClick = (sleepQuality) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      sleepQuality,
-    }));
-  };
-
+  // const handleSubmit = async () => {
+  //   console.log("FormData being sent:", formData); 
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     const response = await axios.post(`http://localhost:5000/api/mood-log`, formData, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     console.log("Server Response:", response.data);  
+  //     navigate('/home');
+  //   } catch (error) {
+  //     if (error.response) {
+  //       console.error('Server error:', error.response.data);
+  //     } else {
+  //       console.error('Error submitting log:', error.message);
+  //     }
+  //   }
+  // };
   const handleSubmit = async () => {
+    console.log("FormData being sent:", formData); 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/mood-log', formData, {
+      if (!token) {
+        console.error('No token found. Please log in again.');
+        return;
+      }
+  
+      const response = await axios.post(`http://localhost:5000/api/mood-log`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+  
+      console.log("Server Response:", response.data);  
       navigate('/home');
     } catch (error) {
-      console.error('Error submitting activities:', error);
+      if (error.response) {
+        console.error('Server error:', error.response.data);
+      } else {
+        console.error('Error submitting log:', error.message);
+      }
     }
   };
+  
 
   const activities = [
     { name: 'Studying', icon: '/images/studying.svg' },
@@ -81,68 +127,57 @@ const LogActivities = ({ formData, setFormData }) => {
     { name: 'Good Sleep', icon: '/images/good-sleep.svg' },
   ];
 
+  const renderItems = (items, type) => (
+    <div className={`grid ${type === 'health' || type === 'sleepQuality' ? 'grid-cols-4' : 'grid-cols-5'} gap-2`}>
+      {items.map((item) => {
+        const isSelected =
+          type === 'sleepQuality'
+            ? selectedItems[type] === item.name
+            : selectedItems[type].includes(item.name);
+
+        return (
+          <div
+            key={item.name}
+            onClick={() => handleSelect(type, item.name)}
+            className="relative cursor-pointer text-center"
+          >
+            <img
+              src={item.icon}
+              alt={item.name}
+              className={`w-10 h-10 mx-auto mb-2 ${
+                isSelected ? 'opacity-60' : ''
+              }`}
+            />
+            {isSelected && (
+              <div className="absolute top-0 right-0 bg-green-500 w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">✔</span>
+              </div>
+            )}
+            <p className="text-sm">{item.name}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="bg-[#eef0ee] min-h-screen flex flex-col items-center justify-start pt-20 pb-20 relative">
       <h2 className="text-5xl font-bold mb-8">How did your day go?</h2>
       <div className="w-full max-w-3xl bg-[#eef0ee] border border-[#b1b1b1] rounded-lg p-4 mb-4">
         <h3 className="text-lg font-semibold mb-4">Activities</h3>
-        <div className="grid grid-cols-5 gap-2">
-          {activities.map((activity) => (
-            <div
-              key={activity.name}
-              onClick={() => handleActivityClick(activity.name)}
-              className="cursor-pointer text-center"
-            >
-              <img src={activity.icon} alt={activity.name} className="w-10 h-10 mx-auto mb-2" />
-              <p className="text-sm">{activity.name}</p>
-            </div>
-          ))}
-        </div>
+        {renderItems(activities, 'activities')}
       </div>
       <div className="w-full max-w-3xl bg-[#eef0ee] border border-[#b1b1b1] rounded-lg p-4 mb-4">
         <h3 className="text-lg font-semibold mb-4">Social</h3>
-        <div className="grid grid-cols-5 gap-2">
-          {social.map((socialItem) => (
-            <div
-              key={socialItem.name}
-              onClick={() => handleSocialClick(socialItem.name)}
-              className="cursor-pointer text-center"
-            >
-              <img src={socialItem.icon} alt={socialItem.name} className="w-10 h-10 mx-auto mb-2" />
-              <p className="text-sm">{socialItem.name}</p>
-            </div>
-          ))}
-        </div>
+        {renderItems(social, 'social')}
       </div>
       <div className="w-full max-w-3xl bg-[#eef0ee] border border-[#b1b1b1] rounded-lg p-4 mb-4">
         <h3 className="text-lg font-semibold mb-4">Health</h3>
-        <div className="grid grid-cols-4 gap-2">
-          {health.map((healthItem) => (
-            <div
-              key={healthItem.name}
-              onClick={() => handleHealthClick(healthItem.name)}
-              className="cursor-pointer text-center"
-            >
-              <img src={healthItem.icon} alt={healthItem.name} className="w-10 h-10 mx-auto mb-2" />
-              <p className="text-sm">{healthItem.name}</p>
-            </div>
-          ))}
-        </div>
+        {renderItems(health, 'health')}
       </div>
       <div className="w-full max-w-3xl bg-[#eef0ee] border border-[#b1b1b1] rounded-lg p-4 mb-4">
         <h3 className="text-lg font-semibold mb-4">Sleep Quality</h3>
-        <div className="grid grid-cols-4 gap-2">
-          {sleepQuality.map((sleepItem) => (
-            <div
-              key={sleepItem.name}
-              onClick={() => handleSleepQualityClick(sleepItem.name)}
-              className="cursor-pointer text-center"
-            >
-              <img src={sleepItem.icon} alt={sleepItem.name} className="w-10 h-10 mx-auto mb-2" />
-              <p className="text-sm">{sleepItem.name}</p>
-            </div>
-          ))}
-        </div>
+        {renderItems(sleepQuality, 'sleepQuality')}
       </div>
       <button
         onClick={handleSubmit}

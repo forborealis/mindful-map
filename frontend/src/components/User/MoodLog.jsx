@@ -5,6 +5,7 @@ const MoodLog = ({ setFormData }) => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedMood, setSelectedMood] = useState('');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -14,12 +15,17 @@ const MoodLog = ({ setFormData }) => {
   }, []);
 
   const handleMoodClick = (mood) => {
+    setSelectedMood(mood);
     setFormData((prevData) => ({ ...prevData, mood }));
-    navigate('/home');
   };
 
   const handleContinueClick = () => {
-    navigate('/log-activities');
+    if (!selectedMood) {
+      setError('Please select a mood before continuing.');
+      return;
+    }
+    setFormData((prevData) => ({ ...prevData, mood: selectedMood }));
+    navigate('/log-activities', { state: { mood: selectedMood } });
   };
 
   const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -28,6 +34,15 @@ const MoodLog = ({ setFormData }) => {
   const day = daysOfWeek[currentTime.getDay()];
   const date = `${months[currentTime.getMonth()]} ${currentTime.getDate()}`;
   const time = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const moods = [
+    { name: 'Relaxed', icon: '/images/relaxed.svg' },
+    { name: 'Happy', icon: '/images/happy.svg' },
+    { name: 'Fine', icon: '/images/fine.svg' },
+    { name: 'Anxious', icon: '/images/anxious.svg' },
+    { name: 'Sad', icon: '/images/sad.svg' },
+    { name: 'Angry', icon: '/images/angry.svg' },
+  ];
 
   return (
     <div className="bg-[#eef0ee] h-screen flex flex-col items-center justify-center relative">
@@ -42,30 +57,25 @@ const MoodLog = ({ setFormData }) => {
       </div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <div className="flex space-x-6">
-        <div onClick={() => handleMoodClick('Relaxed')} className="cursor-pointer text-center">
-          <img src="/images/relaxed.svg" alt="Relaxed" className="w-28 h-28 mx-auto" />
-          <p>Relaxed</p>
-        </div>
-        <div onClick={() => handleMoodClick('Happy')} className="cursor-pointer text-center">
-          <img src="/images/happy.svg" alt="Happy" className="w-28 h-28 mx-auto" />
-          <p>Happy</p>
-        </div>
-        <div onClick={() => handleMoodClick('Fine')} className="cursor-pointer text-center">
-          <img src="/images/fine.svg" alt="Fine" className="w-28 h-28 mx-auto" />
-          <p>Fine</p>
-        </div>
-        <div onClick={() => handleMoodClick('Anxious')} className="cursor-pointer text-center">
-          <img src="/images/anxious.svg" alt="Anxious" className="w-28 h-28 mx-auto" />
-          <p>Anxious</p>
-        </div>
-        <div onClick={() => handleMoodClick('Sad')} className="cursor-pointer text-center">
-          <img src="/images/sad.svg" alt="Sad" className="w-28 h-28 mx-auto" />
-          <p>Sad</p>
-        </div>
-        <div onClick={() => handleMoodClick('Angry')} className="cursor-pointer text-center">
-          <img src="/images/angry.svg" alt="Angry" className="w-28 h-28 mx-auto" />
-          <p>Angry</p>
-        </div>
+        {moods.map((mood) => (
+          <div
+            key={mood.name}
+            onClick={() => handleMoodClick(mood.name)}
+            className="relative cursor-pointer text-center"
+          >
+            <img
+              src={mood.icon}
+              alt={mood.name}
+              className={`w-28 h-28 mx-auto mb-2 ${selectedMood === mood.name ? 'opacity-60' : ''}`}
+            />
+            {selectedMood === mood.name && (
+              <div className="absolute top-0 right-0 bg-green-500 w-6 h-6 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">✔</span>
+              </div>
+            )}
+            <p>{mood.name}</p>
+          </div>
+        ))}
       </div>
       <button
         onClick={handleContinueClick}

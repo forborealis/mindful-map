@@ -4,7 +4,7 @@ const MoodLogSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    // required: true,
   },
   date: {
     type: Date,
@@ -13,27 +13,27 @@ const MoodLogSchema = new mongoose.Schema({
   },
   mood: {
     type: String,
-    enum: ['Relaxed', 'Happy', 'Fine', 'Angry', 'Sad', 'Anxious'],
+    // enum: ['Relaxed', 'Happy', 'Fine', 'Angry', 'Sad', 'Anxious'],
     required: true,
   },
   activities: {
     type: [String],
-    enum: ['Studying', 'Exam', 'Work', 'Reading', 'Gaming', 'Playing with pet'],
+    // enum: ['Studying', 'Exam', 'Work', 'Reading', 'Gaming', 'Music', 'Movie', 'Drinking', 'Relax'],
     required: true,
   },
   social: {
     type: [String],
-    enum: ['Family', 'Friends', 'Significant other', 'Colleagues'],
+    // enum: ['Family', 'Friends', 'Relationship', 'Colleagues', 'Pets'],
     required: true,
   },
   health: {
     type: [String],
-    enum: ['Exercise', 'Walk', 'Run', 'Drink water', 'Eat healthy'],
+    // enum: ['Exercise', 'Walk', 'Run', 'Eat healthy'],
     required: true,
   },
   sleepQuality: {
-    type: Number,
-    enum: [1, 2, 3, 4],
+    type: String,
+    // enum: [1, 2, 3, 4],
     required: true,
   },
 });
