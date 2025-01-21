@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const LogActivities = ({ formData, setFormData }) => {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ const LogActivities = ({ formData, setFormData }) => {
   const moodFromState = location.state?.mood;
 
   // Initialize the formData with the passed mood if not already set
-  React.useEffect(() => {
+  useEffect(() => {
     if (moodFromState && !formData.mood) {
       setFormData((prevData) => ({ ...prevData, mood: moodFromState }));
     }
@@ -47,25 +48,6 @@ const LogActivities = ({ formData, setFormData }) => {
     }));
   };
 
-  // const handleSubmit = async () => {
-  //   console.log("FormData being sent:", formData); 
-  //   try {
-  //     const token = localStorage.getItem('token');
-  //     const response = await axios.post(`http://localhost:5000/api/mood-log`, formData, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-  //     console.log("Server Response:", response.data);  
-  //     navigate('/home');
-  //   } catch (error) {
-  //     if (error.response) {
-  //       console.error('Server error:', error.response.data);
-  //     } else {
-  //       console.error('Error submitting log:', error.message);
-  //     }
-  //   }
-  // };
   const handleSubmit = async () => {
     console.log("FormData being sent:", formData); 
     try {
@@ -82,16 +64,19 @@ const LogActivities = ({ formData, setFormData }) => {
       });
   
       console.log("Server Response:", response.data);  
-      navigate('/home');
+      if (['angry', 'sad', 'anxious'].includes(formData.mood.toLowerCase())) {
+        navigate('/daily-recommendations', { state: { mood: formData.mood.toLowerCase() } });
+      } else {
+        navigate('/mood-entries');
+      }
     } catch (error) {
-      if (error.response) {
-        console.error('Server error:', error.response.data);
+      if (error.response && error.response.status === 400) {
+        toast.error(error.response.data.message);
       } else {
         console.error('Error submitting log:', error.message);
       }
     }
   };
-  
 
   const activities = [
     { name: 'Studying', icon: '/images/studying.svg' },
@@ -117,7 +102,7 @@ const LogActivities = ({ formData, setFormData }) => {
     { name: 'Exercise', icon: '/images/exercise.svg' },
     { name: 'Walk', icon: '/images/walk.svg' },
     { name: 'Run', icon: '/images/run.svg' },
-    { name: 'Eat Healthy', icon: '/images/eat-healthy.svg' },
+    { name: 'Eat Healthy', icon: '/images/eat healthy.svg' },
   ];
 
   const sleepQuality = [
