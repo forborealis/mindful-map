@@ -23,7 +23,10 @@ const BottomNav = ({ value, setValue }) => {
     setValue(newValue);
     if (newValue === 'entries') {
       navigate('/mood-entries');
-    }
+    } 
+    if (newValue === 'calendar') {
+      navigate('/calendar-log');
+    } 
     // Add navigation for other pages when they are implemented
   };
 

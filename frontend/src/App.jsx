@@ -7,6 +7,7 @@ import Home from './components/User/Home';
 import MoodLog from './components/User/MoodLog';
 import LogActivities from './components/User/LogActivities';
 import MoodEntries from './components/User/MoodEntries';
+import CalendarLog from './components/User/CalendarLog';
 import DailyRecommendations from './components/User/DailyRecommendations';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -103,6 +104,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <DailyRecommendations />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/calendar-log"
+          element={
+            <PrivateRoute>
+              <CalendarLog formData={formData} setFormData={setFormData} />
             </PrivateRoute>
           }
         />
