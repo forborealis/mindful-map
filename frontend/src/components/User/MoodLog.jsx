@@ -1,22 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const MoodLog = ({ setFormData }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedMood, setSelectedMood] = useState('');
+  const [logDate, setLogDate] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    const searchParams = new URLSearchParams(location.search);
+    const dateParam = searchParams.get('date');
+    
+    console.log('Date Parameter:', dateParam); // Log the raw date parameter
+    
+    if (dateParam) {
+      const [year, month, day] = dateParam.split('-').map(Number);
+      
+      console.log('Parsed Date:', {
+        year,
+        month,
+        day,
+        dateObject: new Date(year, month - 1, day)
+      }); // Log parsed date details
+      
+      const localDate = new Date(year, month - 1, day);
+      setLogDate(localDate);
+    }
+  }, [location.search]);
 
   const handleMoodClick = (mood) => {
     setSelectedMood(mood);
-    setFormData((prevData) => ({ ...prevData, mood }));
+    setFormData((prevData) => ({ 
+      ...prevData, 
+      mood, 
+      date: logDate.toISOString().split('T')[0] 
+    }));
   };
 
   const handleContinueClick = () => {
@@ -24,15 +44,25 @@ const MoodLog = ({ setFormData }) => {
       setError('Please select a mood before continuing.');
       return;
     }
-    setFormData((prevData) => ({ ...prevData, mood: selectedMood }));
+    
+    const dateToSend = `${logDate.getFullYear()}-${String(logDate.getMonth() + 1).padStart(2, '0')}-${String(logDate.getDate()).padStart(2, '0')}`;
+  
+  console.log('Date being sent:', dateToSend);
+  
+  setFormData((prevData) => ({ 
+    ...prevData, 
+    mood: selectedMood,
+    date: dateToSend 
+  }));
+    
     navigate('/log-activities', { state: { mood: selectedMood } });
   };
 
   const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-  const day = daysOfWeek[currentTime.getDay()];
-  const date = `${months[currentTime.getMonth()]} ${currentTime.getDate()}`;
+  const day = daysOfWeek[logDate.getDay()];
+  const date = `${months[logDate.getMonth()]} ${logDate.getDate()}`;
   const time = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const moods = [

@@ -2,22 +2,26 @@ const MoodLog = require('../models/MoodLog');
 
 exports.saveMood = async (req, res) => {
   try {
-    const { mood, activities, social, health, sleepQuality } = req.body;
+    const { mood, activities, social, health, sleepQuality, date } = req.body;
 
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'Unauthorized: No user found in request.' });
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Convert the date string to a Date object
+    const logDate = new Date(date);
+    logDate.setHours(0, 0, 0, 0);
 
     const existingLog = await MoodLog.findOne({
       user: req.user._id,
-      date: { $gte: today }
+      date: { 
+        $gte: logDate, 
+        $lt: new Date(logDate.getTime() + 24 * 60 * 60 * 1000) 
+      }
     });
 
     if (existingLog) {
-      return res.status(400).json({ success: false, message: 'You have already created a log for today. Please come back tomorrow.' });
+      return res.status(400).json({ success: false, message: 'You have already created a log for this date.' });
     }
 
     const newMoodLog = new MoodLog({
@@ -27,7 +31,7 @@ exports.saveMood = async (req, res) => {
       social,
       health,
       sleepQuality,
-      date: new Date(),
+      date: logDate,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     });
 

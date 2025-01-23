@@ -80,7 +80,9 @@ const CalendarLog = () => {
   };
 
   const handlePlusClick = (day) => {
-    navigate(`/log-mood?date=${currentYear}-${currentMonth + 1}-${day}`);
+    const formattedMonth = (currentMonth + 1).toString().padStart(2, '0');
+    const formattedDay = day.toString().padStart(2, '0');
+    navigate(`/log-mood?date=${currentYear}-${formattedMonth}-${formattedDay}`);
   };
 
   return (
