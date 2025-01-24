@@ -87,7 +87,7 @@ const CalendarLog = () => {
 
   return (
     <div className="bg-[#eef0ee] min-h-screen flex flex-col justify-between">
-      <div>
+      <div className="overflow-y-auto pb-20">
         <nav className="bg-white py-4 shadow-md">
           <div className="container mx-auto flex justify-center items-center">
             <ChevronLeftIcon className="cursor-pointer mx-2" onClick={handlePrevMonth} />

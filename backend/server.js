@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const moodLogRoutes = require('./routes/moodLogRoutes');
+const journalRoutes = require('./routes/journalRoutes');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(cors());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', moodLogRoutes);
+app.use('/api', journalRoutes);
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,

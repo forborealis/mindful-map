@@ -9,6 +9,10 @@ import LogActivities from './components/User/LogActivities';
 import MoodEntries from './components/User/MoodEntries';
 import CalendarLog from './components/User/CalendarLog';
 import DailyRecommendations from './components/User/DailyRecommendations';
+import JournalLogs from './components/User/Journal/JournalLogs';
+import JournalEntry from './components/User/Journal/JournalEntry';
+import ViewJournal from './components/User/Journal/ViewJournal';
+import EditJournal from './components/User/Journal/EditJournal';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -100,6 +104,14 @@ const App = () => {
           }
         />
         <Route
+          path="/calendar-log"
+          element={
+            <PrivateRoute>
+              <CalendarLog formData={formData} setFormData={setFormData} />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/daily-recommendations"
           element={
             <PrivateRoute>
@@ -108,10 +120,34 @@ const App = () => {
           }
         />
         <Route
-          path="/calendar-log"
+          path="/journal-logs"
           element={
             <PrivateRoute>
-              <CalendarLog formData={formData} setFormData={setFormData} />
+              <JournalLogs />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/journal-entry"
+          element={
+            <PrivateRoute>
+              <JournalEntry />
+            </PrivateRoute>
+          }
+        />
+         <Route
+          path="/view-journal/:id"
+          element={
+            <PrivateRoute>
+              <ViewJournal />
+            </PrivateRoute>
+          }
+        />
+         <Route
+          path="/edit-journal/:id"
+          element={
+            <PrivateRoute>
+              <EditJournal />
             </PrivateRoute>
           }
         />

@@ -27,6 +27,9 @@ const BottomNav = ({ value, setValue }) => {
     if (newValue === 'calendar') {
       navigate('/calendar-log');
     } 
+    if (newValue === 'journal') {
+      navigate('/journal-logs');
+    }
     // Add navigation for other pages when they are implemented
   };
 
