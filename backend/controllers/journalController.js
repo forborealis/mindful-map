@@ -37,6 +37,7 @@ exports.createJournalEntry = async (req, res) => {
     await newJournalEntry.save();
     res.status(201).json(newJournalEntry);
   } catch (error) {
+    console.error('Error creating journal entry:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -46,18 +47,21 @@ exports.getJournalEntries = async (req, res) => {
     const journalEntries = await Journal.find({ user: req.user._id, deleted: { $ne: true } });
     res.status(200).json(journalEntries);
   } catch (error) {
+    console.error('Error fetching journal entries:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 exports.getJournalEntryById = async (req, res) => {
   try {
+    console.log('Fetching journal entry with id:', req.params.id); // Add logging
     const journalEntry = await Journal.findById(req.params.id);
     if (!journalEntry || journalEntry.deleted) {
       return res.status(404).json({ message: 'Journal entry not found' });
     }
     res.status(200).json(journalEntry);
   } catch (error) {
+    console.error('Error fetching journal entry:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -84,6 +88,7 @@ exports.updateJournalEntry = async (req, res) => {
     await journalEntry.save();
     res.status(200).json(journalEntry);
   } catch (error) {
+    console.error('Error updating journal entry:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -98,8 +103,10 @@ exports.deleteJournalEntry = async (req, res) => {
     await journalEntry.save();
     res.status(200).json({ message: 'Journal entry deleted successfully' });
   } catch (error) {
+    console.error('Error deleting journal entry:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 
 exports.upload = upload;

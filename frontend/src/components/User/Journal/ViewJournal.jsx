@@ -11,6 +11,7 @@ import Box from '@mui/material/Box';
 
 const ViewJournal = () => {
   const [entry, setEntry] = useState('');
+  const [prompt, setPrompt] = useState('');
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const ViewJournal = () => {
           },
         });
         setEntry(response.data.content);
+        setPrompt(response.data.prompt);
         setImages(response.data.images);
       } catch (error) {
         console.error('Error fetching journal entry:', error);
@@ -63,8 +65,9 @@ const ViewJournal = () => {
           <div></div> {/* Placeholder for alignment */}
         </div>
       </nav>
-      <div className="flex-grow flex items-center justify-center p-4">
-        <div className="relative w-full max-w-2xl"> {/* Adjusted width */}
+      <div className="flex-grow flex flex-col items-center justify-start p-4"> {/* Adjusted justify-content */}
+        {prompt && <h2 className="text-center text-xl font-bold mb-4">{prompt}</h2>}
+        <div className="relative w-full max-w-2xl mt-4"> {/* Added margin-top */}
           <div className="bg-white p-6 rounded-lg shadow-md h-[30rem]"> {/* Increased height */}
             <textarea
               className="w-full h-full p-4 border-none outline-none resize-none"
@@ -79,7 +82,7 @@ const ViewJournal = () => {
                 key={index}
                 src={image}
                 alt={`upload-${index}`}
-                className="w-80 h-56 object-cover rounded-lg cursor-pointer"
+                className="w-40 h-36 object-cover rounded-lg cursor-pointer"
                 onClick={() => handleImageClick(image)}
               />
             ))}

@@ -13,6 +13,7 @@ import JournalLogs from './components/User/Journal/JournalLogs';
 import JournalEntry from './components/User/Journal/JournalEntry';
 import ViewJournal from './components/User/Journal/ViewJournal';
 import EditJournal from './components/User/Journal/EditJournal';
+import JournalPrompt from './components/User/Journal/JournalPrompt';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -148,6 +149,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <EditJournal />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/journal-prompt"
+          element={
+            <PrivateRoute>
+              <JournalPrompt />
             </PrivateRoute>
           }
         />

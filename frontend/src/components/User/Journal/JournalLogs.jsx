@@ -56,7 +56,7 @@ const JournalLogs = () => {
     const hasLoggedToday = journalEntries.some(entry => entry.date.split('T')[0] === today);
 
     if (hasLoggedToday) {
-      toast.error('Journal already logged for the day!');
+      toast.error('You already logged a journal entry for today.');
     } else {
       navigate('/journal-entry');
     }
