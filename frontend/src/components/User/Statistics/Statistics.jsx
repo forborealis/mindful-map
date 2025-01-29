@@ -133,9 +133,14 @@ const Statistics = () => {
 
   return (
     <div style={{ backgroundColor: '#eef0ee', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-      <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', marginTop: '20px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-        <h1>View Correlation Analysis</h1>
-        <button onClick={handleViewClick}>View</button>
+      <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', marginTop: '20px', width: '90%', maxWidth: '800px', textAlign: 'left', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+        <h2 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '24px' }}>Correlation Analysis</h2>
+        <p style={{ color: '#3a3939', fontSize: '14px' }}>Know how your activities are related to your mood</p>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+          <button onClick={handleViewClick} style={{ backgroundColor: '#6fba94', color: '#eef0ee', fontWeight: 'bold', padding: '10px 25px', borderRadius: '20px', border: 'none', cursor: 'pointer' }}>
+            View
+          </button>
+        </div>
       </div>
       <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '10px', marginTop: '20px', marginBottom: '80px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
         <h2 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '24px', textAlign: 'left' }}>Mood Count</h2>

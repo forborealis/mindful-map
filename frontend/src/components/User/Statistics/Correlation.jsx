@@ -73,7 +73,7 @@ const Correlation = () => {
             if (moodActivityMap[mood][activity] >= 3) {
               const totalLogs = Object.values(moodActivityMap[mood]).reduce((a, b) => a + b, 0);
               const percentage = ((moodActivityMap[mood][activity] / totalLogs) * 100).toFixed(2);
-              correlationResults.push(`${mood} (${percentage}%) linked to ${activity}`);
+              correlationResults.push(`${mood} mood is (${percentage}%) linked to ${activity}`);
             }
           });
         });
