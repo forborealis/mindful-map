@@ -21,16 +21,28 @@ const BottomNav = ({ value, setValue }) => {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-    if (newValue === 'entries') {
-      navigate('/mood-entries');
-    } 
-    if (newValue === 'calendar') {
-      navigate('/calendar-log');
-    } 
-    if (newValue === 'journal') {
-      navigate('/journal-logs');
+    switch (newValue) {
+      case 'entries':
+        navigate('/mood-entries');
+        break;
+      case 'statistics':
+        navigate('/statistics');
+        break;
+      case 'forum':
+        navigate('/forum');
+        break;
+      case 'calendar':
+        navigate('/calendar-log');
+        break;
+      case 'journal':
+        navigate('/journal-logs');
+        break;
+      case 'logout':
+        handleLogoutClick();
+        break;
+      default:
+        navigate('/home');
     }
-    // Add navigation for other pages when they are implemented
   };
 
   const handleLogoutClick = () => {
@@ -84,7 +96,6 @@ const BottomNav = ({ value, setValue }) => {
           value="logout"
           icon={<ExitToAppIcon />}
           style={{ color: value === 'logout' ? '#6fba94' : '#b1b1b1' }}
-          onClick={handleLogoutClick}
         />
       </BottomNavigation>
       <Dialog

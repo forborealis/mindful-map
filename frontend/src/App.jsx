@@ -14,6 +14,9 @@ import JournalEntry from './components/User/Journal/JournalEntry';
 import ViewJournal from './components/User/Journal/ViewJournal';
 import EditJournal from './components/User/Journal/EditJournal';
 import JournalPrompt from './components/User/Journal/JournalPrompt';
+import Statistics from './components/User/Statistics/Statistics';
+import Correlation from './components/User/Statistics/Correlation';
+import MoodStatistics from './components/User/Statistics/MoodStatistics';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -157,6 +160,30 @@ const App = () => {
           element={
             <PrivateRoute>
               <JournalPrompt />
+            </PrivateRoute>
+          }
+        />
+         <Route
+          path="/statistics"
+          element={
+            <PrivateRoute>
+              <Statistics />
+            </PrivateRoute>
+          }
+        />
+         <Route
+          path="/correlation"
+          element={
+            <PrivateRoute>
+              <Correlation />
+            </PrivateRoute>
+          }
+        />
+         <Route
+          path="/mood-statistics/:mood"
+          element={
+            <PrivateRoute>
+              <MoodStatistics/>
             </PrivateRoute>
           }
         />

@@ -61,3 +61,26 @@ exports.getAllMoodLogs = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error while fetching mood logs.' });
   }
 };
+
+exports.getPaginatedMoodLogs = async (req, res) => {
+  try {
+    const { month, year, page = 0, limit = 4 } = req.query;
+    const skip = page * limit;
+
+    const moodLogs = await MoodLog.find({
+      user: req.user._id,
+      date: {
+        $gte: new Date(year, month - 1, 1),
+        $lt: new Date(year, month, 1)
+      }
+    })
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    res.status(200).json(moodLogs);
+  } catch (error) {
+    console.error('Error fetching paginated mood logs:', error);
+    res.status(500).json({ success: false, message: 'Server error while fetching paginated mood logs.' });
+  }
+};
