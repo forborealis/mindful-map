@@ -3,18 +3,6 @@ import { useEffect, useState } from "react";
 const DailyPrediction = () => {
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const dayOrder = [
-    'Monday',
-    'Tuesday', 
-    'Wednesday', 
-    'Thursday', 
-    'Friday', 
-    'Saturday', 
-    'Sunday'
-  ];
-
-  // Get the current day
   const currentDay = new Date().toLocaleString('en-us', { weekday: 'long' });
 
   useEffect(() => {
@@ -38,7 +26,7 @@ const DailyPrediction = () => {
         if (data.success && data.predictions[currentDay]) {
           setPrediction(data.predictions[currentDay]);
         } else {
-          console.error("Failed to fetch prediction for today:", data.message);
+          setPrediction(null); // Ensure prediction is null if no data is found
         }
       } catch (error) {
         console.error("Error fetching prediction:", error);
@@ -60,14 +48,16 @@ const DailyPrediction = () => {
       <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-2xl">
         {loading ? (
           <p className="text-lg text-[#3a3939]">Loading your prediction...</p>
-        ) : prediction ? (
+        ) : prediction && prediction.mood !== "No prediction available" ? (
           <p className="text-lg text-[#3a3939]">
             {prediction.activity 
-              ? `You may feel ${prediction.mood} today because of ${prediction.activity}`
+              ? `You may feel ${prediction.mood} today because of ${prediction.activity}` 
               : `You may feel ${prediction.mood} today`}
           </p>
         ) : (
-          <p className="text-lg text-[#3a3939]">No prediction available for today.</p>
+          <p className="text-lg text-[#3a3939]">
+            No prediction available today because no logged moods for the past 30 days.
+          </p>
         )}
       </div>
     </div>
