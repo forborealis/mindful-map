@@ -7,6 +7,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import ForumIcon from '@mui/icons-material/Forum';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import BookIcon from '@mui/icons-material/Book';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -36,6 +37,9 @@ const BottomNav = ({ value, setValue }) => {
         break;
       case 'journal':
         navigate('/journal-logs');
+        break;
+      case 'prediction':
+        navigate('/main-predictions');
         break;
       case 'logout':
         handleLogoutClick();
@@ -90,6 +94,12 @@ const BottomNav = ({ value, setValue }) => {
           value="journal"
           icon={<BookIcon />}
           style={{ color: value === 'journal' ? '#6fba94' : '#b1b1b1' }}
+        />
+        <BottomNavigationAction
+          label="Predictions"
+          value="prediction"
+          icon={<LightbulbIcon />}
+          style={{ color: value === 'prediction' ? '#6fba94' : '#b1b1b1' }}
         />
         <BottomNavigationAction
           label="Logout"

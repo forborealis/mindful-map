@@ -8,9 +8,9 @@ exports.saveMood = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Unauthorized: No user found in request.' });
     }
 
-    // Convert the date string to a Date object
+    // Convert the date string to a Date object and set it to UTC midnight
     const logDate = new Date(date);
-    logDate.setHours(0, 0, 0, 0);
+    logDate.setUTCHours(0, 0, 0, 0); 
 
     const existingLog = await MoodLog.findOne({
       user: req.user._id,
@@ -31,7 +31,7 @@ exports.saveMood = async (req, res) => {
       social,
       health,
       sleepQuality,
-      date: logDate,
+      date: logDate, // UTC midnight
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     });
 
@@ -41,7 +41,7 @@ exports.saveMood = async (req, res) => {
     if (['angry', 'sad', 'anxious'].includes(mood.toLowerCase())) {
       return res.status(200).json({ success: true, message: 'Mood log saved successfully.', mood });
     }
-
+  
     res.status(200).json({ success: true, message: 'Mood log saved successfully.' });
   } catch (error) {
     console.error('Error saving mood log:', error);

@@ -9,7 +9,7 @@ const CalendarLog = () => {
   const [moodLogs, setMoodLogs] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [value, setValue] = useState('entries');
+  const [value, setValue] = useState('calendar');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +34,11 @@ const CalendarLog = () => {
   const today = new Date();
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
   const currentWeekStart = new Date(today);
-  currentWeekStart.setDate(today.getDate() - today.getDay());
+  const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
+  const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Move back to Monday
+  currentWeekStart.setDate(today.getDate() + offset);
+  currentWeekStart.setHours(0, 0, 0, 0); 
+
   const currentWeekEnd = new Date(currentWeekStart);
   currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
 
@@ -87,7 +91,7 @@ const CalendarLog = () => {
 
   return (
     <div className="bg-[#eef0ee] min-h-screen flex flex-col justify-between">
-      <div className="overflow-y-auto pb-20">
+      <div>
         <nav className="bg-white py-4 shadow-md">
           <div className="container mx-auto flex justify-center items-center">
             <ChevronLeftIcon className="cursor-pointer mx-2" onClick={handlePrevMonth} />
@@ -106,7 +110,7 @@ const CalendarLog = () => {
               const isToday = day === today.getDate();  
 
               return (
-                <div key={day} className="flex flex-col items-center mb-3"> {/* Added margin below each row */}
+                <div key={day} className="flex flex-col items-center mb-3"> 
                   <div
                     className={`flex items-center justify-center w-12 h-12 md:w-12 md:h-12 rounded-full shadow 
                       ${isToday && mood === 'plus' ? 'text-green-500 bg-gray-200 border-2 border-green-500' : 

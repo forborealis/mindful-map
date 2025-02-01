@@ -17,6 +17,9 @@ import JournalPrompt from './components/User/Journal/JournalPrompt';
 import Statistics from './components/User/Statistics/Statistics';
 import Correlation from './components/User/Statistics/Correlation';
 import MoodStatistics from './components/User/Statistics/MoodStatistics';
+import WeeklyPredictions from './components/User/WeeklyPredictions';
+import DailyPrediction from './components/User/DailyPrediction';
+import MainPredictions from './components/User/MainPredictions';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -184,6 +187,30 @@ const App = () => {
           element={
             <PrivateRoute>
               <MoodStatistics/>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/main-predictions"
+          element={
+            <PrivateRoute>
+              <MainPredictions formData={formData} setFormData={setFormData} />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/weekly-predictions"
+          element={
+            <PrivateRoute>
+              <WeeklyPredictions formData={formData} setFormData={setFormData} />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/daily-prediction"
+          element={
+            <PrivateRoute>
+              <DailyPrediction formData={formData} setFormData={setFormData} />
             </PrivateRoute>
           }
         />
