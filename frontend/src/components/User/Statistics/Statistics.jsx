@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment';
-import { Doughnut } from 'react-chartjs-2';
+import { Doughnut, Line } from 'react-chartjs-2';
 import BottomNav from '../../BottomNav';
 import {
   Chart as ChartJS,
@@ -17,6 +17,10 @@ import {
 } from 'chart.js';
 import Switch from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 ChartJS.register(
   ArcElement,
@@ -26,17 +30,23 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  Title
+  Title,
+  ChartDataLabels
 );
 
 const Statistics = () => {
   const navigate = useNavigate();
   const [navValue, setNavValue] = useState('statistics'); // Set the initial value to the index of the Statistics page
   const [moodCounts, setMoodCounts] = useState({});
-  const [period, setPeriod] = useState('monthly'); // State to track the selected period
+  const [sleepQualityData, setSleepQualityData] = useState([]);
+  const [moodPeriod, setMoodPeriod] = useState('monthly'); // State to track the selected period for mood count
+  const [sleepPeriod, setSleepPeriod] = useState('monthly'); // State to track the selected period for sleep quality
+  const moodChartRef = useRef(null);
+  const sleepChartRef = useRef(null);
+  const pdfIconRef = useRef(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchMoodData = async () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -53,7 +63,7 @@ const Statistics = () => {
 
         // Calculate mood counts based on the selected period
         let startOfPeriod, endOfPeriod;
-        if (period === 'weekly') {
+        if (moodPeriod === 'weekly') {
           startOfPeriod = moment().startOf('isoWeek'); // Monday
           endOfPeriod = moment().endOf('isoWeek'); // Sunday
         } else {
@@ -67,6 +77,7 @@ const Statistics = () => {
         });
 
         const moodCountMap = {};
+
         periodLogs.forEach(log => {
           const { mood } = log;
           if (!moodCountMap[mood]) {
@@ -77,12 +88,74 @@ const Statistics = () => {
 
         setMoodCounts(moodCountMap);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching mood data:', error);
       }
     };
 
-    fetchData();
-  }, [period]); // Re-fetch data when the period changes
+    fetchMoodData();
+  }, [moodPeriod]); // Re-fetch mood data when the mood period changes
+
+  useEffect(() => {
+    const fetchSleepData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No token found');
+        }
+
+        const response = await axios.get('http://localhost:5000/api/mood-log', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = response.data;
+
+        // Calculate sleep quality based on the selected period
+        let startOfPeriod, endOfPeriod;
+        if (sleepPeriod === 'weekly') {
+          startOfPeriod = moment().startOf('isoWeek'); // Monday
+          endOfPeriod = moment().endOf('isoWeek'); // Sunday
+        } else {
+          startOfPeriod = moment().startOf('month');
+          endOfPeriod = moment().endOf('month');
+        }
+
+        const periodLogs = data.filter(log => {
+          const logDate = moment(log.date);
+          return logDate.isBetween(startOfPeriod, endOfPeriod, null, '[]');
+        });
+
+        const sleepQualityMap = {};
+
+        periodLogs.forEach(log => {
+          const { sleepQuality } = log;
+          if (!sleepQualityMap[log.date]) {
+            sleepQualityMap[log.date] = [];
+          }
+          sleepQualityMap[log.date].push(sleepQuality);
+        });
+
+        const sleepQualityNumeric = {
+          'No Sleep': 1,
+          'Poor Sleep': 2,
+          'Medium Sleep': 3,
+          'Good Sleep': 4
+        };
+
+        const sleepQualityData = Object.keys(sleepQualityMap).map(date => {
+          const avgSleepQuality = sleepQualityMap[date].reduce((acc, quality) => acc + sleepQualityNumeric[quality], 0) / sleepQualityMap[date].length;
+          return { date, avgSleepQuality };
+        });
+
+        setSleepQualityData(sleepQualityData);
+      } catch (error) {
+        console.error('Error fetching sleep data:', error);
+      }
+    };
+
+    fetchSleepData();
+  }, [sleepPeriod]); // Re-fetch sleep data when the sleep period changes
 
   const moodColors = {
     relaxed: '#67b88f',
@@ -99,7 +172,10 @@ const Statistics = () => {
       {
         data: Object.values(moodCounts),
         backgroundColor: Object.keys(moodCounts).map(mood => moodColors[mood.toLowerCase()]),
-        hoverBackgroundColor: Object.keys(moodCounts).map(mood => moodColors[mood.toLowerCase()])
+        hoverBackgroundColor: Object.keys(moodCounts).map(mood => moodColors[mood.toLowerCase()]),
+        borderWidth: 1,
+        borderColor: '#fff',
+        hoverBorderColor: '#fff'
       }
     ]
   };
@@ -115,7 +191,49 @@ const Statistics = () => {
           label: function (context) {
             const label = context.label || '';
             const value = context.raw || 0;
-            return `${label}: ${value}`;
+            const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+            const percentage = ((value / total) * 100).toFixed(2);
+            return `${label}: ${value} (${percentage}%)`;
+          }
+        }
+      },
+      datalabels: {
+        color: '#fff',
+        formatter: (value, context) => {
+          const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+          const percentage = ((value / total) * 100).toFixed(2);
+          return `${percentage}%`;
+        }
+      }
+    }
+  };
+
+  const sleepQualityChartData = {
+    labels: sleepQualityData.map(data => moment(data.date).format('MMM D')),
+    datasets: [
+      {
+        data: sleepQualityData.map(data => data.avgSleepQuality),
+        borderColor: '#6fba94',
+        backgroundColor: 'rgba(111, 186, 148, 0.2)',
+        fill: true
+      }
+    ]
+  };
+
+  const sleepQualityChartOptions = {
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          callback: function (value) {
+            const sleepQualityLabels = ['No Sleep', 'Poor Sleep', 'Medium Sleep', 'Good Sleep'];
+            return sleepQualityLabels[value - 1];
           }
         }
       }
@@ -127,7 +245,35 @@ const Statistics = () => {
   };
 
   const handleMoodClick = (mood) => {
-    navigate(`/mood-statistics/${mood}?period=${period}`);
+    navigate(`/mood-statistics/${mood}?period=${moodPeriod}`);
+  };
+
+  const handleDownloadPDF = async () => {
+    const moodInput = moodChartRef.current;
+    const sleepInput = sleepChartRef.current;
+    const pdfIcon = pdfIconRef.current;
+    pdfIcon.style.display = 'none'; // Hide the PDF icon before capturing the screenshot
+
+    const moodCanvas = await html2canvas(moodInput, { scale: 2 });
+    const sleepCanvas = await html2canvas(sleepInput, { scale: 2 });
+
+    pdfIcon.style.display = 'block'; // Show the PDF icon again after capturing the screenshot
+
+    const moodImgData = moodCanvas.toDataURL('image/png');
+    const sleepImgData = sleepCanvas.toDataURL('image/png');
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 180;
+    const moodImgHeight = (moodCanvas.height * imgWidth) / moodCanvas.width;
+    const sleepImgHeight = (sleepCanvas.height * imgWidth) / sleepCanvas.width;
+
+    const centerX = (pdf.internal.pageSize.getWidth() - imgWidth) / 2;
+
+    pdf.addImage(moodImgData, 'PNG', centerX, 20, imgWidth, moodImgHeight);
+    pdf.addPage();
+    pdf.addImage(sleepImgData, 'PNG', centerX, 20, imgWidth, sleepImgHeight);
+
+    pdf.save(`Mood_and_Sleep_Quality_${moodPeriod}.pdf`);
   };
 
   const moodIcons = {
@@ -194,6 +340,9 @@ const Statistics = () => {
 
   return (
     <div style={{ backgroundColor: '#eef0ee', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
+      <div ref={pdfIconRef} style={{ position: 'absolute', top: '20px', right: '20px', cursor: 'pointer' }} onClick={handleDownloadPDF}>
+        <PictureAsPdfIcon style={{ color: '#3a3939', fontSize: 24 }} />
+      </div>
       <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', marginTop: '20px', width: '90%', maxWidth: '800px', textAlign: 'left', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
         <h2 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '24px' }}>Correlation Analysis</h2>
         <p style={{ color: '#3a3939', fontSize: '14px' }}>Know how your activities are related to your mood</p>
@@ -203,7 +352,7 @@ const Statistics = () => {
           </button>
         </div>
       </div>
-      <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '10px', marginTop: '20px', marginBottom: '80px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+      <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '10px', marginTop: '20px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '24px', textAlign: 'left' }}>Mood Count</h2>
@@ -211,11 +360,11 @@ const Statistics = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: '10px', color: '#3a3939', fontWeight: 'bold' }}>Weekly</span>
-            <IOSSwitch checked={period === 'monthly'} onChange={() => setPeriod(period === 'weekly' ? 'monthly' : 'weekly')} />
+            <IOSSwitch checked={moodPeriod === 'monthly'} onChange={() => setMoodPeriod(moodPeriod === 'weekly' ? 'monthly' : 'weekly')} />
             <span style={{ marginLeft: '10px', color: '#3a3939', fontWeight: 'bold' }}>Monthly</span>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div ref={moodChartRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
           <div style={{ width: '100%', maxWidth: '400px', height: '300px', margin: '0 auto', display: 'flex', justifyContent: 'center' }}>
             <Doughnut data={chartData} options={chartOptions} />
           </div>
@@ -228,6 +377,22 @@ const Statistics = () => {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+      <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '10px', marginTop: '20px', marginBottom: '80px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '24px', textAlign: 'left' }}>Sleep Quality</h2>
+            <p style={{ color: '#3a3939', fontSize: '14px', textAlign: 'left' }}>Track your sleep quality over time</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span style={{ marginRight: '10px', color: '#3a3939', fontWeight: 'bold' }}>Weekly</span>
+            <IOSSwitch checked={sleepPeriod === 'monthly'} onChange={() => setSleepPeriod(sleepPeriod === 'weekly' ? 'monthly' : 'weekly')} />
+            <span style={{ marginLeft: '10px', color: '#3a3939', fontWeight: 'bold' }}>Monthly</span>
+          </div>
+        </div>
+        <div ref={sleepChartRef} style={{ width: '100%', maxWidth: '600px', height: '300px', margin: '0 auto', display: 'flex', justifyContent: 'center', position: 'relative' }}>
+          <Line data={sleepQualityChartData} options={sleepQualityChartOptions} />
         </div>
       </div>
       <BottomNav value={navValue} setValue={setNavValue} />
