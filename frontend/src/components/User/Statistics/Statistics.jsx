@@ -127,7 +127,7 @@ const Statistics = () => {
   };
 
   const handleMoodClick = (mood) => {
-    navigate(`/mood-statistics/${mood}`);
+    navigate(`/mood-statistics/${mood}?period=${period}`);
   };
 
   const moodIcons = {

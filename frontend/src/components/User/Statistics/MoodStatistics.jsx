@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment';
 import BottomNav from '../../BottomNav';
 
 const MoodStatistics = () => {
   const { mood } = useParams();
+  const location = useLocation();
   const [activityData, setActivityData] = useState([]);
   const [socialData, setSocialData] = useState([]);
   const [healthData, setHealthData] = useState([]);
+
   const moodIcons = {
     relaxed: '/images/relaxed.svg',
     happy: '/images/happy.svg',
@@ -34,19 +36,30 @@ const MoodStatistics = () => {
 
         const data = response.data;
 
+        // Determine the period from the query parameter
+        const queryParams = new URLSearchParams(location.search);
+        const period = queryParams.get('period') || 'monthly';
+
         // Calculate activity percentages for the selected mood
-        const startOfMonth = moment().startOf('month');
-        const endOfMonth = moment().endOf('month');
-        const monthlyLogs = data.filter(log => {
+        let startOfPeriod, endOfPeriod;
+        if (period === 'weekly') {
+          startOfPeriod = moment().startOf('isoWeek'); // Monday
+          endOfPeriod = moment().endOf('isoWeek'); // Sunday
+        } else {
+          startOfPeriod = moment().startOf('month');
+          endOfPeriod = moment().endOf('month');
+        }
+
+        const periodLogs = data.filter(log => {
           const logDate = moment(log.date);
-          return logDate.isBetween(startOfMonth, endOfMonth, null, '[]') && log.mood.toLowerCase() === mood.toLowerCase();
+          return logDate.isBetween(startOfPeriod, endOfPeriod, null, '[]') && log.mood.toLowerCase() === mood.toLowerCase();
         });
 
         const activityCountMap = {};
         const socialCountMap = {};
         const healthCountMap = {};
 
-        monthlyLogs.forEach(log => {
+        periodLogs.forEach(log => {
           log.activities.forEach(activity => {
             if (activityCategories.activities.includes(activity.toLowerCase())) {
               if (!activityCountMap[activity]) {
@@ -108,7 +121,7 @@ const MoodStatistics = () => {
     };
 
     fetchData();
-  }, [mood]);
+  }, [mood, location.search]);
 
   const activityIcons = {
     studying: '/images/studying.svg',
