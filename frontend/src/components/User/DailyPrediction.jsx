@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
 
 const DailyPrediction = () => {
-  const [prediction, setPrediction] = useState(null);
+  const [prediction, setPrediction] = useState({});
   const [loading, setLoading] = useState(true);
+
   const currentDay = new Date().toLocaleString('en-us', { weekday: 'long' });
+
+  const formatActivities = (activities) => {
+    if (!activities || activities.length === 0) return "";
+    if (activities.length === 1) return ` because of ${activities[0]}`;
+    return ` because of ${activities[0]} and ${activities[1]}`;
+  };
 
   useEffect(() => {
     const fetchPrediction = async () => {
@@ -18,15 +25,15 @@ const DailyPrediction = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,  
           },
         });
 
         const data = await response.json();
-        if (data.success && data.predictions[currentDay]) {
-          setPrediction(data.predictions[currentDay]);
+        if (data.success) {
+          setPrediction(data.predictions[currentDay] || { mood: "No prediction available", activities: [] });
         } else {
-          setPrediction(null); // Ensure prediction is null if no data is found
+          console.error("Failed to fetch predictions:", data.message);
         }
       } catch (error) {
         console.error("Error fetching prediction:", error);
@@ -47,16 +54,12 @@ const DailyPrediction = () => {
       </div>
       <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-2xl">
         {loading ? (
-          <p className="text-lg text-[#3a3939]">Loading your prediction...</p>
-        ) : prediction && prediction.mood !== "No prediction available" ? (
-          <p className="text-lg text-[#3a3939]">
-            {prediction.activity 
-              ? `You may feel ${prediction.mood} today because of ${prediction.activity}` 
-              : `You may feel ${prediction.mood} today`}
-          </p>
+          <p className="text-lg text-[#3a3939]">Loading prediction...</p>
         ) : (
           <p className="text-lg text-[#3a3939]">
-            No prediction available today because no logged moods for the past 30 days.
+            {prediction.mood === "No prediction available"
+              ? `No prediction available for ${currentDay}`
+              : `You may feel ${prediction.mood} today${formatActivities(prediction.activities)}`}
           </p>
         )}
       </div>

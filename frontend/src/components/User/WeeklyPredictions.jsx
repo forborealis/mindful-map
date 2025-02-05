@@ -16,6 +16,12 @@ const WeeklyPredictions = () => {
 
   const currentDay = new Date().toLocaleString('en-us', { weekday: 'long' });
 
+  const formatActivities = (activities) => {
+    if (!activities || activities.length === 0) return "";
+    if (activities.length === 1) return ` because of ${activities[0]}`;
+    return ` because of ${activities[0]} and ${activities[1]}`;
+  };
+
   useEffect(() => {
     const fetchPredictions = async () => {
       try {
@@ -62,23 +68,20 @@ const WeeklyPredictions = () => {
         ) : Object.keys(predictions).length > 0 ? (
           <div>
             {dayOrder.map((day) => {
-  const prediction = predictions[day] || { mood: "No prediction available", activity: null };
-  const isCurrentDay = day === currentDay;
+              const prediction = predictions[day] || { mood: "No prediction available", activities: [] };
+              const isCurrentDay = day === currentDay;
 
-  return (
-    <p 
-      key={day} 
-      className={`text-lg ${isCurrentDay ? 'font-bold italic text-[#3a3939]' : 'text-gray-500'} mb-4`}
-    >
-      {prediction.mood === "No prediction available"
-        ? `No prediction available for ${day}`
-        : prediction.activity
-        ? `You may feel ${prediction.mood} on ${day} because of ${prediction.activity}`
-        : `You may feel ${prediction.mood} on ${day}`}
-    </p>
-  );
-})}
-
+              return (
+                <p 
+                  key={day} 
+                  className={`text-lg ${isCurrentDay ? 'font-bold italic text-[#3a3939]' : 'text-gray-500'} mb-4`}
+                >
+                  {prediction.mood === "No prediction available"
+                    ? `No prediction available for ${day}`
+                    : `You may feel ${prediction.mood} on ${day}${formatActivities(prediction.activities)}`}
+                </p>
+              );
+            })}
           </div>
         ) : (
           <p className="text-lg text-[#3a3939]">No mood predictions available.</p>
