@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true,
+    required: false,
   },
   avatar: {
     type: String, 
@@ -25,7 +25,11 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: 'user', 
+    default: 'user',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

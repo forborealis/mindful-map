@@ -1,6 +1,6 @@
 const express = require('express');
 const { signup, login } = require('../controllers/authController');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authMiddleware } = require('../middleware/authMiddleware'); // Destructure the import
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('../config/cloudinaryConfig');

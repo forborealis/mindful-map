@@ -99,7 +99,7 @@ const CalendarLog = () => {
             <ChevronRightIcon className="cursor-pointer mx-2" onClick={handleNextMonth} />
           </div>
         </nav>
-        <div className="grid grid-cols-7 gap-2 mt-12 max-w-screen-md mx-auto bg-gray-100 rounded-lg shadow p-4"> {/* Increased width */} 
+        <div className="grid grid-cols-7 gap-2 mt-12 max-w-screen-md mx-auto bg-gray-100 rounded-lg shadow p-4 mb-20"> {/* Added margin-bottom */}
             {daysOfWeek.map((day, i) => (
               <div key={i} className="text-center font-bold text-gray-400 mb-5">{day}</div>
             ))}

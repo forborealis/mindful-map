@@ -24,6 +24,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
+import Dashboard from './components/Admin/Dashboard';
+
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -42,20 +44,34 @@ const App = () => {
     health: [],
     sleepQuality: '',
   });
+  const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
     const checkMoodLog = async () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await axios.get('http://localhost:5000/api/mood-log', {
+          // Fetch user role
+          const userResponse = await axios.get('http://localhost:5000/api/auth/me', {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          const today = new Date().toISOString().split('T')[0];
-          const loggedToday = response.data.some(log => log.date.split('T')[0] === today);
-          setHasLoggedMood(loggedToday);
+          setUserRole(userResponse.data.role);
+
+          // Check mood log only if the user is not an admin
+          if (userResponse.data.role !== 'admin') {
+            const response = await axios.get('http://localhost:5000/api/mood-log', {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            const today = new Date().toISOString().split('T')[0];
+            const loggedToday = response.data.some(log => log.date.split('T')[0] === today);
+            setHasLoggedMood(loggedToday);
+          } else {
+            setHasLoggedMood(false); // Admins don't need to log mood
+          }
         } catch (error) {
           console.error('Error checking mood log:', error);
           setHasLoggedMood(false); // Set to false if there's an error
@@ -64,6 +80,7 @@ const App = () => {
         setHasLoggedMood(false); // No token means not logged in
       }
     };
+
     checkMoodLog();
   }, []);
 
@@ -82,7 +99,13 @@ const App = () => {
           path="/home"
           element={
             <PrivateRoute>
-              {hasLoggedMood ? <Navigate to="/mood-entries" /> : <Navigate to="/log-mood" />}
+              {userRole === 'admin' ? (
+                <Navigate to="/admin/dashboard" />
+              ) : hasLoggedMood ? (
+                <Navigate to="/mood-entries" />
+              ) : (
+                <Navigate to="/log-mood" />
+              )}
             </PrivateRoute>
           }
         />
@@ -90,7 +113,7 @@ const App = () => {
           path="/log-mood"
           element={
             <PrivateRoute>
-              <MoodLog setFormData={setFormData} />
+              {userRole === 'admin' ? <Navigate to="/admin/dashboard" /> : <MoodLog setFormData={setFormData} />}
             </PrivateRoute>
           }
         />
@@ -106,7 +129,7 @@ const App = () => {
           path="/mood-entries"
           element={
             <PrivateRoute>
-              <MoodEntries />
+              {userRole === 'admin' ? <Navigate to="/admin/dashboard" /> : <MoodEntries />}
             </PrivateRoute>
           }
         />
@@ -142,7 +165,7 @@ const App = () => {
             </PrivateRoute>
           }
         />
-         <Route
+        <Route
           path="/view-journal/:id"
           element={
             <PrivateRoute>
@@ -150,7 +173,7 @@ const App = () => {
             </PrivateRoute>
           }
         />
-         <Route
+        <Route
           path="/edit-journal/:id"
           element={
             <PrivateRoute>
@@ -166,7 +189,7 @@ const App = () => {
             </PrivateRoute>
           }
         />
-         <Route
+        <Route
           path="/statistics"
           element={
             <PrivateRoute>
@@ -174,7 +197,7 @@ const App = () => {
             </PrivateRoute>
           }
         />
-         <Route
+        <Route
           path="/correlation"
           element={
             <PrivateRoute>
@@ -182,11 +205,11 @@ const App = () => {
             </PrivateRoute>
           }
         />
-         <Route
+        <Route
           path="/mood-statistics/:mood"
           element={
             <PrivateRoute>
-              <MoodStatistics/>
+              <MoodStatistics />
             </PrivateRoute>
           }
         />
@@ -211,6 +234,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <DailyPrediction formData={formData} setFormData={setFormData} />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
             </PrivateRoute>
           }
         />

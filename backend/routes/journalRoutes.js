@@ -1,5 +1,5 @@
 const express = require('express');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authMiddleware } = require('../middleware/authMiddleware');
 const { createJournalEntry, getJournalEntries, getJournalEntryById, updateJournalEntry, deleteJournalEntry, getJournalPrompt, upload } = require('../controllers/journalController');
 
 const router = express.Router();

@@ -1,5 +1,5 @@
 const express = require('express');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authMiddleware } = require('../middleware/authMiddleware');
 const { saveMood, getAllMoodLogs, getPaginatedMoodLogs } = require('../controllers/moodLogController');
 
 const router = express.Router();
