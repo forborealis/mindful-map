@@ -6,5 +6,10 @@ const adminController = require('../controllers/adminController');
 router.get('/dashboard', authMiddleware, adminMiddleware, adminController.dashboard);
 router.get('/monthly-users', authMiddleware, adminMiddleware, adminController.getMonthlyUsers);
 router.get('/active-users', authMiddleware, adminMiddleware, adminController.getActiveUsers);
+router.get('/users',  authMiddleware, adminMiddleware, adminController.getUsers);
+
+router.post("/soft-delete", authMiddleware, adminMiddleware, adminController.softDelete);
+router.post("/reactivate", authMiddleware, adminMiddleware, adminController.reactivate);
+router.post("/bulk-delete", authMiddleware, adminMiddleware, adminController.bulkDelete);
 
 module.exports = router;

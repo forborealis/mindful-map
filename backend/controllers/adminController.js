@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const MoodLog = require('../models/MoodLog');
+const jwt = require("jsonwebtoken");
 
 exports.dashboard = (req, res) => {
   res.status(200).json({
@@ -89,5 +90,94 @@ exports.getActiveUsers = async (req, res) => {
   } catch (error) {
     console.error('Error fetching active users:', error);
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+exports.getUsers = async (req, res) => {
+  try {
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14); 
+
+    const activeUsers = await MoodLog.aggregate([
+      {
+        $match: {
+          date: { $gte: twoWeeksAgo },
+        },
+      },
+      {
+        $group: {
+          _id: "$user",
+        },
+      },
+    ]);
+
+    const activeUserIds = activeUsers.map(user => user._id.toString());
+
+    const users = await User.find({ role: 'user' }).select('name email avatar isDeactivated createdAt');
+
+    const usersWithStatus = users.map(user => ({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      isDeactivated: user.isDeactivated,
+      createdAt: user.createdAt,
+      status: activeUserIds.includes(user._id.toString()) ? 'Active' : 'Inactive',
+    }));
+
+    res.json(usersWithStatus);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users", error });
+  }
+};
+
+exports.softDelete = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(userId);
+    
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.isDeactivated = true;
+    await user.save();
+
+    // console.log("User deactivated:", user);
+    res.json({ message: "User deactivated successfully" });
+  } catch (error) {
+    console.error("Error deactivating user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.reactivate = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(userId);
+    
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.isDeactivated = false;
+    await user.save();
+
+    // console.log("User reactivated:", user);
+    res.json({ message: "User reactivated successfully" });
+  } catch (error) {
+    console.error("Error reactivating user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.bulkDelete = async (req, res) => {
+  try {
+    const { ids } = req.body; 
+    await User.updateMany(
+      { _id: { $in: ids } },
+      { $set: { isDeactivated: true } }
+    );
+
+    res.json({ message: "Selected users deactivated successfully" });
+  } catch (error) {
+    console.error("Error in bulk soft delete:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

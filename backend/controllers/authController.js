@@ -107,6 +107,10 @@ exports.login = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Invalid email or password.' });
     }
 
+    if (user.isDeactivated) {
+      return res.status(403).json({ success: false, message: "Your account is deactivated." });
+    }
+
     // Check if the password is correct
     const isMatch = await user.matchPassword(password);
     console.log('Password match:', isMatch);

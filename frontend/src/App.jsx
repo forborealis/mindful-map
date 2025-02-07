@@ -25,6 +25,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
 import Dashboard from './components/Admin/Dashboard';
+import UsersTable from './components/Admin/UsersTable';
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -242,6 +243,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <PrivateRoute>
+              <UsersTable />
             </PrivateRoute>
           }
         />

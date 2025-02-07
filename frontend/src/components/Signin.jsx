@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -29,13 +30,19 @@ const Signin = () => {
       const response = await axios.post('http://localhost:5000/api/auth/login', data);
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
+        toast.success("Login successful!");
         navigate('/home');
       } else {
-        setError(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
-      setError('An error occurred during login. Please try again.');
       console.error('Error during login:', error);
+
+      if (error.response && error.response.status === 403) {
+        toast.error("Your account is deactivated. Contact admin.");
+      } else {
+        toast.error("An error occurred during login. Please try again."); 
+      }
     }
   };
 
