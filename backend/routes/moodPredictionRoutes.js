@@ -1,9 +1,9 @@
 const express = require("express");
-const { authMiddleware } = require("../middleware/authMiddleware");
+const { authMiddleware, userMiddleware } = require("../middleware/authMiddleware");
 const { predictMood } = require("../controllers/moodPredictionController");
 
 const router = express.Router();
 
-router.get("/predict-mood", authMiddleware, predictMood);
+router.get("/predict-mood", authMiddleware, userMiddleware, predictMood);
 
 module.exports = router;

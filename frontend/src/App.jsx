@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import Signup from './components/Signup';
 import Signin from './components/Signin';
@@ -27,17 +27,91 @@ import axios from 'axios';
 import Dashboard from './components/Admin/Dashboard';
 import UsersTable from './components/Admin/UsersTable';
 
-const PrivateRoute = ({ children }) => {
+const useAuth = () => {
   const token = localStorage.getItem('token');
+  const [userRole, setUserRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (token) {
+        try {
+          const userResponse = await axios.get('http://localhost:5000/api/auth/me', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setUserRole(userResponse.data.role);
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchUserRole();
+  }, [token]);
+
+  return { token, userRole, loading };
+};
+
+const UserPrivateRoute = ({ children }) => {
+  const { token, userRole, loading } = useAuth();
+  const location = useLocation();
+  const [prevLocation, setPrevLocation] = useState(location.pathname);
+
+  useEffect(() => {
+    if (location.pathname !== prevLocation) {
+      setPrevLocation(location.pathname);
+    }
+  }, [location.pathname, prevLocation]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   if (!token) {
     toast.error('Please sign in to access this page.');
     return <Navigate to="/signin" />;
   }
+
+  if (userRole !== 'user') {
+    toast.error('Access denied.');
+    return <Navigate to={prevLocation} replace />;
+  }
+
+  return children;
+};
+
+const AdminPrivateRoute = ({ children }) => {
+  const { token, userRole, loading } = useAuth();
+  const location = useLocation();
+  const [prevLocation, setPrevLocation] = useState(location.pathname);
+
+  useEffect(() => {
+    if (location.pathname !== prevLocation) {
+      setPrevLocation(location.pathname);
+    }
+  }, [location.pathname, prevLocation]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!token) {
+    toast.error('Please sign in to access this page.');
+    return <Navigate to="/signin" />;
+  }
+
+  if (userRole !== 'admin') {
+    toast.error('Access denied.');
+    return <Navigate to={prevLocation} replace />;
+  }
+
   return children;
 };
 
 const App = () => {
-  const [hasLoggedMood, setHasLoggedMood] = useState(null); // Initialize as null to indicate loading state
   const [formData, setFormData] = useState({
     mood: '',
     activities: [],
@@ -45,49 +119,6 @@ const App = () => {
     health: [],
     sleepQuality: '',
   });
-  const [userRole, setUserRole] = useState('');
-
-  useEffect(() => {
-    const checkMoodLog = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          // Fetch user role
-          const userResponse = await axios.get('http://localhost:5000/api/auth/me', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setUserRole(userResponse.data.role);
-
-          // Check mood log only if the user is not an admin
-          if (userResponse.data.role !== 'admin') {
-            const response = await axios.get('http://localhost:5000/api/mood-log', {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            const today = new Date().toISOString().split('T')[0];
-            const loggedToday = response.data.some(log => log.date.split('T')[0] === today);
-            setHasLoggedMood(loggedToday);
-          } else {
-            setHasLoggedMood(false); // Admins don't need to log mood
-          }
-        } catch (error) {
-          console.error('Error checking mood log:', error);
-          setHasLoggedMood(false); // Set to false if there's an error
-        }
-      } else {
-        setHasLoggedMood(false); // No token means not logged in
-      }
-    };
-
-    checkMoodLog();
-  }, []);
-
-  if (hasLoggedMood === null) {
-    return <div>Loading...</div>; // Show loading state while checking mood log
-  }
 
   return (
     <Router>
@@ -97,161 +128,147 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
         <Route
-          path="/home"
-          element={
-            <PrivateRoute>
-              {userRole === 'admin' ? (
-                <Navigate to="/admin/dashboard" />
-              ) : hasLoggedMood ? (
-                <Navigate to="/mood-entries" />
-              ) : (
-                <Navigate to="/log-mood" />
-              )}
-            </PrivateRoute>
-          }
-        />
-        <Route
           path="/log-mood"
           element={
-            <PrivateRoute>
-              {userRole === 'admin' ? <Navigate to="/admin/dashboard" /> : <MoodLog setFormData={setFormData} />}
-            </PrivateRoute>
+            <UserPrivateRoute>
+              <MoodLog setFormData={setFormData} />
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/log-activities"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <LogActivities formData={formData} setFormData={setFormData} />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/mood-entries"
           element={
-            <PrivateRoute>
-              {userRole === 'admin' ? <Navigate to="/admin/dashboard" /> : <MoodEntries />}
-            </PrivateRoute>
+            <UserPrivateRoute>
+              <MoodEntries />
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/calendar-log"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <CalendarLog formData={formData} setFormData={setFormData} />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/daily-recommendations"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <DailyRecommendations />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/journal-logs"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <JournalLogs />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/journal-entry"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <JournalEntry />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/view-journal/:id"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <ViewJournal />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/edit-journal/:id"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <EditJournal />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/journal-prompt"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <JournalPrompt />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/statistics"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <Statistics />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/correlation"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <Correlation />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/mood-statistics/:mood"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <MoodStatistics />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/main-predictions"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <MainPredictions formData={formData} setFormData={setFormData} />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/weekly-predictions"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <WeeklyPredictions formData={formData} setFormData={setFormData} />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/daily-prediction"
           element={
-            <PrivateRoute>
+            <UserPrivateRoute>
               <DailyPrediction formData={formData} setFormData={setFormData} />
-            </PrivateRoute>
+            </UserPrivateRoute>
           }
         />
         <Route
           path="/admin/dashboard"
           element={
-            <PrivateRoute>
+            <AdminPrivateRoute>
               <Dashboard />
-            </PrivateRoute>
+            </AdminPrivateRoute>
           }
         />
         <Route
           path="/admin/users"
           element={
-            <PrivateRoute>
+            <AdminPrivateRoute>
               <UsersTable />
-            </PrivateRoute>
+            </AdminPrivateRoute>
           }
         />
       </Routes>

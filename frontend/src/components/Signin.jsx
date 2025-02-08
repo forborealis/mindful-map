@@ -31,7 +31,35 @@ const Signin = () => {
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
         toast.success("Login successful!");
-        navigate('/home');
+
+        // Fetch user role
+        const userResponse = await axios.get('http://localhost:5000/api/auth/me', {
+          headers: {
+            Authorization: `Bearer ${response.data.token}`,
+          },
+        });
+
+        if (userResponse.data.role === 'admin') {
+          navigate('/admin/dashboard');
+        } else if (userResponse.data.role === 'user') {
+          // Check if the user has logged a mood for the day
+          const moodLogResponse = await axios.get('http://localhost:5000/api/mood-log', {
+            headers: {
+              Authorization: `Bearer ${response.data.token}`,
+            },
+          });
+
+          const today = new Date().toISOString().split('T')[0];
+          const loggedToday = moodLogResponse.data.some(log => log.date.split('T')[0] === today);
+
+          if (loggedToday) {
+            navigate('/mood-entries');
+          } else {
+            navigate('/log-mood');
+          }
+        } else {
+          toast.error("Unknown user role.");
+        }
       } else {
         toast.error(response.data.message);
       }

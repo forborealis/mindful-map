@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User'); // Assuming you have a User model
 
 const authMiddleware = async (req, res, next) => {
-  const token = req.header('Authorization').replace('Bearer ', '');
+  const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
     return res.status(401).json({ success: false, message: 'No token provided. Please sign in.' });
@@ -22,6 +22,7 @@ const authMiddleware = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.error('Error in authMiddleware:', error);
     return res.status(401).json({ success: false, message: 'Invalid token. Please sign in again.' });
   }
 };
@@ -34,4 +35,12 @@ const adminMiddleware = (req, res, next) => {
   }
 };
 
-module.exports = { authMiddleware, adminMiddleware };
+const userMiddleware = (req, res, next) => {
+  if (req.user && req.user.role === 'user') {
+    next();
+  } else {
+    return res.status(403).json({ success: false, message: 'Access denied. Users only.' });
+  }
+};
+
+module.exports = { authMiddleware, adminMiddleware, userMiddleware };
