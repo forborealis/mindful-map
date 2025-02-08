@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
+import AboutUs from './components/AboutUs';
 import Signup from './components/Signup';
 import Signin from './components/Signin';
 import Home from './components/User/Home';
@@ -125,6 +126,7 @@ const App = () => {
       <ToastContainer />
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutUs />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
         <Route
