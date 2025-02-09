@@ -6,7 +6,6 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import axios from "axios";
-import moment from 'moment';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreIcon from '@mui/icons-material/Restore';
 import Navbar from './Navbar';
@@ -28,6 +27,7 @@ const UsersTable = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log("API Response:", response.data); 
         setUsers(response.data);
         setFilteredUsers(response.data); 
       } catch (error) {
@@ -45,7 +45,8 @@ const UsersTable = () => {
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFilteredUsers(filtered);
+    
+  setFilteredUsers(filtered);
   }, [searchTerm, users]);
 
   const handleSelectUser = (id) => {
@@ -65,7 +66,7 @@ const UsersTable = () => {
           selectedUsers.includes(user.id) ? { ...user, isDeactivated: true } : user
         )
       );
-      setSelectedUsers([]); // Clear selected users after bulk delete
+      setSelectedUsers([]); 
     } catch (error) {
       console.error("Error during bulk delete:", error);
     }
@@ -116,11 +117,12 @@ const UsersTable = () => {
     {
       field: "checkbox",
       headerName: "Select",
-      width: 100,
+      width: 80,
       renderCell: (params) => (
         <Checkbox
           checked={selectedUsers.includes(params.row.id)}
           onChange={() => handleSelectUser(params.row.id)}
+          sx={{ color: '#4CAF50' }}
         />
       ),
       sortable: false,
@@ -137,23 +139,27 @@ const UsersTable = () => {
       filterable: false,
     },
     {
-      field: "name",
+      field: "name", 
       headerName: "Name",
-      flex: 1,
+      flex: 0.5,
     },
     {
       field: "email",
-      headerName: "Email",
+      headerName: "Email", 
       flex: 1,
     },
     {
       field: "status",
       headerName: "Status",
-      flex: 0.5,
+      flex: 1,
       renderCell: (params) => (
-        <Typography 
+        <Typography
           sx={{
-            color: params.value === "Active" ? theme.palette.success.main : theme.palette.error.main,
+            bgcolor: params.value === "Active" ? '#E8F5E9' : '#FFEBEE',
+            color: params.value === "Active" ? '#4CAF50' : '#F44336',
+            px: 2,
+            py: 0.5,
+            borderRadius: 1,
           }}
         >
           {params.value}
@@ -163,85 +169,135 @@ const UsersTable = () => {
     {
       field: "createdAt",
       headerName: "Created At",
-      flex: 0.5,
-      valueGetter: (params) => {
-        const date = moment(params.value);
-        if (date.isValid()) {
-          return date.format('YYYY-MM-DD');
+      flex: 1,
+      renderCell: (params) => {
+        if (!params.value) return "No Date Available";
+        try {
+          return new Date(params.value).toISOString().slice(0, 10);
+        } catch (error) {
+          return "Invalid Date";
         }
-        return 'Invalid Date';
-      },
+      }
     },
     {
       field: "actions",
       headerName: "Actions",
-      width: 200,
+      width: 100,
       renderCell: (params) => {
         const isDeactivated = params.row.isDeactivated;
-    
-        // console.log(`User ${params.row.name} isDeactivated:`, isDeactivated);  
-
         return (
-          <Box>
+          <IconButton onClick={() => handleAction(params.row.id, isDeactivated ? 'reactivate' : 'softDelete')}>
             {isDeactivated ? (
-              <IconButton onClick={() => handleAction(params.row.id, 'reactivate')}>
-                <RestoreIcon sx={{ color: "green" }} />
-              </IconButton>
+              <RestoreIcon sx={{ color: "#4CAF50" }} />
             ) : (
-              <IconButton onClick={() => handleAction(params.row.id, 'softDelete')}>
-                <DeleteIcon sx={{ color: "red" }} />
-              </IconButton>
+              <DeleteIcon sx={{ color: "#F44336" }} />
             )}
-          </Box>
+          </IconButton>
         );
       },
-    }    
-  ];
-
-  return (
-    <Box sx={{ height: 500, width: "100%" }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h6">Users</Typography>
-        
-        {/* Search Field */}
-        <TextField
-          label="Search"
-          variant="outlined"
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ width: 200 }}
-        />
-
-        {/* Bulk Delete Button */}
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={<DeleteIcon />}
-          onClick={handleBulkDelete}
-          disabled={selectedUsers.length === 0}
-        >
-          Bulk Delete
-        </Button>
-
-        <FileDownloadIcon
-          onClick={exportPDF}
-          sx={{ cursor: "pointer", color: theme.palette.primary.main }}
-        />
+    }
+   ];
+   
+   return (
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#F8FAF9" }}>
+      {/* Sidebar */}
+      <Box sx={{ width: 240, flexShrink: 0 }}>
+        <Navbar />
       </Box>
 
-      <DataGrid
-        rows={filteredUsers}
-        columns={columns}
-        loading={loading}
-        pageSize={10}
-        rowsPerPageOptions={[10, 25, 50]}
-        autoHeight
-        disableSelectionOnClick
-      />
-      <Navbar />
+      {/* Main Content */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",       // Centers vertically
+          minHeight: "100vh", 
+          py: 3,
+          bgcolor: "#F8FAF9",
+        }}
+      >
+        {/* Table Container */}
+        <Box
+          sx={{
+            width: "100%", // Takes full width of the available space
+            maxWidth: "1100px", 
+            bgcolor: "white",
+            p: 4,
+            borderRadius: 2,
+            boxShadow: 3,
+            margin: "0 auto", // Centers the table horizontally
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h5" sx={{ fontWeight: "bold", color: "#333" }}>
+              Users
+            </Typography>
+
+            {/* Controls */}
+            <Box display="flex" gap={2} alignItems="center">
+              <TextField
+                placeholder="Search..."
+                size="small"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{
+                  width: 280,
+                  bgcolor: "#F5F5F5",
+                  borderRadius: 1,
+                }}
+              />
+
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={handleBulkDelete}
+                disabled={selectedUsers.length === 0}
+                sx={{
+                  bgcolor: selectedUsers.length > 0 ? "#F44336" : "#D32F2F",
+                  fontSize: "0.875rem",
+                  px: 3,
+                }}
+              >
+                BULK DELETE
+              </Button>
+
+              <IconButton onClick={exportPDF} sx={{ color: "#1976D2" }}>
+                <FileDownloadIcon />
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* DataGrid */}
+          <DataGrid
+            rows={filteredUsers}
+            columns={columns}
+            loading={loading}
+            pageSize={10}
+            rowsPerPageOptions={[10, 25, 50, 100]}
+            autoHeight
+            disableSelectionOnClick
+            sx={{
+              border: "none",
+              "& .MuiDataGrid-columnHeaders": {
+                bgcolor: "#E3F2FD",
+                fontWeight: "bold",
+                color: "#1565C0",
+              },
+              "& .MuiDataGrid-cell": {
+                borderBottom: "1px solid #E0E0E0",
+                px: 2,
+              },
+              "& .MuiDataGrid-row:hover": {
+                bgcolor: "#FAFAFA",
+              },
+            }}
+          />
+        </Box>
+      </Box>
     </Box>
-  );
+   );
 };
 
 export default UsersTable;

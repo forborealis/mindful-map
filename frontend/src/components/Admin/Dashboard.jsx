@@ -66,30 +66,39 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#eef0ee]">
-      <div className="flex justify-between p-6">
-        <div className="bg-[#eef0ee] border border-[#6fba94] rounded-lg p-4 flex items-center w-1/2 mr-4">
-          <ShowChartIcon className="text-[#64aa86] mr-4" />
-          <div>
-            <h2 className="text-[#292f33] font-bold">Total Monthly Users</h2>
-            <p className="text-[#64aa86] font-bold">{monthlyUsers}</p>
+    <div className="flex min-h-screen bg-[#eef0ee]">
+      {/* Sidebar */}
+      <div className="w-1/5">
+        <Navbar />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-grow p-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-[#eef0ee] border border-[#6fba94] rounded-lg p-4 flex items-center">
+            <ShowChartIcon className="text-[#64aa86] mr-4" />
+            <div>
+              <h2 className="text-[#292f33] font-bold">Total Monthly Users</h2>
+              <p className="text-[#64aa86] font-bold">{monthlyUsers}</p>
+            </div>
+          </div>
+          <div className="bg-[#eef0ee] border border-[#6fba94] rounded-lg p-4 flex items-center">
+            <TaskAltIcon className="text-[#64aa86] mr-4" />
+            <div>
+              <h2 className="text-[#292f33] font-bold">Active Users</h2>
+              <p className="text-[#64aa86] font-bold">{activeUsersCount}</p>
+            </div>
           </div>
         </div>
-        <div className="bg-[#eef0ee] border border-[#6fba94] rounded-lg p-4 flex items-center w-1/2">
-          <TaskAltIcon className="text-[#64aa86] mr-4" />
-          <div>
-            <h2 className="text-[#292f33] font-bold">Active Users</h2>
-            <p className="text-[#64aa86] font-bold">{activeUsersCount}</p>
+
+        {/* Chart Container */}
+        <div className="bg-white border border-[#6fba94] rounded-lg p-6 mt-6 max-w-4xl mx-auto">
+          <h2 className="text-[#292f33] font-bold mb-4">Users Created Every Month</h2>
+          <div className="h-64">
+            <Bar data={barChartData} options={{ maintainAspectRatio: false }} />
           </div>
         </div>
       </div>
-      <div className="bg-white border border-[#6fba94] rounded-lg p-4 m-6 max-w-4xl mx-auto">
-        <h2 className="text-[#292f33] font-bold mb-4">Users Created Every Month</h2>
-        <div className="h-64">
-          <Bar data={barChartData} options={{ maintainAspectRatio: false }} />
-        </div>
-      </div>
-      <Navbar />
     </div>
   );
 };

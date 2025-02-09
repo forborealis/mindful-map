@@ -121,7 +121,7 @@ exports.getUsers = async (req, res) => {
       email: user.email,
       avatar: user.avatar,
       isDeactivated: user.isDeactivated,
-      createdAt: user.createdAt,
+      createdAt: user.createdAt.toISOString(),
       status: activeUserIds.includes(user._id.toString()) ? 'Active' : 'Inactive',
     }));
 
