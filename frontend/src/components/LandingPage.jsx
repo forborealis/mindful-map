@@ -26,7 +26,11 @@ const LandingPage = () => {
             Keep track of your moods every day and determine how your activities can impact your daily mood.
           </p>
           <div className="flex justify-center md:justify-start space-x-4">
-            <button className="bg-white text-black px-8 py-2 rounded-full shadow-md hover:bg-gray-200">About Us</button>
+            <button className="bg-white text-black px-8 py-2 rounded-full shadow-md hover:bg-gray-200"
+           onClick={() => navigate('/about')}
+           >
+              About Us
+            </button>
             <button
               className="bg-white text-black px-8 py-2 rounded-full shadow-md hover:bg-gray-200"
               onClick={() => navigate('/signin')}

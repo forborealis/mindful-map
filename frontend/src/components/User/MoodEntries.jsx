@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import BottomNav from '../BottomNav';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import CircularProgress from '@mui/material/CircularProgress';
+import { Menu, MenuItem, FormControlLabel, Checkbox, Button } from '@mui/material';
+import FilterListIcon from '@mui/icons-material/FilterList';
 
 const MoodEntries = () => {
   const [moodLogs, setMoodLogs] = useState([]);
@@ -14,6 +16,16 @@ const MoodEntries = () => {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedDays, setSelectedDays] = useState({
+    Sunday: false,
+    Monday: false,
+    Tuesday: false,
+    Wednesday: false,
+    Thursday: false,
+    Friday: false,
+    Saturday: false,
+  });
 
   const fetchMoodLogs = async (page) => {
     try {
@@ -82,28 +94,84 @@ const MoodEntries = () => {
     setMoodLogs([]);
   };
 
+  const handleFilterClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDayChange = (event) => {
+    setSelectedDays({
+      ...selectedDays,
+      [event.target.name]: event.target.checked,
+    });
+  };
+
+  const filteredMoodLogs = useMemo(() => {
+    return moodLogs.filter((moodLog) => {
+      const logDate = new Date(moodLog.date);
+      const day = daysOfWeek[logDate.getDay()];
+      return selectedDays[day] || !Object.values(selectedDays).some(Boolean);
+    });
+  }, [moodLogs, selectedDays]);
+
   return (
     <div className="bg-[#eef0ee] min-h-screen flex flex-col justify-between">
       <div>
         <nav className="bg-white py-4 shadow-md">
-          <div className="container mx-auto flex justify-center items-center">
-            <ChevronLeftIcon className="cursor-pointer mx-2" onClick={handlePrevMonth} />
-            <h1 className="text-xl font-bold">{months[currentMonth]} {currentYear}</h1>
-            <ChevronRightIcon className="cursor-pointer mx-2" onClick={handleNextMonth} />
+          <div className="container mx-auto flex justify-between items-center">
+            <div className="flex items-center justify-center w-full">
+              <ChevronLeftIcon className="cursor-pointer mx-2" onClick={handlePrevMonth} />
+              <h1 className="text-xl font-bold">{months[currentMonth]} {currentYear}</h1>
+              <ChevronRightIcon className="cursor-pointer mx-2" onClick={handleNextMonth} />
+            </div>
+            <div className="absolute right-0 mr-4">
+              <Button
+                aria-controls="filter-menu"
+                aria-haspopup="true"
+                onClick={handleFilterClick}
+                startIcon={<FilterListIcon style={{ color: '#6fba94' }} />}
+              >
+              </Button>
+              <Menu
+                id="filter-menu"
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={handleFilterClose}
+              >
+                {daysOfWeek.map((day) => (
+                  <MenuItem key={day}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={selectedDays[day]}
+                          onChange={handleDayChange}
+                          name={day}
+                        />
+                      }
+                      label={day}
+                    />
+                  </MenuItem>
+                ))}
+              </Menu>
+            </div>
           </div>
         </nav>
         <InfiniteScroll
-          dataLength={moodLogs.length}
+          dataLength={filteredMoodLogs.length}
           next={loadMoreLogs}
           hasMore={hasMore}
           loader={<div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0 60px 0' }}><CircularProgress /></div>}
           endMessage={<p style={{ textAlign: 'center' }}>No more logs</p>}
         >
           <div className="flex flex-col items-center justify-center pt-10 pb-20 overflow-y-auto">
-            {moodLogs.length === 0 ? (
+            {filteredMoodLogs.length === 0 ? (
               <p>No logs for this month.</p>
             ) : (
-              moodLogs.map((moodLog) => {
+              filteredMoodLogs.map((moodLog) => {
                 const { mood, activities, social, health, sleepQuality, date, time } = moodLog;
                 const logDate = new Date(date);
                 const day = daysOfWeek[logDate.getDay()];
