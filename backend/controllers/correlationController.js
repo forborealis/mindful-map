@@ -1,6 +1,7 @@
 const moment = require('moment');
-const MoodLog = require('../models/MoodLog'); 
-const Correlation = require('../models/Correlation'); 
+const MoodLog = require('../models/MoodLog');
+const Correlation = require('../models/Correlation');
+
 const getWeeklyCorrelation = async (req, res) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
@@ -10,9 +11,8 @@ const getWeeklyCorrelation = async (req, res) => {
 
     const data = await MoodLog.find({ user: req.user.id });
 
-
-    const startOfWeek = moment().startOf('isoWeek'); 
-    const endOfWeek = moment().endOf('isoWeek'); 
+    const startOfWeek = moment().startOf('isoWeek'); // Monday
+    const endOfWeek = moment().endOf('isoWeek'); // Sunday
     const currentWeekLogs = data.filter(log => {
       const logDate = moment(log.date);
       return logDate.isBetween(startOfWeek, endOfWeek, null, '[]');
@@ -100,12 +100,26 @@ const getWeeklyCorrelation = async (req, res) => {
       sleepQuality: topSleepQuality.quality
     });
 
-    const correlation = new Correlation({
-      user: req.user.id,
-      correlationResults
-    });
+    // Check if today is Sunday and if the correlation results for the current week have already been stored
+    const today = moment().day();
+    if (today === 0) { // 0 represents Sunday
+      const existingCorrelation = await Correlation.findOne({
+        user: req.user.id,
+        createdAt: {
+          $gte: startOfWeek.toDate(),
+          $lte: endOfWeek.toDate()
+        }
+      });
 
-    await correlation.save();
+      if (!existingCorrelation) {
+        const correlation = new Correlation({
+          user: req.user.id,
+          correlationResults
+        });
+
+        await correlation.save();
+      }
+    }
 
     res.status(200).json(correlationResults);
   } catch (error) {
@@ -114,6 +128,31 @@ const getWeeklyCorrelation = async (req, res) => {
   }
 };
 
+const getMonthlyCorrelation = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'No token found' });
+    }
+
+    const { startOfMonth, endOfMonth } = req.query;
+
+    const correlations = await Correlation.find({
+      user: req.user.id,
+      createdAt: {
+        $gte: new Date(startOfMonth),
+        $lte: new Date(endOfMonth)
+      }
+    });
+
+    res.status(200).json(correlations);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
-  getWeeklyCorrelation
+  getWeeklyCorrelation,
+  getMonthlyCorrelation
 };

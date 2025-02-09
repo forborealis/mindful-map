@@ -16,6 +16,7 @@ import ViewJournal from './components/User/Journal/ViewJournal';
 import EditJournal from './components/User/Journal/EditJournal';
 import JournalPrompt from './components/User/Journal/JournalPrompt';
 import Statistics from './components/User/Statistics/Statistics';
+import CorrelationStatistics from './components/User/Statistics/CorrelationStatistics';
 import Correlation from './components/User/Statistics/Correlation';
 import MoodStatistics from './components/User/Statistics/MoodStatistics';
 import WeeklyPredictions from './components/User/WeeklyPredictions';
@@ -222,6 +223,14 @@ const App = () => {
           element={
             <UserPrivateRoute>
               <Correlation />
+            </UserPrivateRoute>
+          }
+        />
+        <Route
+          path="/correlation-statistics"
+          element={
+            <UserPrivateRoute>
+              <CorrelationStatistics />
             </UserPrivateRoute>
           }
         />

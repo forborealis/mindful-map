@@ -244,6 +244,10 @@ const Statistics = () => {
     navigate('/correlation');
   };
 
+  const handleWeeklyStatisticsClick = () => {
+    navigate('/correlation-statistics');
+  };
+
   const handleMoodClick = (mood) => {
     navigate(`/mood-statistics/${mood}?period=${moodPeriod}`);
   };
@@ -347,8 +351,11 @@ const Statistics = () => {
         <h2 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '24px' }}>Correlation Analysis</h2>
         <p style={{ color: '#3a3939', fontSize: '14px' }}>Know how your activities are related to your mood</p>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-          <button onClick={handleViewClick} style={{ backgroundColor: '#6fba94', color: '#eef0ee', fontWeight: 'bold', padding: '10px 25px', borderRadius: '20px', border: 'none', cursor: 'pointer' }}>
-            View
+        <button onClick={handleViewClick} style={{ backgroundColor: '#6fba94', color: '#eef0ee', fontWeight: 'bold', padding: '10px 25px', borderRadius: '20px', border: 'none', cursor: 'pointer', marginRight: '10px' }}>
+            View Result
+          </button>
+          <button onClick={handleWeeklyStatisticsClick} style={{ backgroundColor: '#6fba94', color: '#eef0ee', fontWeight: 'bold', padding: '10px 25px', borderRadius: '20px', border: 'none', cursor: 'pointer' }}>
+            Statistics
           </button>
         </div>
       </div>
