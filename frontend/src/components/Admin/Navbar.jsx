@@ -73,7 +73,7 @@ const Navbar = () => {
           {/* Sidebar Header */}
           <Box sx={{ p: 3, borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", gap: 1 }}>
             <Typography variant="h6" sx={{ color: "#2d3436", fontWeight: 600 }}>
-              Admin Portal
+              Mindful Map Admin
             </Typography>
           </Box>
 

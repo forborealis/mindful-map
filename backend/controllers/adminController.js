@@ -93,10 +93,43 @@ exports.getActiveUsers = async (req, res) => {
   }
 };
 
+exports.getInactiveUsers = async (req, res) => {
+  try {
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+    const activeUsers = await MoodLog.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: twoWeeksAgo,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$user',
+        },
+      },
+    ]);
+
+    const activeUserIds = activeUsers.map(user => user._id.toString());
+
+    const inactiveUsers = await User.find({
+      _id: { $nin: activeUserIds },
+    }).select('name email');
+
+    res.status(200).json(inactiveUsers);
+  } catch (error) {
+    console.error('Error fetching inactive users:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
 exports.getUsers = async (req, res) => {
   try {
     const twoWeeksAgo = new Date();
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14); 
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
     const activeUsers = await MoodLog.aggregate([
       {
@@ -141,7 +174,6 @@ exports.softDelete = async (req, res) => {
     user.isDeactivated = true;
     await user.save();
 
-    // console.log("User deactivated:", user);
     res.json({ message: "User deactivated successfully" });
   } catch (error) {
     console.error("Error deactivating user:", error);
@@ -159,7 +191,6 @@ exports.reactivate = async (req, res) => {
     user.isDeactivated = false;
     await user.save();
 
-    // console.log("User reactivated:", user);
     res.json({ message: "User reactivated successfully" });
   } catch (error) {
     console.error("Error reactivating user:", error);
