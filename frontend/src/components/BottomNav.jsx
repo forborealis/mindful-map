@@ -15,6 +15,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
+import RecommendIcon from '@mui/icons-material/Recommend';
 
 const BottomNav = ({ value, setValue }) => {
   const navigate = useNavigate();
@@ -28,6 +29,9 @@ const BottomNav = ({ value, setValue }) => {
         break;
       case 'statistics':
         navigate('/statistics');
+        break;
+        case 'recommendation':
+        navigate('/recommendation');
         break;
       case 'forum':
         navigate('/forum');
@@ -76,6 +80,12 @@ const BottomNav = ({ value, setValue }) => {
           value="statistics"
           icon={<BarChartIcon />}
           style={{ color: value === 'statistics' ? '#6fba94' : '#b1b1b1' }}
+        />
+         <BottomNavigationAction
+          label="Recommendation"
+          value="recommendation"
+          icon={<RecommendIcon />}
+          style={{ color: value === 'recommendation' ? '#6fba94' : '#b1b1b1' }}
         />
         <BottomNavigationAction
           label="Forum"

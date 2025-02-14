@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 const Correlation = () => {
   const [correlationData, setCorrelationData] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,6 +29,10 @@ const Correlation = () => {
     fetchData();
   }, []);
 
+  const handleNextClick = () => {
+    navigate('/recommendations', { state: { correlationData } });
+  };
+
   return (
     <div style={{ backgroundColor: '#eef0ee', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', marginTop: '20px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', minHeight: '60vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
@@ -48,7 +55,7 @@ const Correlation = () => {
         <div style={{ bottom: '10px', width: '100%', textAlign: 'center', color: '#b1b1b1', fontSize: '14px' }}>
           Click below for personalized recommendations
         </div>
-        <button style={{ backgroundColor: '#6fba94', color: '#fff', fontWeight: 'bold', padding: '10px 25px', borderRadius: '20px', border: 'none', cursor: 'pointer', position: 'absolute', bottom: '50px', left: '50%', transform: 'translateX(-50%)', width: '130px' }}>
+        <button onClick={handleNextClick} style={{ backgroundColor: '#6fba94', color: '#fff', fontWeight: 'bold', padding: '10px 25px', borderRadius: '20px', border: 'none', cursor: 'pointer', position: 'absolute', bottom: '50px', left: '50%', transform: 'translateX(-50%)', width: '130px' }}>
           Next
         </button>
       </div>

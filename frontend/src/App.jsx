@@ -22,6 +22,9 @@ import MoodStatistics from './components/User/Statistics/MoodStatistics';
 import WeeklyPredictions from './components/User/WeeklyPredictions';
 import DailyPrediction from './components/User/DailyPrediction';
 import MainPredictions from './components/User/MainPredictions';
+import Recommendations from './components/User/Statistics/Recommendations';
+import BreathingExercise from './components/User/Statistics/Recommendations/BreathingExercise';
+import Pomodoro from './components/User/Statistics/Recommendations/Pomodoro';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -263,6 +266,30 @@ const App = () => {
           element={
             <UserPrivateRoute>
               <DailyPrediction formData={formData} setFormData={setFormData} />
+            </UserPrivateRoute>
+          }
+        />
+        <Route
+          path="/recommendations"
+          element={
+            <UserPrivateRoute>
+              <Recommendations />
+            </UserPrivateRoute>
+          }
+        />
+        <Route
+          path="/breathing-exercise"
+          element={
+            <UserPrivateRoute>
+              <BreathingExercise />
+            </UserPrivateRoute>
+          }
+        />
+         <Route
+          path="/pomodoro"
+          element={
+            <UserPrivateRoute>
+              <Pomodoro />
             </UserPrivateRoute>
           }
         />
