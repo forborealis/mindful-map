@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
+import ChecklistIcon from '@mui/icons-material/Checklist';
 
 const Recommendations = () => {
   const location = useLocation();
@@ -51,6 +52,10 @@ const Recommendations = () => {
     navigate('/pomodoro');
   };
 
+  const handleListTaskClick = () => {
+    navigate('/list-task');
+  };
+
   return (
     <div style={{ background: 'linear-gradient(to right, #67b88f, #93c4ab, #f8ffff)', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '10px', width: '90%', maxWidth: '800px', textAlign: 'left', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
@@ -74,6 +79,12 @@ const Recommendations = () => {
                 <AccessTimeFilledIcon
                   style={{ color: '#6fba94', marginLeft: '10px', cursor: 'pointer' }}
                   onClick={handlePomodoroClick}
+                />
+              )}
+              {rec.toLowerCase().includes('list your tasks') && (
+                <ChecklistIcon
+                  style={{ color: '#6fba94', marginLeft: '10px', cursor: 'pointer' }}
+                  onClick={handleListTaskClick}
                 />
               )}
             </li>

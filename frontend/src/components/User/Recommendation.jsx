@@ -14,6 +14,10 @@ const Recommendation = () => {
     navigate('/pomodoro');
   };
 
+  const handleListTaskClick = () => {
+    navigate('/list-task');
+  };
+
   return (
     <div className="bg-[#eef0ee] min-h-screen flex flex-col justify-between">
       <div className="flex justify-center items-center flex-grow">
@@ -32,7 +36,10 @@ const Recommendation = () => {
             <img src="/images/pomodoro.png" alt="Pomodoro Technique" className="w-full rounded-lg" />
             <p className="text-white font-bold mt-2">Pomodoro Technique</p>
           </div>
-          <div className="bg-[#6fba94] rounded-lg w-1/4 p-5 text-center cursor-pointer">
+          <div 
+          onClick={handleListTaskClick}
+          className="bg-[#6fba94] rounded-lg w-1/4 p-5 text-center cursor-pointer"
+          >
             <img src="/images/task.png" alt="List Tasks" className="w-full rounded-lg" />
             <p className="text-white font-bold mt-2">List Tasks</p>
           </div>

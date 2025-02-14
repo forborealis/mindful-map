@@ -26,7 +26,7 @@ const recommendationsData = {
       studying: [
         'Practice deep breathing exercises.',
         'Prepare a study schedule to manage time effectively.',
-        'Remind Yourself: Progress Over Perfection',
+        'List your tasks and prioritize them.',
         'Exercise or Move Around.',
         'Listen to Calming Music or Brown Noise'
       ],
