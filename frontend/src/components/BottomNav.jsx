@@ -30,7 +30,7 @@ const BottomNav = ({ value, setValue }) => {
       case 'statistics':
         navigate('/statistics');
         break;
-        case 'recommendation':
+      case 'recommendation':
         navigate('/recommendation');
         break;
       case 'forum':
@@ -81,7 +81,7 @@ const BottomNav = ({ value, setValue }) => {
           icon={<BarChartIcon />}
           style={{ color: value === 'statistics' ? '#6fba94' : '#b1b1b1' }}
         />
-         <BottomNavigationAction
+        <BottomNavigationAction
           label="Recommendation"
           value="recommendation"
           icon={<RecommendIcon />}
