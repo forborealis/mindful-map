@@ -25,8 +25,10 @@ import MainPredictions from './components/User/MainPredictions';
 import Recommendations from './components/User/Statistics/Recommendations';
 import BreathingExercise from './components/User/Statistics/Recommendations/BreathingExercise';
 import Pomodoro from './components/User/Statistics/Recommendations/Pomodoro';
+import BubblePopGame from './components/User/Statistics/Recommendations/BubblePopGame';
 import ListTask from './components/User/Statistics/Recommendations/ListTask';
-import Recommendation from './components/User/Recommendation';
+import CalmingMusic from './components/User/Statistics/Recommendations/CalmingMusic';
+import Activities from './components/User/Activities';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -303,11 +305,27 @@ const App = () => {
             </UserPrivateRoute>
           }
         />
-        <Route
-          path="/recommendation"
+         <Route
+          path="/bubblepop-game"
           element={
             <UserPrivateRoute>
-              <Recommendation />
+              <BubblePopGame />
+            </UserPrivateRoute>
+          }
+        />
+         <Route
+          path="/calming-music"
+          element={
+            <UserPrivateRoute>
+              <CalmingMusic />
+            </UserPrivateRoute>
+          }
+        />
+        <Route
+          path="/activities"
+          element={
+            <UserPrivateRoute>
+              <Activities />
             </UserPrivateRoute>
           }
         />

@@ -5,6 +5,10 @@ import Chip from '@mui/material/Chip';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import ReplayIcon from '@mui/icons-material/Replay';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   const backgroundColor =
@@ -30,6 +34,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 const Pomodoro = () => {
   const [time, setTime] = useState(1500); 
   const [isActive, setIsActive] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -75,7 +80,31 @@ const Pomodoro = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-[#67b88f] via-[#93c4ab] to-[#f8ffff] min-h-screen flex justify-center items-center">
+    <div className="bg-gradient-to-r from-[#67b88f] via-[#93c4ab] to-[#f8ffff] min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="absolute top-4 left-4">
+        <HelpOutlineIcon 
+          style={{ fontSize: 30, color: 'white', cursor: 'pointer' }} 
+          onClick={() => setShowModal(true)} 
+        />
+        <Modal
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          aria-labelledby="pomodoro-modal-title"
+          aria-describedby="pomodoro-modal-description"
+        >
+          <Box 
+            className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow-lg"
+            style={{ width: '250px' }}
+          >
+            <Typography id="pomodoro-modal-title" variant="h6" component="h2" style={{ color: '#3a3939', fontWeight: 'bold' }}>
+              What is Pomodoro?
+            </Typography>
+            <Typography id="pomodoro-modal-description" style={{ color: '#3a3939', fontSize: '0.875rem', fontWeight: 'bold' }}>
+              The Pomodoro Technique is a time management method developed by Francesco Cirillo. It uses a timer to break work into intervals, traditionally 25 minutes in length, separated by short breaks. This technique helps improve focus and productivity.
+            </Typography>
+          </Box>
+        </Modal>
+      </div>
       <div className="bg-white bg-opacity-20 p-10 rounded-lg text-center" style={{ width: '90%', maxWidth: '800px' }}>
         <Breadcrumbs aria-label="breadcrumb" className="mb-8 flex justify-center">
           <StyledBreadcrumb component="a" href="#" label="Pomodoro" onClick={setPomodoro} />
@@ -91,6 +120,17 @@ const Pomodoro = () => {
             <ReplayIcon style={{ fontSize: 50, color: 'white' }} />
           </div>
         </div>
+      </div>
+      <div className="absolute bottom-4 right-4" style={{ width: '300px' }}>
+        <iframe
+          style={{ borderRadius: '12px' }}
+          src="https://open.spotify.com/embed/playlist/37i9dQZF1DWZeKCadgRdKQ?utm_source=generator&theme=0"
+          width="100%"
+          height="170"
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+        ></iframe>
       </div>
     </div>
   );

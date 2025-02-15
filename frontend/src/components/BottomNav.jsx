@@ -30,8 +30,8 @@ const BottomNav = ({ value, setValue }) => {
       case 'statistics':
         navigate('/statistics');
         break;
-      case 'recommendation':
-        navigate('/recommendation');
+      case 'activities':
+        navigate('/activities');
         break;
       case 'forum':
         navigate('/forum');
@@ -82,10 +82,10 @@ const BottomNav = ({ value, setValue }) => {
           style={{ color: value === 'statistics' ? '#6fba94' : '#b1b1b1' }}
         />
         <BottomNavigationAction
-          label="Recommendation"
-          value="recommendation"
+          label="Activities"
+          value="activities"
           icon={<RecommendIcon />}
-          style={{ color: value === 'recommendation' ? '#6fba94' : '#b1b1b1' }}
+          style={{ color: value === 'activities' ? '#6fba94' : '#b1b1b1' }}
         />
         <BottomNavigationAction
           label="Forum"
