@@ -172,7 +172,7 @@ const generateRecommendations = (correlationData) => {
   return recommendations;
 };
 
-const getWeeklyCorrelation = async (req, res) => {
+const getWeeklyCorrelationForCorrelation = async (req, res) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
     if (!token) {
@@ -270,14 +270,119 @@ const getWeeklyCorrelation = async (req, res) => {
       sleepQuality: topSleepQuality.quality
     });
 
+    res.status(200).json(correlationResults);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getWeeklyCorrelationForStatistics = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'No token found' });
+    }
+
+    const { startOfWeek, endOfWeek } = req.query;
+
+    const data = await MoodLog.find({ user: req.user.id });
+
+    const currentWeekLogs = data.filter(log => {
+      const logDate = moment(log.date);
+      return logDate.isBetween(startOfWeek, endOfWeek, null, '[]');
+    });
+
+    const moodActivityMap = {};
+    const sleepQualityCount = {
+      'No Sleep': 0,
+      'Poor Sleep': 0,
+      'Medium Sleep': 0,
+      'Good Sleep': 0
+    };
+
+    currentWeekLogs.forEach(log => {
+      const { mood, activities, sleepQuality } = log;
+      activities.forEach(activity => {
+        if (!moodActivityMap[mood]) {
+          moodActivityMap[mood] = {};
+        }
+
+        if (!moodActivityMap[mood][activity]) {
+          moodActivityMap[mood][activity] = 0;
+        }
+
+        moodActivityMap[mood][activity]++;
+      });
+
+      if (sleepQuality in sleepQualityCount) {
+        sleepQualityCount[sleepQuality]++;
+      }
+    });
+
+    const correlationResults = [];
+    let topMood = null;
+    let topMoodCount = 0;
+    let topMoodActivity = null;
+    let topMoodActivityCount = 0;
+
+    Object.keys(moodActivityMap).forEach(mood => {
+      const moodCount = Object.values(moodActivityMap[mood]).reduce((a, b) => a + b, 0);
+      if (moodCount >= 3 && moodCount > topMoodCount) {
+        topMood = mood;
+        topMoodCount = moodCount;
+        topMoodActivity = null;
+        topMoodActivityCount = 0;
+
+        Object.keys(moodActivityMap[mood]).forEach(activity => {
+          if (moodActivityMap[mood][activity] > topMoodActivityCount) {
+            topMoodActivity = activity;
+            topMoodActivityCount = moodActivityMap[mood][activity];
+          }
+        });
+      }
+    });
+
+    if (topMood && topMoodActivity) {
+      const percentage = ((topMoodActivityCount / topMoodCount) * 100).toFixed(2);
+      correlationResults.push({
+        correlationValue: parseFloat(percentage),
+        correlationMood: topMood,
+        correlationActivity: topMoodActivity
+      });
+    }
+
+    // Analyze sleep quality patterns
+    const totalSleepLogs = Object.values(sleepQualityCount).reduce((a, b) => a + b, 0);
+    const poorSleepLogs = sleepQualityCount['No Sleep'] + sleepQualityCount['Poor Sleep'];
+    const mediumSleepLogs = sleepQualityCount['Medium Sleep'];
+    const goodSleepLogs = sleepQualityCount['Good Sleep'];
+
+    const poorSleepPercentage = totalSleepLogs > 0 ? ((poorSleepLogs / totalSleepLogs) * 100).toFixed(2) : 0;
+    const mediumSleepPercentage = totalSleepLogs > 0 ? ((mediumSleepLogs / totalSleepLogs) * 100).toFixed(2) : 0;
+    const goodSleepPercentage = totalSleepLogs > 0 ? ((goodSleepLogs / totalSleepLogs) * 100).toFixed(2) : 0;
+
+    const sleepQualityResults = [
+      { quality: 'Poor', percentage: poorSleepPercentage, count: poorSleepLogs },
+      { quality: 'Medium', percentage: mediumSleepPercentage, count: mediumSleepLogs },
+      { quality: 'Good', percentage: goodSleepPercentage, count: goodSleepLogs }
+    ];
+
+    // Find the top sleep quality result
+    const topSleepQuality = sleepQualityResults.reduce((prev, current) => (prev.count > current.count ? prev : current));
+    correlationResults.push({
+      sleepQualityValue: parseFloat(topSleepQuality.percentage),
+      sleepQuality: topSleepQuality.quality
+    });
+
     // Check if today is Sunday and if the correlation results for the current week have already been stored
     const today = moment().day();
     if (today === 0) { // 0 represents Sunday
       const existingCorrelation = await Correlation.findOne({
         user: req.user.id,
         createdAt: {
-          $gte: startOfWeek.toDate(),
-          $lte: endOfWeek.toDate()
+          $gte: new Date(startOfWeek),
+          $lte: new Date(endOfWeek)
         }
       });
 
@@ -298,26 +403,65 @@ const getWeeklyCorrelation = async (req, res) => {
   }
 };
 
-const getMonthlyCorrelation = async (req, res) => {
+const getWeeklyComparison = async (req, res) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
     if (!token) {
       return res.status(401).json({ message: 'No token found' });
     }
 
-    const { startOfMonth, endOfMonth } = req.query;
+    const { startOfWeek, endOfWeek } = req.query;
 
-    const correlations = await Correlation.find({
+    const currentWeekCorrelation = await Correlation.findOne({
       user: req.user.id,
       createdAt: {
-        $gte: new Date(startOfMonth),
-        $lte: new Date(endOfMonth)
+        $gte: new Date(startOfWeek),
+        $lte: new Date(endOfWeek)
       }
     });
 
-    res.status(200).json(correlations);
+
+    const previousWeekCorrelation = await Correlation.findOne({
+      user: req.user.id,
+      createdAt: {
+        $gte: moment(startOfWeek).subtract(1, 'weeks').toDate(),
+        $lte: moment(endOfWeek).subtract(1, 'weeks').toDate()
+      }
+    });
+
+
+    if (!currentWeekCorrelation || !previousWeekCorrelation) {
+      return res.status(404).json({ message: 'Correlation data not found for comparison' });
+    }
+
+    const compareMoods = (current, previous) => {
+      const moodValues = {
+        relaxed: 5,
+        happy: 4,
+        fine: 3,
+        anxious: 2,
+        sad: 1,
+        angry: 0
+      };
+
+      const currentMoodValue = moodValues[current.correlationMood.toLowerCase()] || 0;
+      const previousMoodValue = moodValues[previous.correlationMood.toLowerCase()] || 0;
+
+      const percentageChange = ((currentMoodValue - previousMoodValue) / 5) * 100;
+      return percentageChange;
+    };
+
+    const currentMood = currentWeekCorrelation.correlationResults.find(result => result.correlationMood);
+    const previousMood = previousWeekCorrelation.correlationResults.find(result => result.correlationMood);
+
+    if (currentMood && previousMood) {
+      const moodComparison = compareMoods(currentMood, previousMood);
+      res.status(200).json({ moodComparison });
+    } else {
+      res.status(404).json({ message: 'Mood data not found for the specified weeks' });
+    }
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching comparison data:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -340,7 +484,8 @@ const getRecommendations = async (req, res) => {
 };
 
 module.exports = {
-  getWeeklyCorrelation,
-  getMonthlyCorrelation,
+  getWeeklyCorrelationForCorrelation,
+  getWeeklyCorrelationForStatistics,
+  getWeeklyComparison,
   getRecommendations
 };
