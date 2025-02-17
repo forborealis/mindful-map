@@ -56,7 +56,7 @@ const sendVerificationEmail = (user, token) => {
 
 exports.signup = async (req, res) => {
   try {
-    const { email, name, password } = req.body;
+    const { email, name, password, role } = req.body;
 
     if (!email || !name || !password) {
       return res.status(400).json({ success: false, message: 'Email, name, and password are required.' });
@@ -87,8 +87,8 @@ exports.signup = async (req, res) => {
       avatar: avatarPath,
       firebaseUid: userRecord.uid,
       password, // Password will be hashed in the pre-save hook
-      role: 'user',
-      verified: false,
+      role: role || 'user',
+      verified: role === 'admin', // Automatically verify admin users
     });
 
     await user.save();
@@ -97,12 +97,14 @@ exports.signup = async (req, res) => {
       expiresIn: process.env.JWT_EXPIRES_TIME,
     });
 
-    // Send verification email
-    sendVerificationEmail(user, token);
+    // Send verification email if the user is not an admin
+    if (user.role !== 'admin') {
+      sendVerificationEmail(user, token);
+    }
 
     return res.status(201).json({
       success: true,
-      message: 'User registered successfully. Please check your email to verify your account.',
+      message: user.role === 'admin' ? 'Admin registered successfully.' : 'User registered successfully. Please check your email to verify your account.',
       token,
     });
   } catch (error) {
@@ -139,6 +141,7 @@ exports.login = async (req, res) => {
         password, // Password will be hashed in the pre-save hook
         role: 'admin',
         firebaseUid: userRecord.uid,
+        verified: true, // Automatically verify admin users
       });
       await user.save();
       console.log('Admin user created:', user);
