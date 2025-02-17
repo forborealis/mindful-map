@@ -27,6 +27,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'user',
   },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
   isDeactivated: { 
     type: Boolean, 
     default: false 

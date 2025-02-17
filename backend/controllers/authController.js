@@ -1,10 +1,12 @@
 const admin = require('../config/firebaseConfig');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt'); // Import bcrypt
-const cloudinary = require('../config/cloudinaryConfig');
+const bcrypt = require('bcrypt');
+const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
@@ -15,6 +17,42 @@ const storage = new CloudinaryStorage({
 });
 
 const upload = multer({ storage: storage });
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.mailtrap.io',
+  port: 2525,
+  auth: {
+    user: process.env.MAILTRAP_USER,
+    pass: process.env.MAILTRAP_PASS,
+  },
+});
+
+const sendVerificationEmail = (user, token) => {
+  const verificationUrl = `http://localhost:5000/api/auth/verify-email?token=${token}`;
+
+  const mailOptions = {
+    from: '"Mindful Map" <no-reply@mindfulmap.com>',
+    to: user.email,
+    subject: 'Account Verification',
+    html: `
+      <div style="background-color: #f9f9f9; padding: 20px; font-family: 'Roboto', sans-serif;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; text-align: center;">
+          <img src="http://localhost:5173/images/logo.png" alt="Mindful Map" style="width: 100px; margin-bottom: 20px;">
+          <h2>Account Verification</h2>
+          <p style="text-align: justify;">Good day! Thank you for joining Mindful Map. To start using your account, please verify your email first by clicking the button below. We're looking forward to having you!</p>
+          <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #6fba94; color: #ffffff; text-decoration: none; border-radius: 5px;">Verify Account</a>
+        </div>
+      </div>
+    `,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return console.error('Error sending email:', error);
+    }
+    console.log('Verification email sent:', info.response);
+  });
+};
 
 exports.signup = async (req, res) => {
   try {
@@ -46,10 +84,11 @@ exports.signup = async (req, res) => {
     user = new User({
       email,
       name,
-      avatar: avatarPath, 
+      avatar: avatarPath,
       firebaseUid: userRecord.uid,
       password, // Password will be hashed in the pre-save hook
-      role: 'user', 
+      role: 'user',
+      verified: false,
     });
 
     await user.save();
@@ -58,9 +97,12 @@ exports.signup = async (req, res) => {
       expiresIn: process.env.JWT_EXPIRES_TIME,
     });
 
+    // Send verification email
+    sendVerificationEmail(user, token);
+
     return res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'User registered successfully. Please check your email to verify your account.',
       token,
     });
   } catch (error) {
@@ -118,6 +160,11 @@ exports.login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid email or password.' });
     }
 
+    // Check if the user is verified
+    if (!user.verified) {
+      return res.status(403).json({ success: false, message: 'Please verify your email to log in.' });
+    }
+
     // Generate a token
     const token = jwt.sign({ uid: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_TIME,
@@ -152,5 +199,30 @@ exports.getMe = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
+  }
+};
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ success: false, message: 'Invalid or missing token.' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.uid);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    user.verified = true;
+    await user.save();
+
+    return res.redirect('http://localhost:5173/signin');
+  } catch (error) {
+    console.error('Error in email verification:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const AboutUs = () => {
   const [fadeIn, setFadeIn] = useState(false);
   const [fadeInTeam, setFadeInTeam] = useState(false);
+  const [fadeInVisionMission, setFadeInVisionMission] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -11,9 +12,14 @@ const AboutUs = () => {
 
     const handleScroll = () => {
       const teamSection = document.getElementById('team-section');
-      const rect = teamSection.getBoundingClientRect();
-      if (rect.top <= window.innerHeight) {
+      const visionMissionSection = document.getElementById('vision-mission-section');
+      const teamRect = teamSection.getBoundingClientRect();
+      const visionMissionRect = visionMissionSection.getBoundingClientRect();
+      if (teamRect.top <= window.innerHeight) {
         setFadeInTeam(true);
+      }
+      if (visionMissionRect.top <= window.innerHeight) {
+        setFadeInVisionMission(true);
       }
     };
 
@@ -28,7 +34,7 @@ const AboutUs = () => {
           <h1 className="text-4xl md:text-6xl font-bold text-[#292f33] mb-6 leading-tight">
             We're Here to Help
           </h1>
-          <p className="text-base text-[#292f33] mb-6">
+          <p className="text-lg text-[#292f33] mb-6">
             Mindful Map is a daily mood and activity tracking system designed to help you understand the connection between your emotions and daily routines. By logging your moods and activities, you can identify patterns that influence your well-being, empowering you to manage your emotions more effectively. With insightful visualizations and personalized recommendations, Mindful Map encourages self-awareness and emotional balance.
           </p>
           <button
@@ -39,7 +45,23 @@ const AboutUs = () => {
           </button>
         </div>
         <div className={`md:w-1/2 mt-20 md:mt-0 flex justify-center md:justify-end md:pr-28 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
-          <img src="/images/about.png" alt="About Us" className="w-full h-auto max-w-lg" />
+          <img src="/images/about.gif" alt="About Us" className="w-full h-auto max-w-lg" />
+        </div>
+      </div>
+      <div id="vision-mission-section" className={`container mx-auto px-4 flex flex-col md:flex-row items-center justify-center mt-20 transition-opacity duration-1000 ${fadeInVisionMission ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="bg-white bg-opacity-30 p-6 rounded-lg shadow-md w-full md:w-1/3 mb-6 md:mb-0 md:mr-4">
+          <h2 className="text-4xl font-bold text-center mb-4 text-[#292f33]">Vision</h2>
+          <hr className="border-t-2 border-gray-800 mb-4" />
+          <p className="text-mg text-justify text-[#292f33]">
+            To empower individuals with self-awareness and emotional resilience by providing a seamless and insightful way to track and understand their moods and daily activities. Mindful Map envisions a world where everyone can achieve emotional balance and well-being through mindful reflection and data-driven insights.
+          </p>
+        </div>
+        <div className="bg-white bg-opacity-30 p-6 rounded-lg shadow-md w-full md:w-1/3 md:ml-4">
+          <h2 className="text-4xl font-bold text-center mb-4 text-[#292f33]">Mission</h2>
+          <hr className="border-t-2 border-gray-800 mb-4" />
+          <p className="text-mg text-justify text-[#292f33]">
+            Mindful Map strives to help users in building healthier emotional habits by offering an intuitive platform for mood and activity tracking. Through personalized insights and recommendations, we aim to support users in properly managing their emotions, fostering self-awareness, and improving overall mental well-being.
+          </p>
         </div>
       </div>
       <div id="team-section" className={`container mx-auto px-4 mt-20 text-center transition-opacity duration-1000 ${fadeInTeam ? 'opacity-100' : 'opacity-0'}`}>

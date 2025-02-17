@@ -46,19 +46,27 @@ const Signin = () => {
           navigate('/admin/dashboard');
         } else if (userResponse.data.role === 'user') {
           // Check if the user has logged a mood for the day
-          const moodLogResponse = await axios.get('http://localhost:5000/api/mood-log', {
-            headers: {
-              Authorization: `Bearer ${response.data.token}`,
-            },
-          });
+          try {
+            const moodLogResponse = await axios.get('http://localhost:5000/api/mood-log', {
+              headers: {
+                Authorization: `Bearer ${response.data.token}`,
+              },
+            });
 
-          const today = new Date().toISOString().split('T')[0];
-          const loggedToday = moodLogResponse.data.some(log => log.date.split('T')[0] === today);
+            const today = new Date().toISOString().split('T')[0];
+            const loggedToday = moodLogResponse.data.some(log => log.date.split('T')[0] === today);
 
-          if (loggedToday) {
-            navigate('/mood-entries');
-          } else {
-            navigate('/log-mood');
+            if (loggedToday) {
+              navigate('/mood-entries');
+            } else {
+              navigate('/log-mood');
+            }
+          } catch (error) {
+            if (error.response && error.response.data.message === 'No mood logs found') {
+              navigate('/log-mood');
+            } else {
+              toast.error('Error fetching mood logs.');
+            }
           }
         } else {
           toast.error("Unknown user role.");
@@ -120,11 +128,11 @@ const Signin = () => {
           {error && <p className="text-red-500 mb-4">{error}</p>}
           <button
             type="submit"
-            className="w-full p-3 rounded-full bg-[#6fba94] text-white font-bold hover:bg-[#5aa88f]"
+            className="text-lg w-full p-3 rounded-full bg-[#6fba94] text-white font-bold hover:bg-[#5aa88f]"
           >
             Sign In
           </button>
-          <p className="mt-4 text-sm">
+          <p className="mt-4 text-mg">
             <span style={{ color: '#3a3939' }}>Don't have an account? </span>
             <span
               style={{ color: '#6fba94', cursor: 'pointer' }}

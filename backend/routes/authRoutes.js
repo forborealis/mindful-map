@@ -1,5 +1,5 @@
 const express = require('express');
-const { signup, login, getMe } = require('../controllers/authController');
+const { signup, login, getMe, verifyEmail } = require('../controllers/authController');
 const { authMiddleware } = require('../middleware/authMiddleware'); // Destructure the import
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
@@ -20,6 +20,7 @@ const router = express.Router();
 router.post('/signup', upload.single('avatar'), signup);
 router.post('/login', login);
 router.get('/me', authMiddleware, getMe); // Protect the /me route with authMiddleware
+router.get('/verify-email', verifyEmail);
 
 router.get('/home', authMiddleware, (req, res) => {
   res.status(200).json({ success: true, message: 'Welcome to the home page!' });

@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -11,6 +15,7 @@ const Signup = () => {
     avatar: null,
   });
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -37,18 +42,25 @@ const Signup = () => {
         },
       });
       if (response.data.success) {
-        navigate('/signin');
+        toast.success('Registration successful! Please check your email to verify your account.');
+        setError('');
+        setTimeout(() => {
+          navigate('/signin');
+        }, 3000); // Redirect after 3 seconds
       } else {
         setError(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
       setError('An error occurred during registration. Please try again.');
+      toast.error('An error occurred during registration. Please try again.');
       console.error('Error during registration:', error);
     }
   };
 
   return (
     <div className="min-h-screen flex">
+      <ToastContainer />
       <div className="w-3/5 bg-cover bg-center" style={{ backgroundImage: "url('/images/trynow.png')" }}>
         <div className="flex flex-col items-center justify-center h-full p-8 text-center">
           <h1 className="text-5xl font-bold text-white">Welcome to Mindful Map!</h1>
@@ -75,32 +87,41 @@ const Signup = () => {
             className="w-full p-3 mb-4 rounded-full bg-[#eef0ee] border-2 border-[#6fba94] outline-none focus:border-[#6fba94]"
             onChange={handleChange}
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="w-full p-3 mb-6 rounded-full bg-[#eef0ee] border-2 border-[#6fba94] outline-none focus:border-[#6fba94]"
-            onChange={handleChange}
-          />
-          <div className="w-full flex flex-col items-center mb-6">
-            <div className="flex items-center">
-              <input
-                type="file"
-                name="avatar"
-                className="mr-4"
-                onChange={handleChange}
-              />
-              <label className="text-[#3a3939]">Upload Avatar</label>
+          <div className="w-full relative mb-6">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              placeholder="Password"
+              className="w-full p-3 rounded-full bg-[#eef0ee] border-2 border-[#6fba94] outline-none focus:border-[#6fba94]"
+              onChange={handleChange}
+            />
+            <div
+              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <VisibilityOffIcon className="text-[#6fba94]"/> : <VisibilityIcon className="text-[#6fba94]"/>}
             </div>
+          </div>
+          <div className="w-full flex flex-col items-center mb-6">
+            <label htmlFor="avatar" className="text-lg w-1/2 p-3 rounded-full bg-[#6fba94] text-white font-bold hover:bg-[#5aa88f] text-center cursor-pointer">
+              Upload Avatar
+            </label>
+            <input
+              type="file"
+              id="avatar"
+              name="avatar"
+              className="hidden"
+              onChange={handleChange}
+            />
           </div>
           {error && <p className="text-red-500 mb-4">{error}</p>}
           <button
             type="submit"
-            className="w-full p-3 rounded-full bg-[#6fba94] text-white font-bold hover:bg-[#5aa88f]"
+            className="text-lg w-full p-3 rounded-full bg-[#6fba94] text-white font-bold hover:bg-[#5aa88f]"
           >
             Sign Up
           </button>
-          <p className="mt-4 text-sm">
+          <p className="mt-4 text-mg">
             <span style={{ color: '#3a3939' }}>Already have an account? </span>
             <span
               style={{ color: '#6fba94', cursor: 'pointer' }}
