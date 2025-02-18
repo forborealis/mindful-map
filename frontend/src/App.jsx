@@ -29,12 +29,14 @@ import BubblePopGame from './components/User/Statistics/Recommendations/BubblePo
 import ListTask from './components/User/Statistics/Recommendations/ListTask';
 import CalmingMusic from './components/User/Statistics/Recommendations/CalmingMusic';
 import Activities from './components/User/Activities';
+import ForumDiscussion from './components/User/Forum';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
 import Dashboard from './components/Admin/Dashboard';
 import UsersTable from './components/Admin/UsersTable';
+import PromptsTable from './components/Admin/PromptsTable';
 
 const useAuth = () => {
   const token = localStorage.getItem('token');
@@ -330,6 +332,16 @@ const App = () => {
           }
         />
         <Route
+          path="/forum"
+          element={
+            <UserPrivateRoute>
+              <ForumDiscussion />
+            </UserPrivateRoute>
+          }
+        />
+
+        {/* Admin Routes */}
+        <Route
           path="/admin/dashboard"
           element={
             <AdminPrivateRoute>
@@ -342,6 +354,14 @@ const App = () => {
           element={
             <AdminPrivateRoute>
               <UsersTable />
+            </AdminPrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/prompts"
+          element={
+            <AdminPrivateRoute>
+              <PromptsTable />
             </AdminPrivateRoute>
           }
         />

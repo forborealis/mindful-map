@@ -37,7 +37,7 @@ const theme = createTheme({
 const menuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/admin/dashboard" },
   { text: "Users", icon: <PeopleIcon />, path: "/admin/users" },
-  { text: "Forum", icon: <ForumIcon />, path: "/admin/forum" },
+  { text: "Forum", icon: <ForumIcon />, path: "/admin/prompts" },
   { text: "Moderate", icon: <GavelIcon />, path: "/admin/moderate" },
 ];
 

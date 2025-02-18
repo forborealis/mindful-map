@@ -13,4 +13,8 @@ router.post("/soft-delete", authMiddleware, adminMiddleware, adminController.sof
 router.post("/reactivate", authMiddleware, adminMiddleware, adminController.reactivate);
 router.post("/bulk-delete", authMiddleware, adminMiddleware, adminController.bulkDelete);
 
+router.get("/prompts",  authMiddleware, adminMiddleware, adminController.getAllPrompts)
+router.post("/add-prompt",  authMiddleware, adminMiddleware, adminController.addPrompt);
+router.delete("/:id",  authMiddleware, adminMiddleware, adminController.deletePrompt);
+
 module.exports = router;

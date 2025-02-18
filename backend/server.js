@@ -10,6 +10,7 @@ const analysisRoutes = require('./routes/analysisRoutes');
 const moodPredictionRoutes = require("./routes/moodPredictionRoutes");
 const adminRoutes = require('./routes/adminRoutes');
 const correlationRoutes = require('./routes/correlationRoutes');
+const forumRoutes = require('./routes/forumRoutes');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api', journalRoutes);
 app.use('/api', analysisRoutes);
 app.use('/api', moodPredictionRoutes);
 app.use('/api', correlationRoutes);
+app.use('/api', forumRoutes);
 app.use('/api/admin', adminRoutes);
 
 mongoose.connect(process.env.MONGO_URI, {

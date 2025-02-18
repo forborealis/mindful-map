@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Prompt = require('../models/Prompt');
 const MoodLog = require('../models/MoodLog');
 const jwt = require("jsonwebtoken");
 
@@ -210,5 +211,54 @@ exports.bulkDelete = async (req, res) => {
   } catch (error) {
     console.error("Error in bulk soft delete:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getAllPrompts = async (req, res) => {
+  try {
+    const prompts = await Prompt.find().populate("createdBy", "name email");
+    res.json(prompts);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching prompts", error });
+  }
+};
+
+exports.addPrompt = async (req, res) => {
+  try {
+    const { question } = req.body;
+    
+    if (!question) {
+      return res.status(400).json({ message: "Question is required" });
+    }
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Unauthorized: No user found" });
+    }
+
+    const newPrompt = await Prompt.create({ 
+      question, 
+      createdBy: req.user.id 
+    });
+
+    res.status(201).json(newPrompt);
+  } catch (error) {
+    console.error("Error adding prompt:", error);if (error.code === 11000) {
+
+      return res.status(400).json({
+        message: "This prompt already exists!",
+        code: 11000,
+      });
+    }
+
+    res.status(500).json({ message: "Error adding prompt", error: error.message });
+  }
+};
+
+exports.deletePrompt = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Prompt.findByIdAndDelete(id);
+    res.status(200).json({ message: "Prompt deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting prompt", error });
   }
 };
