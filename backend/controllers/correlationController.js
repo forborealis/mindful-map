@@ -189,15 +189,19 @@ const getWeeklyCorrelationForCorrelation = async (req, res) => {
     });
 
     const moodActivityMap = {};
+    const moodSocialMap = {};
     const sleepQualityCount = {
       'No Sleep': 0,
       'Poor Sleep': 0,
       'Medium Sleep': 0,
       'Good Sleep': 0
     };
+    let healthCount = 0;
 
     currentWeekLogs.forEach(log => {
-      const { mood, activities, sleepQuality } = log;
+      const { mood, activities, social, health, sleepQuality } = log;
+
+      // Handle activities
       activities.forEach(activity => {
         if (!moodActivityMap[mood]) {
           moodActivityMap[mood] = {};
@@ -210,6 +214,25 @@ const getWeeklyCorrelationForCorrelation = async (req, res) => {
         moodActivityMap[mood][activity]++;
       });
 
+      // Handle social
+      if (social) {
+        if (!moodSocialMap[mood]) {
+          moodSocialMap[mood] = {};
+        }
+
+        if (!moodSocialMap[mood][social]) {
+          moodSocialMap[mood][social] = 0;
+        }
+
+        moodSocialMap[mood][social]++;
+      }
+
+      // Handle health
+      if (health.length > 0) {
+        healthCount++;
+      }
+
+      // Handle sleep quality
       if (sleepQuality in sleepQualityCount) {
         sleepQualityCount[sleepQuality]++;
       }
@@ -269,6 +292,49 @@ const getWeeklyCorrelationForCorrelation = async (req, res) => {
       sleepQualityValue: parseFloat(topSleepQuality.percentage),
       sleepQuality: topSleepQuality.quality
     });
+
+    // Analyze social patterns
+    let topSocialMood = null;
+    let topSocialMoodCount = 0;
+    let topSocialActivity = null;
+    let topSocialActivityCount = 0;
+
+    Object.keys(moodSocialMap).forEach(mood => {
+      const moodCount = Object.values(moodSocialMap[mood]).reduce((a, b) => a + b, 0);
+      if (moodCount >= 3 && moodCount > topSocialMoodCount) {
+        topSocialMood = mood;
+        topSocialMoodCount = moodCount;
+        topSocialActivity = null;
+        topSocialActivityCount = 0;
+
+        Object.keys(moodSocialMap[mood]).forEach(social => {
+          if (moodSocialMap[mood][social] > topSocialActivityCount) {
+            topSocialActivity = social;
+            topSocialActivityCount = moodSocialMap[mood][social];
+          }
+        });
+      }
+    });
+
+    if (topSocialMood && topSocialActivity) {
+      const percentage = ((topSocialActivityCount / topSocialMoodCount) * 100).toFixed(2);
+      correlationResults.push({
+        correlationValue: parseFloat(percentage),
+        correlationMood: topSocialMood,
+        correlationActivity: topSocialActivity
+      });
+    }
+
+    // Analyze health patterns
+    if (healthCount < 3) {
+      correlationResults.push({
+        healthStatus: 'low'
+      });
+    } else {
+      correlationResults.push({
+        healthStatus: 'normal'
+      });
+    }
 
     res.status(200).json(correlationResults);
   } catch (error) {
@@ -420,7 +486,6 @@ const getWeeklyComparison = async (req, res) => {
       }
     });
 
-
     const previousWeekCorrelation = await Correlation.findOne({
       user: req.user.id,
       createdAt: {
@@ -428,7 +493,6 @@ const getWeeklyComparison = async (req, res) => {
         $lte: moment(endOfWeek).subtract(1, 'weeks').toDate()
       }
     });
-
 
     if (!currentWeekCorrelation || !previousWeekCorrelation) {
       return res.status(404).json({ message: 'Correlation data not found for comparison' });

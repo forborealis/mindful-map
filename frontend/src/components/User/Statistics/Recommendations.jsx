@@ -8,12 +8,13 @@ import ChecklistIcon from '@mui/icons-material/Checklist';
 const Recommendations = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { correlationData } = location.state;
+  const { correlationData, sleepQualityData } = location.state;
   const [recommendations, setRecommendations] = useState([]);
   const [correlatedMood, setCorrelatedMood] = useState('');
 
   useEffect(() => {
     console.log('Correlation Data:', correlationData); // Debugging log
+    console.log('Sleep Quality Data:', sleepQualityData); // Debugging log
 
     const fetchRecommendations = async () => {
       try {
@@ -22,7 +23,7 @@ const Recommendations = () => {
           throw new Error('No token found');
         }
 
-        const response = await axios.post('http://localhost:5000/api/recommendations', { correlationData }, {
+        const response = await axios.post('http://localhost:5000/api/recommendations', { correlationData: [...correlationData, ...sleepQualityData] }, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -42,7 +43,7 @@ const Recommendations = () => {
     };
 
     fetchRecommendations();
-  }, [correlationData]);
+  }, [correlationData, sleepQualityData]);
 
   const handleBreathingExerciseClick = () => {
     navigate('/breathing-exercise');

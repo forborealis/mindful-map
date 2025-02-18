@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import moment from 'moment';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const CorrelationStatistics = () => {
   const [currentWeek, setCurrentWeek] = useState(moment().startOf('isoWeek'));
@@ -11,6 +14,7 @@ const CorrelationStatistics = () => {
   const [currentWeekData, setCurrentWeekData] = useState(null);
   const [prevWeekData, setPrevWeekData] = useState(null);
   const [moodComparison, setMoodComparison] = useState(null);
+  const [monthlyData, setMonthlyData] = useState([]);
 
   const fetchWeeklyData = async (weekStart, weekEnd, setData) => {
     try {
@@ -64,8 +68,8 @@ const CorrelationStatistics = () => {
           angry: 0
         };
 
-        const currentMoodValue = moodValues[current.correlationMood.toLowerCase()] || 0;
-        const previousMoodValue = moodValues[previous.correlationMood.toLowerCase()] || 0;
+        const currentMoodValue = current && current.correlationMood ? moodValues[current.correlationMood.toLowerCase()] || 0 : 0;
+        const previousMoodValue = previous && previous.correlationMood ? moodValues[previous.correlationMood.toLowerCase()] || 0 : 0;
 
         const percentageChange = ((currentMoodValue - previousMoodValue) / 5) * 100;
         return percentageChange;
@@ -96,9 +100,73 @@ const CorrelationStatistics = () => {
   const startOfWeekFormatted = currentWeek.startOf('isoWeek').format('MMMM D');
   const endOfWeekFormatted = currentWeek.clone().endOf('isoWeek').format('D, YYYY');
 
+  const generateMonthlyReport = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const startOfMonth = moment().startOf('month');
+    const endOfMonth = moment().endOf('month');
+    const weeks = [];
+
+    for (let weekStart = startOfMonth.clone(); weekStart.isBefore(endOfMonth); weekStart.add(1, 'weeks')) {
+      const weekEnd = weekStart.clone().endOf('isoWeek');
+      weeks.push({ startOfWeek: weekStart.clone(), endOfWeek: weekEnd.clone() });
+    }
+
+    const monthlyData = await Promise.all(weeks.map(async ({ startOfWeek, endOfWeek }) => {
+      const response = await axios.get('http://localhost:5000/api/weekly-correlation-statistics', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        params: {
+          startOfWeek: startOfWeek.toISOString(),
+          endOfWeek: endOfWeek.toISOString()
+        }
+      });
+      return response.data;
+    }));
+
+    setMonthlyData(monthlyData);
+
+    const compareMoods = (current, previous) => {
+      const moodValues = {
+        relaxed: 5,
+        happy: 4,
+        fine: 3,
+        anxious: 2,
+        sad: 1,
+        angry: 0
+      };
+
+      const currentMoodValue = current && current.correlationMood ? moodValues[current.correlationMood.toLowerCase()] || 0 : 0;
+      const previousMoodValue = previous && previous.correlationMood ? moodValues[previous.correlationMood.toLowerCase()] || 0 : 0;
+
+      const percentageChange = ((currentMoodValue - previousMoodValue) / 5) * 100;
+      return percentageChange;
+    };
+
+    const doc = new jsPDF();
+    doc.text('Monthly Correlation Statistics', 14, 16);
+    doc.autoTable({
+      head: [['Week', 'Mood Statistics', 'Sleep Quality', 'Weekly Comparison']],
+      body: monthlyData.map((weekData, index) => {
+        const weekStart = weeks[index].startOfWeek.format('MMMM D');
+        const weekEnd = weeks[index].endOfWeek.format('D, YYYY');
+        const moodStatistics = weekData.map(result => result.correlationMood ? `${result.correlationMood} mood is (${result.correlationValue}%) linked to ${result.correlationActivity}` : '').join('\n');
+        const sleepQuality = weekData.map(result => result.sleepQualityValue ? `${result.sleepQualityValue}% of sleep this week is ${result.sleepQuality} Quality` : '').join('\n');
+        const weeklyComparison = index > 0 ? `${compareMoods(weekData[0], monthlyData[index - 1][0]).toFixed(2)}%` : 'N/A';
+        return [`${weekStart} - ${weekEnd}`, moodStatistics, sleepQuality, weeklyComparison];
+      })
+    });
+    doc.save('monthly_correlation_statistics.pdf');
+  };
+
   return (
     <div style={{ backgroundColor: '#eef0ee', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
+        <PictureAsPdfIcon className="cursor-pointer" onClick={generateMonthlyReport} style={{ position: 'absolute', right: '10px', top: '10px' }} />
         {hasPrevWeek && (
           <ChevronLeftIcon className="cursor-pointer" onClick={handlePrevWeek} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
         )}
