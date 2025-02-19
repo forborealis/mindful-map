@@ -214,8 +214,8 @@ const getWeeklyCorrelationForCorrelation = async (req, res) => {
         moodActivityMap[mood][activity]++;
       });
 
-      // Handle social
-      if (social) {
+       // Handle social
+       social.forEach(social => {
         if (!moodSocialMap[mood]) {
           moodSocialMap[mood] = {};
         }
@@ -225,7 +225,7 @@ const getWeeklyCorrelationForCorrelation = async (req, res) => {
         }
 
         moodSocialMap[mood][social]++;
-      }
+      });
 
       // Handle health
       if (health.length > 0) {
@@ -270,29 +270,6 @@ const getWeeklyCorrelationForCorrelation = async (req, res) => {
       });
     }
 
-    // Analyze sleep quality patterns
-    const totalSleepLogs = Object.values(sleepQualityCount).reduce((a, b) => a + b, 0);
-    const poorSleepLogs = sleepQualityCount['No Sleep'] + sleepQualityCount['Poor Sleep'];
-    const mediumSleepLogs = sleepQualityCount['Medium Sleep'];
-    const goodSleepLogs = sleepQualityCount['Good Sleep'];
-
-    const poorSleepPercentage = ((poorSleepLogs / totalSleepLogs) * 100).toFixed(2);
-    const mediumSleepPercentage = ((mediumSleepLogs / totalSleepLogs) * 100).toFixed(2);
-    const goodSleepPercentage = ((goodSleepLogs / totalSleepLogs) * 100).toFixed(2);
-
-    const sleepQualityResults = [
-      { quality: 'Poor', percentage: poorSleepPercentage, count: poorSleepLogs },
-      { quality: 'Medium', percentage: mediumSleepPercentage, count: mediumSleepLogs },
-      { quality: 'Good', percentage: goodSleepPercentage, count: goodSleepLogs }
-    ];
-
-    // Find the top sleep quality result
-    const topSleepQuality = sleepQualityResults.reduce((prev, current) => (prev.count > current.count ? prev : current));
-    correlationResults.push({
-      sleepQualityValue: parseFloat(topSleepQuality.percentage),
-      sleepQuality: topSleepQuality.quality
-    });
-
     // Analyze social patterns
     let topSocialMood = null;
     let topSocialMoodCount = 0;
@@ -321,9 +298,32 @@ const getWeeklyCorrelationForCorrelation = async (req, res) => {
       correlationResults.push({
         correlationValue: parseFloat(percentage),
         correlationMood: topSocialMood,
-        correlationActivity: topSocialActivity
+        correlationSocial: topSocialActivity
       });
     }
+
+    // Analyze sleep quality patterns
+    const totalSleepLogs = Object.values(sleepQualityCount).reduce((a, b) => a + b, 0);
+    const poorSleepLogs = sleepQualityCount['No Sleep'] + sleepQualityCount['Poor Sleep'];
+    const mediumSleepLogs = sleepQualityCount['Medium Sleep'];
+    const goodSleepLogs = sleepQualityCount['Good Sleep'];
+
+    const poorSleepPercentage = ((poorSleepLogs / totalSleepLogs) * 100).toFixed(2);
+    const mediumSleepPercentage = ((mediumSleepLogs / totalSleepLogs) * 100).toFixed(2);
+    const goodSleepPercentage = ((goodSleepLogs / totalSleepLogs) * 100).toFixed(2);
+
+    const sleepQualityResults = [
+      { quality: 'Poor', percentage: poorSleepPercentage, count: poorSleepLogs },
+      { quality: 'Medium', percentage: mediumSleepPercentage, count: mediumSleepLogs },
+      { quality: 'Good', percentage: goodSleepPercentage, count: goodSleepLogs }
+    ];
+
+    // Find the top sleep quality result
+    const topSleepQuality = sleepQualityResults.reduce((prev, current) => (prev.count > current.count ? prev : current));
+    correlationResults.push({
+      sleepQualityValue: parseFloat(topSleepQuality.percentage),
+      sleepQuality: topSleepQuality.quality
+    });
 
     // Analyze health patterns
     if (healthCount < 3) {

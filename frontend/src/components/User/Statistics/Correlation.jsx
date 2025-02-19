@@ -31,8 +31,8 @@ const Correlation = () => {
         console.log('Fetched data:', response.data); // Debugging line
 
         // Assuming the response data contains all types of correlation data
-        const activities = response.data.filter(item => item.correlationActivity && !item.correlationActivity.includes('Friends'));
-        const social = response.data.filter(item => item.correlationActivity && item.correlationActivity.includes('Friends'));
+        const activities = response.data.filter(item => item.correlationActivity && !item.correlationSocial);
+        const social = response.data.filter(item => item.correlationSocial);
         const sleepQuality = response.data.filter(item => item.sleepQuality);
         const health = response.data.find(item => item.healthStatus);
 
@@ -54,8 +54,9 @@ const Correlation = () => {
 
   const generatePDF = () => {
     const doc = new jsPDF();
+    doc.setFont('helvetica');
 
-    const createChart = (data, labels, title, callback) => {
+    const createChart = (data, labels, callback) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       new Chart(ctx, {
@@ -63,7 +64,7 @@ const Correlation = () => {
         data: {
           labels: labels,
           datasets: [{
-            data: data,
+            data: [data, 100 - data],
             backgroundColor: ['#FF6384', '#D3D3D3'],
             hoverBackgroundColor: ['#FF6384', '#D3D3D3']
           }]
@@ -76,8 +77,7 @@ const Correlation = () => {
               display: false
             },
             title: {
-              display: true,
-              text: title
+              display: false
             }
           }
         }
@@ -86,21 +86,25 @@ const Correlation = () => {
     };
 
     const activityData = correlationData.map(item => item.correlationValue);
-    const activityLabels = correlationData.map(item => `${item.correlationMood} - ${item.correlationActivity}`);
-    createChart(activityData, activityLabels, 'Activity Correlation', (activityChart) => {
+    const activityLabels = correlationData.map(item => item.correlationActivity);
+    createChart(activityData[0] || 0, ['Activity', ''], (activityChart) => {
       const socialDataValues = socialData.map(item => item.correlationValue);
-      const socialLabels = socialData.map(item => `${item.correlationMood} - ${item.correlationActivity}`);
-      createChart(socialDataValues, socialLabels, 'Social Correlation', (socialChart) => {
+      const socialLabels = socialData.map(item => item.correlationSocial);
+      createChart(socialDataValues[0] || 0, ['Social', ''], (socialChart) => {
         const sleepDataValues = sleepQualityData.map(item => item.sleepQualityValue);
         const sleepLabels = sleepQualityData.map(item => item.sleepQuality);
-        createChart(sleepDataValues, sleepLabels, 'Sleep Quality Correlation', (sleepChart) => {
-          doc.text('Correlation Analysis Report', 10, 10);
-          doc.addImage(activityChart.toDataURL('image/png'), 'PNG', 10, 20, 60, 60);
-          doc.text(activityLabels[0] || '', 10, 85);
-          doc.addImage(socialChart.toDataURL('image/png'), 'PNG', 80, 20, 60, 60);
-          doc.text(socialLabels[0] || '', 80, 85);
-          doc.addImage(sleepChart.toDataURL('image/png'), 'PNG', 150, 20, 60, 60);
-          doc.text(sleepLabels[0] || '', 150, 85);
+        createChart(sleepDataValues[0] || 0, ['Sleep Quality', ''], (sleepChart) => {
+          doc.setFontSize(12);
+          doc.text('Mood-Activity Correlation', 40, 100, { align: 'center' });
+          doc.addImage(activityChart.toDataURL('image/png'), 'PNG', 6, 110, 60, 60);
+          doc.text(activityLabels[0] || '', 40, 175, { align: 'center' });
+          doc.text('Mood-Social Correlation', 105, 100, { align: 'center' });
+          doc.addImage(socialChart.toDataURL('image/png'), 'PNG', 75, 110, 60, 60);
+          doc.text(socialLabels[0] || '', 105, 175, { align: 'center' });
+          doc.text('Sleep Quality Correlation', 170, 100, { align: 'center' });
+          doc.addImage(sleepChart.toDataURL('image/png'), 'PNG', 140, 110, 60, 60);
+          doc.text(sleepLabels[0] + ' Quality' || '', 170, 175, { align: 'center' });
+          doc.addImage('images/logo.png', 'PNG', 180, 10, 20, 20); // Add logo to the upper right side
           doc.save('correlation_analysis_report.pdf');
         });
       });
@@ -108,7 +112,6 @@ const Correlation = () => {
   };
 
   const getChartData = (data, label) => ({
-    labels: [label, ''],
     datasets: [{
       data: [data, 100 - data],
       backgroundColor: ['#FF6384', '#D3D3D3'],
@@ -137,7 +140,7 @@ const Correlation = () => {
           {socialData.length > 0 ? (
             socialData.map((result, index) => (
               <p key={index} style={{ color: '#89bcbc', fontWeight: 'bold', fontSize: '27px' }}>
-                {result.correlationMood ? `${result.correlationMood} mood is (${result.correlationValue}%) linked to ${result.correlationActivity}` : null}
+                {result.correlationMood ? `${result.correlationMood} mood is (${result.correlationValue}%) linked to ${result.correlationSocial}` : null}
               </p>
             ))
           ) : (
@@ -173,18 +176,21 @@ const Correlation = () => {
           Next
         </button>
       </div>
-      <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '10px', marginTop: '20px', width: '100%', maxWidth: '1000px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', justifyContent: 'space-around' }}>
+      <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '10px', marginTop: '20px', marginBottom: '20px', width: '100%', maxWidth: '1000px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', justifyContent: 'space-around' }}>
         <div>
-          <Doughnut data={getChartData(correlationData[0]?.correlationValue || 0, 'Anxious Mood')} />
-          <p style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '16px', marginTop: '10px' }}>Anxious Mood</p>
+          <h3 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '20px' }}>Mood-Activity Correlation</h3>
+          <Doughnut data={getChartData(correlationData[0]?.correlationValue || 0, 'Studying')} />
+          <p style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '16px', marginTop: '10px' }}>{correlationData[0]?.correlationActivity || 'Activity'}</p>
         </div>
         <div>
+          <h3 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '20px' }}>Mood-Social Correlation</h3>
           <Doughnut data={getChartData(socialData[0]?.correlationValue || 0, 'Friends')} />
-          <p style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '16px', marginTop: '10px' }}>Friends</p>
+          <p style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '16px', marginTop: '10px' }}>{socialData[0]?.correlationSocial || 'Social'}</p>
         </div>
         <div>
-          <Doughnut data={getChartData(sleepQualityData[0]?.sleepQualityValue || 0, 'Poor Sleep Quality')} />
-          <p style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '16px', marginTop: '10px' }}>Poor Sleep Quality</p>
+          <h3 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '20px' }}>Sleep Quality</h3>
+          <Doughnut data={getChartData(sleepQualityData[0]?.sleepQualityValue || 0, 'Sleep Quality')} />
+          <p style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '16px', marginTop: '10px' }}>{sleepQualityData[0]?.sleepQuality + ' Quality' || 'Sleep Quality'}</p>
         </div>
       </div>
     </div>
