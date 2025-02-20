@@ -28,20 +28,21 @@ const Signin = () => {
       email: formData.email,
       password: formData.password,
     };
-
+  
     try {
       const response = await axios.post('http://localhost:5000/api/auth/login', data);
+  
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
         toast.success("Login successful!");
-
+  
         // Fetch user role
         const userResponse = await axios.get('http://localhost:5000/api/auth/me', {
           headers: {
             Authorization: `Bearer ${response.data.token}`,
           },
         });
-
+  
         if (userResponse.data.role === 'admin') {
           navigate('/admin/dashboard');
         } else if (userResponse.data.role === 'user') {
@@ -52,10 +53,10 @@ const Signin = () => {
                 Authorization: `Bearer ${response.data.token}`,
               },
             });
-
+  
             const today = new Date().toISOString().split('T')[0];
             const loggedToday = moodLogResponse.data.some(log => log.date.split('T')[0] === today);
-
+  
             if (loggedToday) {
               navigate('/mood-entries');
             } else {
@@ -75,10 +76,25 @@ const Signin = () => {
         toast.error(response.data.message);
       }
     } catch (error) {
-      setError('An error occurred during login. Please try again.');
-      console.error('Error during login:', error);
+      if (error.response) {
+        const errorMessage = error.response.data.message;
+  
+        if (error.response.status === 403) {
+          if (errorMessage === "Your account is deactivated.") {
+            toast.error("Your account has been deactivated. Please contact support.");
+          } else if (errorMessage === "Please verify your email to log in.") {
+            toast.error("Please verify your email before logging in.");
+          } else {
+            toast.error(errorMessage);
+          }
+        } else {
+          toast.error(errorMessage || "An error occurred during login.");
+        }
+      } else {
+        toast.error("Server is unreachable. Please try again later.");
+      }
     }
-  };
+  };  
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
