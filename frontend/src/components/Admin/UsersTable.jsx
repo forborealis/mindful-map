@@ -9,6 +9,8 @@ import axios from "axios";
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreIcon from '@mui/icons-material/Restore';
 import Navbar from './Navbar';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UsersTable = () => {
   const theme = useTheme();
@@ -72,27 +74,51 @@ const UsersTable = () => {
     }
   };
 
-  const handleAction = async (userId, action) => {
+  const handleAction = async (userId, action, deactivatedAt) => {
     try {
       const token = localStorage.getItem("token");
   
-      if (action === 'softDelete') {
-        await axios.post("http://localhost:5000/api/admin/soft-delete", { userId }, { headers: { Authorization: `Bearer ${token}` } });
-
-        setUsers(users.map(user => 
-          user.id === userId ? { ...user, isDeactivated: true } : user
+      if (action === "reactivate") {
+        const response = await axios.post(
+          "http://localhost:5000/api/admin/reactivate", 
+          { userId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+  
+        if (response.data.message === "Reactivation is only allowed after 24 hours.") {
+          toast.error("Reactivation is only allowed after 24 hours.");
+          return;
+        }
+  
+        setUsers(users.map(user =>
+          user.id === userId ? { ...user, isDeactivated: false, deactivatedAt: null } : user
         ));
-      } else if (action === 'reactivate') {
-        await axios.post("http://localhost:5000/api/admin/reactivate", { userId }, { headers: { Authorization: `Bearer ${token}` } });
-
-        setUsers(users.map(user => 
-          user.id === userId ? { ...user, isDeactivated: false } : user
+  
+        toast.success("User reactivated successfully!");
+        
+      } else if (action === "softDelete") {
+        const response = await axios.post(
+          "http://localhost:5000/api/admin/soft-delete", 
+          { userId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+  
+        // Update the user with the deactivatedAt from the response
+        setUsers(users.map(user =>
+          user.id === userId ? { 
+            ...user, 
+            isDeactivated: true, 
+            deactivatedAt: response.data.deactivatedAt // Use the timestamp from backend
+          } : user
         ));
+  
+        toast.success("User deactivated successfully!");
       }
     } catch (error) {
       console.error(`Error during ${action}:`, error);
+      toast.error(error.response?.data?.message || `Error during ${action}. Please try again.`);
     }
-  };  
+  };
 
   const exportPDF = () => {
     const doc = new jsPDF();
@@ -184,9 +210,9 @@ const UsersTable = () => {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => {
-        const isDeactivated = params.row.isDeactivated;
+        const { id, isDeactivated, deactivatedAt } = params.row;
         return (
-          <IconButton onClick={() => handleAction(params.row.id, isDeactivated ? 'reactivate' : 'softDelete')}>
+<IconButton onClick={() => handleAction(id, isDeactivated ? "reactivate" : "softDelete", deactivatedAt)}>
             {isDeactivated ? (
               <RestoreIcon sx={{ color: "#4CAF50" }} />
             ) : (
@@ -195,7 +221,7 @@ const UsersTable = () => {
           </IconButton>
         );
       },
-    }
+    }    
    ];
    
    return (

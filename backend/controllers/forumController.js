@@ -3,6 +3,62 @@ const Forum = require('../models/Forum');
 const User = require('../models/User');
 const moment = require("moment");
 const mongoose = require('mongoose');
+const { getFilter } = require('../helper.js');
+
+exports.postComment = async (req, res) => {
+  try {
+    const { promptId, content } = req.body;
+    const userId = req.user._id;
+
+    if (!promptId || !content) {
+      return res.status(400).json({ message: 'Prompt ID and content are required' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(promptId)) {
+      return res.status(400).json({ message: 'Invalid prompt ID format' });
+    }
+
+    const filter = getFilter();
+    const cleanedContent = filter.clean(content); 
+
+    const prompt = await Prompt.findById(promptId);
+    if (!prompt) {
+      return res.status(404).json({ message: 'Prompt not found' });
+    }
+
+    let forum = await Forum.findOne({ prompt: promptId });
+    if (!forum) {
+      forum = new Forum({ prompt: promptId, discussions: [] });
+    }
+
+    const newDiscussion = {
+      user: userId,
+      content: cleanedContent,
+      createdAt: new Date(),
+    };
+
+    forum.discussions.push(newDiscussion);
+    await forum.save();
+
+    // Populate user data for the new discussion
+    const populatedDiscussion = await Forum.findOne(
+      { _id: forum._id, 'discussions._id': forum.discussions[forum.discussions.length - 1]._id }
+    ).populate({
+      path: 'discussions.user',
+      select: 'name avatar',
+    });
+
+    const newDiscussionWithUser = populatedDiscussion.discussions[populatedDiscussion.discussions.length - 1];
+
+    return res.status(201).json({
+      message: 'Comment posted successfully',
+      newDiscussion: newDiscussionWithUser,
+    });
+  } catch (error) {
+    console.error('Error posting comment:', error);
+    return res.status(500).json({ message: 'Error posting comment', error: error.message });
+  }
+};
 
 exports.getTodaysPrompt = async (req, res) => {
   try {
@@ -44,7 +100,7 @@ exports.getCurrentUser = async (req, res) => {
       }
   
       const user = await User.findById(userId)
-        .select('name email avatar'); 
+        .select('name email avatar isDeactivated deactivatedAt'); 
   
       if (!user) {
         return res.status(404).json({
@@ -94,76 +150,76 @@ exports.getForumDiscussions = async (req, res) => {
   }
 };
 
-exports.postComment = async (req, res) => {
-  try {
-    const { promptId, content } = req.body;
-    const userId = req.user._id;
+// exports.postComment = async (req, res) => {
+//   try {
+//     const { promptId, content } = req.body;
+//     const userId = req.user._id;
 
-    if (!promptId || !content) {
-      return res.status(400).json({
-        message: 'Prompt ID and content are required'
-      });
-    }
+//     if (!promptId || !content) {
+//       return res.status(400).json({
+//         message: 'Prompt ID and content are required'
+//       });
+//     }
 
-    if (!mongoose.Types.ObjectId.isValid(promptId)) {
-      return res.status(400).json({
-        message: 'Invalid prompt ID format'
-      });
-    }
+//     if (!mongoose.Types.ObjectId.isValid(promptId)) {
+//       return res.status(400).json({
+//         message: 'Invalid prompt ID format'
+//       });
+//     }
 
-    // Find the prompt to ensure it exists
-    const prompt = await Prompt.findById(promptId);
-    if (!prompt) {
-      return res.status(404).json({
-        message: 'Prompt not found'
-      });
-    }
+//     // Find the prompt to ensure it exists
+//     const prompt = await Prompt.findById(promptId);
+//     if (!prompt) {
+//       return res.status(404).json({
+//         message: 'Prompt not found'
+//       });
+//     }
 
-    // Find or create forum for this prompt
-    let forum = await Forum.findOne({ prompt: promptId });
+//     // Find or create forum for this prompt
+//     let forum = await Forum.findOne({ prompt: promptId });
     
-    if (!forum) {
-      forum = new Forum({
-        prompt: promptId,
-        discussions: []
-      });
-    }
+//     if (!forum) {
+//       forum = new Forum({
+//         prompt: promptId,
+//         discussions: []
+//       });
+//     }
 
-    const newDiscussion = {
-      user: userId,
-      content: content,
-      createdAt: new Date()
-    };
+//     const newDiscussion = {
+//       user: userId,
+//       content: content,
+//       createdAt: new Date()
+//     };
 
-    // Add to discussions array
-    forum.discussions.push(newDiscussion);
-    await forum.save();
+//     // Add to discussions array
+//     forum.discussions.push(newDiscussion);
+//     await forum.save();
 
-    // Populate user data for the new discussion
-    const populatedDiscussion = await Forum.findOne(
-      { 
-        _id: forum._id, 
-        'discussions._id': forum.discussions[forum.discussions.length - 1]._id 
-      }
-    ).populate({
-      path: 'discussions.user',
-      select: 'name avatar'
-    });
+//     // Populate user data for the new discussion
+//     const populatedDiscussion = await Forum.findOne(
+//       { 
+//         _id: forum._id, 
+//         'discussions._id': forum.discussions[forum.discussions.length - 1]._id 
+//       }
+//     ).populate({
+//       path: 'discussions.user',
+//       select: 'name avatar'
+//     });
 
-    const newDiscussionWithUser = populatedDiscussion.discussions[populatedDiscussion.discussions.length - 1];
+//     const newDiscussionWithUser = populatedDiscussion.discussions[populatedDiscussion.discussions.length - 1];
 
-    return res.status(201).json({
-      message: 'Comment posted successfully',
-      newDiscussion: newDiscussionWithUser
-    });
-  } catch (error) {
-    console.error('Error posting comment:', error);
-    return res.status(500).json({
-      message: 'Error posting comment',
-      error: error.message
-    });
-  }
-};
+//     return res.status(201).json({
+//       message: 'Comment posted successfully',
+//       newDiscussion: newDiscussionWithUser
+//     });
+//   } catch (error) {
+//     console.error('Error posting comment:', error);
+//     return res.status(500).json({
+//       message: 'Error posting comment',
+//       error: error.message
+//     });
+//   }
+// };
 
 exports.deleteComment = async (req, res) => {
   try {

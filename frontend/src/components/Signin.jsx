@@ -75,13 +75,8 @@ const Signin = () => {
         toast.error(response.data.message);
       }
     } catch (error) {
+      setError('An error occurred during login. Please try again.');
       console.error('Error during login:', error);
-
-      if (error.response && error.response.status === 403) {
-        toast.error("Your account is deactivated. Contact admin.");
-      } else {
-        toast.error("An error occurred during login. Please try again."); 
-      }
     }
   };
 

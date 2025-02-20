@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { formatDistanceToNowStrict } from 'date-fns';
-import {Box, Card, Typography, Avatar, Stack, Paper, TextField, Button, Alert, Snackbar, Divider} from "@mui/material";
-import { AccessTime } from "@mui/icons-material";
+import {Box, Card, Typography, Avatar, Stack, Paper, TextField, Button, 
+        Alert, Snackbar, IconButton, Menu, MenuItem } from "@mui/material";
+import { AccessTime, MoreVert } from "@mui/icons-material";
 
 const ForumDiscussion = () => {
   const [todaysPrompt, setTodaysPrompt] = useState(null);
@@ -12,6 +13,8 @@ const ForumDiscussion = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedComment, setSelectedComment] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -98,6 +101,16 @@ const ForumDiscussion = () => {
     fetchUserAndPrompt();
   }, []);
 
+  const handleMenuOpen = (event, commentId) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedComment(commentId);
+  };
+  
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedComment(null);
+  };
+  
   const handlePostComment = async () => {
     if (!newComment.trim() || !user || !todaysPrompt) return;
     
@@ -144,6 +157,27 @@ const ForumDiscussion = () => {
     }
   };
 
+  const handleDeleteComment = async () => {
+    if (!selectedComment) return;
+  
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:5000/api/${todaysPrompt._id}/comment/${selectedComment}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      setComments(comments.filter(comment => comment._id !== selectedComment));
+      setSnackbar({ open: true, message: "Comment deleted successfully", severity: "success" });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      setSnackbar({ open: true, message: "Failed to delete comment", severity: "error" });
+    } finally {
+      handleMenuClose();
+    }
+  };
+
   const getAvatarColor = (name) => {
     const colors = ["primary.main", "secondary.main", "success.main", "warning.main", "info.main"];
     const nameHash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -158,7 +192,7 @@ const ForumDiscussion = () => {
   const renderComments = (discussionComments) => {
     return discussionComments.length > 0 ? (
       discussionComments.map((comment, index) => (
-        <Box key={index} sx={{ display: "flex", alignItems: "flex-start" }}>
+        <Box key={index} sx={{ display: "flex", alignItems: "flex-start", position: "relative" }}>
           <Avatar 
             sx={{ 
               bgcolor: comment.user && comment.user.avatar 
@@ -192,6 +226,21 @@ const ForumDiscussion = () => {
               {comment.content}
             </Typography>
           </Paper>
+  
+          {/* Show delete menu only for user's own comments */}
+          {user && comment.user?._id === user._id && (
+            <>
+              <IconButton
+                sx={{ position: "absolute", right: 10, top: 5 }}
+                onClick={(event) => handleMenuOpen(event, comment._id)}
+              >
+                <MoreVert />
+              </IconButton>
+              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                <MenuItem onClick={handleDeleteComment}>Delete</MenuItem>
+              </Menu>
+            </>
+          )}
         </Box>
       ))
     ) : (

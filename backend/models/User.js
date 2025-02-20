@@ -31,13 +31,17 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
   isDeactivated: { 
     type: Boolean, 
     default: false 
   },
-  createdAt: {
+  deactivatedAt: {
     type: Date,
-    default: Date.now,
+    default: null,
   },
 });
 

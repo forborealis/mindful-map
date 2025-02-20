@@ -147,7 +147,7 @@ exports.getUsers = async (req, res) => {
 
     const activeUserIds = activeUsers.map(user => user._id.toString());
 
-    const users = await User.find({ role: 'user' }).select('name email avatar isDeactivated createdAt');
+    const users = await User.find({ role: 'user' }).select('name email avatar isDeactivated createdAt deactivatedAt');
 
     const usersWithStatus = users.map(user => ({
       id: user._id,
@@ -173,9 +173,10 @@ exports.softDelete = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.isDeactivated = true;
+    user.deactivatedAt = new Date();
     await user.save();
 
-    res.json({ message: "User deactivated successfully" });
+    res.json({ message: "User deactivated successfully", deactivatedAt: user.deactivatedAt });
   } catch (error) {
     console.error("Error deactivating user:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -189,7 +190,20 @@ exports.reactivate = async (req, res) => {
     
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    if (!user.deactivatedAt) {
+      return res.status(400).json({ message: "Deactivation timestamp not found" });
+    }
+
+    const now = new Date();
+    const deactivatedAt = new Date(user.deactivatedAt);
+    const hoursSinceDeactivation = (now - deactivatedAt) / (1000 * 60 * 60); 
+
+    if (hoursSinceDeactivation < 24) {
+      return res.status(403).json({ message: `Reactivation is only allowed after 24 hours.` });
+    }
+
     user.isDeactivated = false;
+    user.deactivatedAt = null;
     await user.save();
 
     res.json({ message: "User reactivated successfully" });
