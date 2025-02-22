@@ -122,20 +122,125 @@ const UsersTable = () => {
 
   const exportPDF = () => {
     const doc = new jsPDF();
-    doc.text("Users Report", 14, 10);
-
-    const tableData = filteredUsers.map(user => [
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const logoWidth = 25; 
+    const logoHeight = 25;
+    const margin = 15;
+    const lineY = 42;  // Adjusted line position
+    
+    const tupLogo = new Image();
+    const rightLogo = new Image();
+    tupLogo.src = '/images/tup.png';
+    rightLogo.src = '/images/logo.png';
+    
+    Promise.all([
+      new Promise((resolve, reject) => {
+        tupLogo.onload = resolve;
+        tupLogo.onerror = reject;
+      }),
+      new Promise((resolve, reject) => {
+        rightLogo.onload = resolve;
+        rightLogo.onerror = reject;
+      })
+    ]).then(() => {
+      doc.addImage(tupLogo, 'PNG', margin, 10, logoWidth, logoHeight);
+      
+      const rightLogoX = pageWidth - margin - logoWidth;
+      doc.addImage(rightLogo, 'PNG', rightLogoX, 10, logoWidth, logoHeight);
+      
+      const textStart = margin + logoWidth + 10;
+      const textWidth = rightLogoX - textStart;
+      
+      // University name 
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      const universityName = "TECHNOLOGICAL UNIVERSITY OF THE PHILIPPINES-TAGUIG";
+      const universityX = textStart + (textWidth - doc.getTextWidth(universityName)) / 2 - 5;
+      doc.text(universityName, universityX, 20);
+      
+      // Program name
+      doc.setFontSize(11);
+      const program = "BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY";
+      const programX = textStart + (textWidth - doc.getTextWidth(program)) / 2 - 5;
+      doc.text(program, programX, 27);
+      
+      // Address
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      const address = "Km. 14 East Service Road, Western Bicutan, Taguig City 1630, Metro Manila, Philippines";
+      const addressX = textStart + (textWidth - doc.getTextWidth(address)) / 2 - 5;
+      doc.text(address, addressX, 34);
+      
+      // Horizontal line
+      doc.setLineWidth(0.6);
+      doc.setDrawColor(100, 179, 138);  
+      doc.line(35, lineY, pageWidth - 35, lineY);
+      
+      // Add report title
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Users Report", margin, lineY + 20);
+      
+      // Table data
+      const tableData = filteredUsers.map(user => [
+        user.name || "N/A",
+        user.email,
+        user.status,
+        new Date(user.createdAt).toLocaleDateString(),
+      ]);
+      
+      doc.autoTable({
+        head: [["Name", "Email", "Status", "Created At"]],
+        body: tableData,
+        startY: lineY + 25,
+        margin: { top: 10, left: margin, right: margin },
+        styles: {
+          fontSize: 9,
+          cellPadding: 3,
+        },
+        headStyles: {
+          fillColor: [100, 179, 138],
+          textColor: 255,
+          fontSize: 10,
+          fontStyle: 'bold',
+        },
+      });
+      
+      doc.save("users_report.pdf");
+    }).catch(error => {
+      console.error('Error loading images:', error);
+      generatePDFWithoutLogos(doc, filteredUsers);
+    });
+  };
+  
+  // Fallback function
+  const generatePDFWithoutLogos = (doc, users) => {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Users Report", 15, 20);
+    
+    const tableData = users.map(user => [
       user.name || "N/A",
       user.email,
       user.status,
       new Date(user.createdAt).toLocaleDateString(),
     ]);
-
+    
     doc.autoTable({
       head: [["Name", "Email", "Status", "Created At"]],
       body: tableData,
+      startY: 30,
+      margin: { left: 15, right: 15 },
+      styles: { fontSize: 9 },
+      headStyles: {
+        fillColor: [128, 0, 0],
+        textColor: 255,
+        fontSize: 10,
+        fontStyle: 'bold',
+      },
     });
-
+    
     doc.save("users_report.pdf");
   };
 
@@ -212,7 +317,7 @@ const UsersTable = () => {
       renderCell: (params) => {
         const { id, isDeactivated, deactivatedAt } = params.row;
         return (
-<IconButton onClick={() => handleAction(id, isDeactivated ? "reactivate" : "softDelete", deactivatedAt)}>
+          <IconButton onClick={() => handleAction(id, isDeactivated ? "reactivate" : "softDelete", deactivatedAt)}>
             {isDeactivated ? (
               <RestoreIcon sx={{ color: "#4CAF50" }} />
             ) : (
