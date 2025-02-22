@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'chart.js/auto';
 import { Doughnut } from 'react-chartjs-2';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DownloadIcon from '@mui/icons-material/Download';
 import { Chart } from 'chart.js';
 
 const Correlation = () => {
@@ -94,18 +94,81 @@ const Correlation = () => {
         const sleepDataValues = sleepQualityData.map(item => item.sleepQualityValue);
         const sleepLabels = sleepQualityData.map(item => item.sleepQuality);
         createChart(sleepDataValues[0] || 0, ['Sleep Quality', ''], (sleepChart) => {
-          doc.setFontSize(12);
-          doc.text('Mood-Activity Correlation', 40, 100, { align: 'center' });
-          doc.addImage(activityChart.toDataURL('image/png'), 'PNG', 6, 110, 60, 60);
-          doc.text(activityLabels[0] || '', 40, 175, { align: 'center' });
-          doc.text('Mood-Social Correlation', 105, 100, { align: 'center' });
-          doc.addImage(socialChart.toDataURL('image/png'), 'PNG', 75, 110, 60, 60);
-          doc.text(socialLabels[0] || '', 105, 175, { align: 'center' });
-          doc.text('Sleep Quality Correlation', 170, 100, { align: 'center' });
-          doc.addImage(sleepChart.toDataURL('image/png'), 'PNG', 140, 110, 60, 60);
-          doc.text(sleepLabels[0] + ' Quality' || '', 170, 175, { align: 'center' });
-          doc.addImage('images/logo.png', 'PNG', 180, 10, 20, 20); // Add logo to the upper right side
-          doc.save('correlation_analysis_report.pdf');
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const logoWidth = 25; 
+          const logoHeight = 25;
+          const margin = 15;
+          const lineY = 42;  // Adjusted line position
+          
+          const tupLogo = new Image();
+          const rightLogo = new Image();
+          tupLogo.src = '/images/tup.png';
+          rightLogo.src = '/images/logo.png';
+          
+          Promise.all([
+            new Promise((resolve, reject) => {
+              tupLogo.onload = resolve;
+              tupLogo.onerror = reject;
+            }),
+            new Promise((resolve, reject) => {
+              rightLogo.onload = resolve;
+              rightLogo.onerror = reject;
+            })
+          ]).then(() => {
+            doc.addImage(tupLogo, 'PNG', margin, 10, logoWidth, logoHeight);
+            
+            const rightLogoX = pageWidth - margin - logoWidth;
+            doc.addImage(rightLogo, 'PNG', rightLogoX, 10, logoWidth, logoHeight);
+            
+            const textStart = margin + logoWidth + 10;
+            const textWidth = rightLogoX - textStart;
+            
+            // University name 
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            const universityName = "TECHNOLOGICAL UNIVERSITY OF THE PHILIPPINES-TAGUIG";
+            const universityX = textStart + (textWidth - doc.getTextWidth(universityName)) / 2 - 5;
+            doc.text(universityName, universityX, 20);
+            
+            // Program name
+            doc.setFontSize(11);
+            const program = "BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY";
+            const programX = textStart + (textWidth - doc.getTextWidth(program)) / 2 - 5;
+            doc.text(program, programX, 27);
+            
+            // Address
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            const address = "Km. 14 East Service Road, Western Bicutan, Taguig City 1630, Metro Manila, Philippines";
+            const addressX = textStart + (textWidth - doc.getTextWidth(address)) / 2 - 5;
+            doc.text(address, addressX, 34);
+            
+            // Horizontal line
+            doc.setLineWidth(0.6);
+            doc.setDrawColor(100, 179, 138);  
+            doc.line(35, lineY, pageWidth - 35, lineY);
+            
+            // Add report title
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Correlation Analysis Report', margin, lineY + 20);
+            
+            // Add charts
+            doc.setFontSize(12);
+            doc.text('Mood-Activity Correlation', 40, 100, { align: 'center' });
+            doc.addImage(activityChart.toDataURL('image/png'), 'PNG', 6, 110, 60, 60);
+            doc.text(activityLabels[0] || '', 40, 175, { align: 'center' });
+            doc.text('Mood-Social Correlation', 105, 100, { align: 'center' });
+            doc.addImage(socialChart.toDataURL('image/png'), 'PNG', 75, 110, 60, 60);
+            doc.text(socialLabels[0] || '', 105, 175, { align: 'center' });
+            doc.text('Sleep Quality Correlation', 170, 100, { align: 'center' });
+            doc.addImage(sleepChart.toDataURL('image/png'), 'PNG', 140, 110, 60, 60);
+            doc.text(sleepLabels[0] + ' Quality' || '', 170, 175, { align: 'center' });
+            
+            doc.save('correlation_analysis_report.pdf');
+          }).catch(error => {
+            console.error('Error loading images:', error);
+          });
         });
       });
     });
@@ -122,7 +185,7 @@ const Correlation = () => {
   return (
     <div style={{ backgroundColor: '#eef0ee', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', marginTop: '20px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', minHeight: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
-        <PictureAsPdfIcon onClick={generatePDF} style={{ position: 'absolute', top: '20px', right: '20px', cursor: 'pointer', color: '#6fba94' }} />
+        <DownloadIcon onClick={generatePDF} style={{ position: 'absolute', top: '20px', right: '20px', cursor: 'pointer', color: '#6fba94' }} />
         <h2 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '24px', marginBottom: '20px' }}>Correlation analysis results...</h2>
         <div style={{ marginBottom: '20px' }}>
           {correlationData.length > 0 ? (

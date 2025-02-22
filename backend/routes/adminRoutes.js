@@ -8,6 +8,8 @@ router.get('/monthly-users', authMiddleware, adminMiddleware, adminController.ge
 router.get('/active-users', authMiddleware, adminMiddleware, adminController.getActiveUsers);
 router.get('/inactive-users', authMiddleware, adminMiddleware, adminController.getInactiveUsers); // Added route for inactive users
 router.get('/users', authMiddleware, adminMiddleware, adminController.getUsers);
+router.get('/daily-forum-engagement', adminController.getDailyForumEngagement);
+router.get('/weekly-forum-engagement', adminController.getWeeklyForumEngagement);
 
 router.post("/soft-delete", authMiddleware, adminMiddleware, adminController.softDelete);
 router.post("/reactivate", authMiddleware, adminMiddleware, adminController.reactivate);

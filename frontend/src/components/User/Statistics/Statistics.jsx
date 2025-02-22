@@ -19,7 +19,7 @@ import Switch from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DownloadIcon from '@mui/icons-material/Download';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 ChartJS.register(
@@ -257,29 +257,92 @@ const Statistics = () => {
     const sleepInput = sleepChartRef.current;
     const pdfIcon = pdfIconRef.current;
     pdfIcon.style.display = 'none'; // Hide the PDF icon before capturing the screenshot
-
-    const moodCanvas = await html2canvas(moodInput, { scale: 2 });
-    const sleepCanvas = await html2canvas(sleepInput, { scale: 2 });
-
+  
+    const moodCanvas = await html2canvas(moodInput, { scale: 4 });
+    const sleepCanvas = await html2canvas(sleepInput, { scale: 1 });
+  
     pdfIcon.style.display = 'block'; // Show the PDF icon again after capturing the screenshot
-
+  
     const moodImgData = moodCanvas.toDataURL('image/png');
     const sleepImgData = sleepCanvas.toDataURL('image/png');
-
+  
     const pdf = new jsPDF('p', 'mm', 'a4');
     const imgWidth = 180;
     const moodImgHeight = (moodCanvas.height * imgWidth) / moodCanvas.width;
     const sleepImgHeight = (sleepCanvas.height * imgWidth) / sleepCanvas.width;
-
+  
     const centerX = (pdf.internal.pageSize.getWidth() - imgWidth) / 2;
-
-    pdf.addImage(moodImgData, 'PNG', centerX, 20, imgWidth, moodImgHeight);
-    pdf.addPage();
-    pdf.addImage(sleepImgData, 'PNG', centerX, 20, imgWidth, sleepImgHeight);
-
-    pdf.save(`Mood_and_Sleep_Quality_${moodPeriod}.pdf`);
+  
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const logoWidth = 25; 
+    const logoHeight = 25;
+    const margin = 15;
+    const lineY = 42;  // Adjusted line position
+    
+    const tupLogo = new Image();
+    const rightLogo = new Image();
+    tupLogo.src = '/images/tup.png';
+    rightLogo.src = '/images/logo.png';
+    
+    Promise.all([
+      new Promise((resolve, reject) => {
+        tupLogo.onload = resolve;
+        tupLogo.onerror = reject;
+      }),
+      new Promise((resolve, reject) => {
+        rightLogo.onload = resolve;
+        rightLogo.onerror = reject;
+      })
+    ]).then(() => {
+      pdf.addImage(tupLogo, 'PNG', margin, 10, logoWidth, logoHeight);
+      
+      const rightLogoX = pageWidth - margin - logoWidth;
+      pdf.addImage(rightLogo, 'PNG', rightLogoX, 10, logoWidth, logoHeight);
+      
+      const textStart = margin + logoWidth + 10;
+      const textWidth = rightLogoX - textStart;
+      
+      // University name 
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      const universityName = "TECHNOLOGICAL UNIVERSITY OF THE PHILIPPINES-TAGUIG";
+      const universityX = textStart + (textWidth - pdf.getTextWidth(universityName)) / 2 - 5;
+      pdf.text(universityName, universityX, 20);
+      
+      // Program name
+      pdf.setFontSize(11);
+      const program = "BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY";
+      const programX = textStart + (textWidth - pdf.getTextWidth(program)) / 2 - 5;
+      pdf.text(program, programX, 27);
+      
+      // Address
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      const address = "Km. 14 East Service Road, Western Bicutan, Taguig City 1630, Metro Manila, Philippines";
+      const addressX = textStart + (textWidth - pdf.getTextWidth(address)) / 2 - 5;
+      pdf.text(address, addressX, 34);
+      
+      // Horizontal line
+      pdf.setLineWidth(0.6);
+      pdf.setDrawColor(100, 179, 138);  
+      pdf.line(35, lineY, pageWidth - 35, lineY);
+      
+      // Add report title
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Mood and Sleep Quality Report', margin, lineY + 20);
+      
+      // Add mood chart
+      pdf.addImage(moodImgData, 'PNG', centerX, 70, imgWidth, moodImgHeight);
+  
+      // Add sleep quality chart
+      pdf.addImage(sleepImgData, 'PNG', centerX, 70 + moodImgHeight + 20, imgWidth, sleepImgHeight); // Moved upward by reducing the gap
+  
+      pdf.save(`Mood_and_Sleep_Quality_${moodPeriod}.pdf`);
+    }).catch(error => {
+      console.error('Error loading images:', error);
+    });
   };
-
   const moodIcons = {
     relaxed: '/images/relaxed.svg',
     happy: '/images/happy.svg',
@@ -309,6 +372,7 @@ const Statistics = () => {
           opacity: 1,
           border: 0,
         },
+        
         '&.Mui-disabled + .MuiSwitch-track': {
           opacity: 0.5,
         },
@@ -345,7 +409,7 @@ const Statistics = () => {
   return (
     <div style={{ backgroundColor: '#eef0ee', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
       <div ref={pdfIconRef} style={{ position: 'absolute', top: '20px', right: '20px', cursor: 'pointer' }} onClick={handleDownloadPDF}>
-        <PictureAsPdfIcon style={{ color: '#3a3939', fontSize: 24 }} />
+        <DownloadIcon style={{ color: '#6fba94', fontSize: 24,  }} />
       </div>
       <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', marginTop: '20px', width: '90%', maxWidth: '800px', textAlign: 'left', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
         <h2 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '24px' }}>Correlation Analysis</h2>
@@ -372,7 +436,7 @@ const Statistics = () => {
           </div>
         </div>
         <div ref={moodChartRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-          <div style={{ width: '100%', maxWidth: '400px', height: '300px', margin: '0 auto', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ width: '100%', maxWidth: '400px', height: '350px', margin: '0 auto', display: 'flex', justifyContent: 'center' }}>
             <Doughnut data={chartData} options={chartOptions} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
@@ -380,7 +444,8 @@ const Statistics = () => {
               <div key={index} style={{ margin: '0 10px', textAlign: 'center', cursor: 'pointer' }} onClick={() => handleMoodClick(mood)}>
                 <img src={moodIcons[mood.toLowerCase()]} alt={mood} style={{ width: '50px', height: '50px', borderRadius: '50%' }} />
                 <p style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '16px' }}>{mood.charAt(0).toUpperCase() + mood.slice(1)}</p>
-                <p style={{ color: '#6fba94', fontWeight: 'bold', fontSize: '16px' }}>{moodCounts[mood]}</p>
+                <p style={{ color: '#6fba94', fontWeight: 'bold', fontSize: '20px' }}>{moodCounts[mood]}</p>
+              <br></br>
               </div>
             ))}
           </div>

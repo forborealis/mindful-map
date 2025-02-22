@@ -10,20 +10,89 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 
+const challenges = {
+  Monday: {
+    title: 'Gratitude Challenge',
+    description: 'List 5 people/things you are grateful for.',
+    fields: [
+      { placeholder: 'Person/Thing 1', state: 'gratitude1' },
+      { placeholder: 'Person/Thing 2', state: 'gratitude2' },
+      { placeholder: 'Person/Thing 3', state: 'gratitude3' },
+      { placeholder: 'Person/Thing 4', state: 'gratitude4' },
+      { placeholder: 'Person/Thing 5', state: 'gratitude5' },
+    ],
+  },
+  Tuesday: {
+    title: 'Self-Love Challenge',
+    description: 'List 3 things you like about yourself.',
+    fields: [
+      { placeholder: 'Thing 1', state: 'selfLove1' },
+      { placeholder: 'Thing 2', state: 'selfLove2' },
+      { placeholder: 'Thing 3', state: 'selfLove3' },
+    ],
+  },
+  Wednesday: {
+    title: 'Achievement Challenge',
+    description: 'List 3 achievements you are proud of.',
+    fields: [
+      { placeholder: 'Achievement 1', state: 'achievement1' },
+      { placeholder: 'Achievement 2', state: 'achievement2' },
+      { placeholder: 'Achievement 3', state: 'achievement3' },
+    ],
+  },
+  Thursday: {
+    title: 'Kindness Challenge',
+    description: 'List 3 acts of kindness you have done or witnessed.',
+    fields: [
+      { placeholder: 'Act of Kindness 1', state: 'kindness1' },
+      { placeholder: 'Act of Kindness 2', state: 'kindness2' },
+      { placeholder: 'Act of Kindness 3', state: 'kindness3' },
+    ],
+  },
+  Friday: {
+    title: 'Hobby Challenge',
+    description: 'List 3 hobbies or activities you enjoy.',
+    fields: [
+      { placeholder: 'Hobby/Activity 1', state: 'hobby1' },
+      { placeholder: 'Hobby/Activity 2', state: 'hobby2' },
+      { placeholder: 'Hobby/Activity 3', state: 'hobby3' },
+    ],
+  },
+  Saturday: {
+    title: 'Relaxation Challenge',
+    description: 'List 3 ways you relax and unwind.',
+    fields: [
+      { placeholder: 'Relaxation Method 1', state: 'relaxation1' },
+      { placeholder: 'Relaxation Method 2', state: 'relaxation2' },
+      { placeholder: 'Relaxation Method 3', state: 'relaxation3' },
+    ],
+  },
+  Sunday: {
+    title: 'Reflection Challenge',
+    description: 'Reflect on the past week and list 3 things you learned.',
+    fields: [
+      { placeholder: 'Lesson 1', state: 'lesson1' },
+      { placeholder: 'Lesson 2', state: 'lesson2' },
+      { placeholder: 'Lesson 3', state: 'lesson3' },
+    ],
+  },
+};
+
 const JournalEntry = () => {
-  const [entry, setEntry] = useState('');
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [challengeData, setChallengeData] = useState({});
   const navigate = useNavigate();
 
-  const handleGetPrompt = () => {
-    navigate('/journal-prompt');
-  };
+  const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const challenge = challenges[currentDay];
 
   const handleSave = async () => {
     try {
       const formData = new FormData();
-      formData.append('content', entry);
+      formData.append('challenge', JSON.stringify(challenge));
+      formData.append('challengeData', JSON.stringify(challengeData));
       images.forEach((image) => {
         formData.append('images', image);
       });
@@ -64,6 +133,19 @@ const JournalEntry = () => {
     navigate('/journal-logs');
   };
 
+  const handleWarningModalClose = () => {
+    setShowWarningModal(false);
+  };
+
+  const handleWarningModalProceed = () => {
+    setShowWarningModal(false);
+    handleSave();
+  };
+
+  const handleChallengeInputChange = (field, value) => {
+    setChallengeData((prevData) => ({ ...prevData, [field]: value }));
+  };
+
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -80,14 +162,8 @@ const JournalEntry = () => {
         </div>
       </nav>
       <div className="flex-grow flex items-center justify-center p-4">
-        <div className="relative w-full max-w-4xl">
+        <div className="relative w-full max-w-4xl bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between mb-4">
-            <button
-              onClick={handleGetPrompt}
-              className="bg-[#64aa86] text-white font-bold py-2 px-6 rounded-full"
-            >
-              Get Prompt
-            </button>
             <button
               onClick={handleSave}
               className="bg-[#64aa86] text-white font-bold py-2 px-6 rounded-full"
@@ -95,13 +171,18 @@ const JournalEntry = () => {
               Save
             </button>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-md h-96"> {/* Increased height */}
-            <textarea
-              className="w-full h-full p-4 border-none outline-none resize-none"
-              placeholder="Journal entry..."
-              value={entry}
-              onChange={(e) => setEntry(e.target.value)}
-            />
+          <div className="mb-4">
+            <h2 className="text-xl font-bold mb-2">{challenge.title}</h2>
+            <p className="mb-4">{challenge.description}</p>
+            {challenge.fields.map((field) => (
+              <textarea
+                key={field.state}
+                className="w-full p-4 border border-gray-300 rounded-lg mb-4"
+                placeholder={field.placeholder}
+                value={challengeData[field.state] || ''}
+                onChange={(e) => handleChallengeInputChange(field.state, e.target.value)}
+              />
+            ))}
           </div>
           <input
             type="file"
@@ -113,17 +194,17 @@ const JournalEntry = () => {
           />
           <label htmlFor="image-upload">
             <ImageIcon
-              className="absolute bottom-4 right-4 text-[#64aa86] cursor-pointer"
+              className="text-[#64aa86] cursor-pointer"
               style={{ fontSize: 40 }}
             />
           </label>
-          <div className="absolute bottom-4 left-4 flex space-x-2">
+          <div className="flex space-x-2 mt-4">
             {images.map((image, index) => (
               <img
                 key={index}
                 src={URL.createObjectURL(image)}
                 alt={`upload-${index}`}
-                className="w-44 h-32 object-cover cursor-pointer rounded-lg"
+                className="w-32 h-32 object-cover cursor-pointer rounded-lg"
                 onClick={() => handleImageClick(image)}
               />
             ))}
@@ -139,6 +220,29 @@ const JournalEntry = () => {
             style={{ fontSize: 40 }}
             onClick={handleCloseModal}
           />
+        </Box>
+      </Modal>
+      <Modal open={showWarningModal} onClose={handleWarningModalClose}>
+        <Box className="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto mt-20">
+          <h2 className="text-xl font-bold mb-4">You are not alone</h2>
+          <p className="mb-4">
+            It looks like your journal entry contains words that may indicate you are feeling down. 
+            Please remember that you are not alone. Speak to trusted friends or family members and seek professional help if you can.
+          </p>
+          <div className="flex justify-end">
+            <button
+              onClick={handleWarningModalClose}
+              className="bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded mr-2"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleWarningModalProceed}
+              className="bg-[#64aa86] text-white font-bold py-2 px-4 rounded"
+            >
+              Proceed
+            </button>
+          </div>
         </Box>
       </Modal>
     </div>

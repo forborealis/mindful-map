@@ -15,7 +15,7 @@ const upload = multer({ storage: storage });
 
 exports.createJournalEntry = async (req, res) => {
   try {
-    const { content, prompt } = req.body;
+    const { content, challenge, challengeData } = req.body;
     let images = [];
 
     if (req.files) {
@@ -30,7 +30,8 @@ exports.createJournalEntry = async (req, res) => {
     const newJournalEntry = new Journal({
       user: req.user._id,
       content,
-      prompt,
+      challenge: JSON.parse(challenge),
+      challengeData: JSON.parse(challengeData),
       images,
     });
 
@@ -68,13 +69,16 @@ exports.getJournalEntryById = async (req, res) => {
 
 exports.updateJournalEntry = async (req, res) => {
   try {
-    const { content } = req.body;
+    const { content, challenge, challengeData } = req.body;
     const journalEntry = await Journal.findById(req.params.id);
     if (!journalEntry || journalEntry.deleted) {
       return res.status(404).json({ message: 'Journal entry not found' });
     }
 
     journalEntry.content = content;
+    journalEntry.challenge = JSON.parse(challenge);
+    journalEntry.challengeData = JSON.parse(challengeData);
+
     if (req.files) {
       const images = await Promise.all(
         req.files.map(async (file) => {
@@ -107,6 +111,5 @@ exports.deleteJournalEntry = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 
 exports.upload = upload;

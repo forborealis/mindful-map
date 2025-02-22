@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Prompt = require('../models/Prompt');
 const MoodLog = require('../models/MoodLog');
+const Forum = require('../models/Forum'); // Assuming you have a Forum model
 const jwt = require("jsonwebtoken");
 
 exports.dashboard = (req, res) => {
@@ -274,5 +275,60 @@ exports.deletePrompt = async (req, res) => {
     res.status(200).json({ message: "Prompt deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting prompt", error });
+  }
+};
+
+exports.getDailyForumEngagement = async (req, res) => {
+  try {
+    const dailyEngagement = await Forum.aggregate([
+      { $unwind: "$discussions" },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$discussions.createdAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const dailyEngagementData = dailyEngagement.map(data => ({
+      date: data._id,
+      count: data.count,
+    }));
+
+    res.status(200).json(dailyEngagementData);
+  } catch (error) {
+    console.error('Error fetching daily forum engagement:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+// New function to get weekly forum engagement
+exports.getWeeklyForumEngagement = async (req, res) => {
+  try {
+    const weeklyEngagement = await Forum.aggregate([
+      { $unwind: "$discussions" },
+      {
+        $group: {
+          _id: { $isoWeek: "$discussions.createdAt" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const weeklyEngagementData = weeklyEngagement.map(data => ({
+      week: data._id,
+      count: data.count,
+    }));
+
+    res.status(200).json(weeklyEngagementData);
+  } catch (error) {
+    console.error('Error fetching weekly forum engagement:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };

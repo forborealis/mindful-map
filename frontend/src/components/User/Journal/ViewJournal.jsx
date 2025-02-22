@@ -10,10 +10,10 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 
 const ViewJournal = () => {
-  const [entry, setEntry] = useState('');
-  const [prompt, setPrompt] = useState('');
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [challenge, setChallenge] = useState(null);
+  const [challengeData, setChallengeData] = useState({});
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -26,9 +26,9 @@ const ViewJournal = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setEntry(response.data.content);
-        setPrompt(response.data.prompt);
         setImages(response.data.images);
+        setChallenge(response.data.challenge);
+        setChallengeData(response.data.challengeData);
       } catch (error) {
         console.error('Error fetching journal entry:', error);
         toast.error('Failed to load journal entry.');
@@ -66,23 +66,31 @@ const ViewJournal = () => {
         </div>
       </nav>
       <div className="flex-grow flex flex-col items-center justify-start p-4"> {/* Adjusted justify-content */}
-        {prompt && <h2 className="text-center text-xl font-bold mb-4">{prompt}</h2>}
         <div className="relative w-full max-w-2xl mt-4"> {/* Added margin-top */}
-          <div className="bg-white p-6 rounded-lg shadow-md h-[30rem]"> {/* Increased height */}
-            <textarea
-              className="w-full h-full p-4 border-none outline-none resize-none"
-              placeholder="Journal entry..."
-              value={entry}
-              readOnly
-            />
-          </div>
+          {challenge && (
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-xl font-bold mb-4">{challenge.title}</h2>
+              <p className="mb-4">{challenge.description}</p>
+              {challenge.fields.map((field, index) => (
+                <div key={field.state}>
+                  <textarea
+                    className="w-full p-4 border-none outline-none resize-none mb-4"
+                    placeholder={field.placeholder}
+                    value={challengeData[field.state] || ''}
+                    readOnly
+                  />
+                  {index < challenge.fields.length - 1 && <hr className="border-t border-gray-300 mb-4" />}
+                </div>
+              ))}
+            </div>
+          )}
           <div className="absolute bottom-4 right-4 flex space-x-2">
             {images.map((image, index) => (
               <img
                 key={index}
                 src={image}
                 alt={`upload-${index}`}
-                className="w-40 h-36 object-cover rounded-lg cursor-pointer"
+                className="w-40 h-24 object-cover rounded-lg cursor-pointer"
                 onClick={() => handleImageClick(image)}
               />
             ))}

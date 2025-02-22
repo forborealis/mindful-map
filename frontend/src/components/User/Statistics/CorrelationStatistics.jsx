@@ -105,16 +105,16 @@ const CorrelationStatistics = () => {
     if (!token) {
       throw new Error('No token found');
     }
-
+  
     const startOfMonth = moment().startOf('month');
     const endOfMonth = moment().endOf('month');
     const weeks = [];
-
+  
     for (let weekStart = startOfMonth.clone(); weekStart.isBefore(endOfMonth); weekStart.add(1, 'weeks')) {
       const weekEnd = weekStart.clone().endOf('isoWeek');
-      weeks.push({ startOfWeek: weekStart.clone(), endOfWeek: weekEnd.clone() });
+      weeks.push({ startOfWeek: weekStart.clone().startOf('isoWeek'), endOfWeek: weekEnd.clone().endOf('isoWeek') });
     }
-
+  
     const monthlyData = await Promise.all(weeks.map(async ({ startOfWeek, endOfWeek }) => {
       const response = await axios.get('http://localhost:5000/api/weekly-correlation-statistics', {
         headers: {
@@ -127,9 +127,9 @@ const CorrelationStatistics = () => {
       });
       return response.data;
     }));
-
+  
     setMonthlyData(monthlyData);
-
+  
     const compareMoods = (current, previous) => {
       const moodValues = {
         relaxed: 5,
@@ -139,27 +139,100 @@ const CorrelationStatistics = () => {
         sad: 1,
         angry: 0
       };
-
+  
       const currentMoodValue = current && current.correlationMood ? moodValues[current.correlationMood.toLowerCase()] || 0 : 0;
       const previousMoodValue = previous && previous.correlationMood ? moodValues[previous.correlationMood.toLowerCase()] || 0 : 0;
-
+  
       const percentageChange = ((currentMoodValue - previousMoodValue) / 5) * 100;
       return percentageChange;
     };
-
+  
+    const computeSleepQuality = (weekData) => {
+      if (!weekData || weekData.length === 0) return 'No sleep data';
+  
+      const sleepQualityCount = {
+        'No Sleep': 0,
+        'Poor Sleep': 0,
+        'Medium Sleep': 0,
+        'Good Sleep': 0
+      };
+  
+      weekData.forEach(result => {
+        if (result.sleepQuality && result.sleepQuality in sleepQualityCount) {
+          sleepQualityCount[result.sleepQuality]++;
+        }
+      });
+  
+      console.log('Sleep Quality Count:', sleepQualityCount);
+  
+      const totalSleepLogs = Object.values(sleepQualityCount).reduce((a, b) => a + b, 0);
+      if (totalSleepLogs === 0) return 'No sleep data';
+  
+      const poorSleepLogs = sleepQualityCount['No Sleep'] + sleepQualityCount['Poor Sleep'];
+      const mediumSleepLogs = sleepQualityCount['Medium Sleep'];
+      const goodSleepLogs = sleepQualityCount['Good Sleep'];
+  
+      console.log('Total Sleep Logs:', totalSleepLogs);
+      console.log('Poor Sleep Logs:', poorSleepLogs);
+      console.log('Medium Sleep Logs:', mediumSleepLogs);
+      console.log('Good Sleep Logs:', goodSleepLogs);
+  
+      const poorSleepPercentage = ((poorSleepLogs / totalSleepLogs) * 100).toFixed(2);
+      const mediumSleepPercentage = ((mediumSleepLogs / totalSleepLogs) * 100).toFixed(2);
+      const goodSleepPercentage = ((goodSleepLogs / totalSleepLogs) * 100).toFixed(2);
+  
+      console.log('Poor Sleep Percentage:', poorSleepPercentage);
+      console.log('Medium Sleep Percentage:', mediumSleepPercentage);
+      console.log('Good Sleep Percentage:', goodSleepPercentage);
+  
+      const sleepQualityResults = [
+        { quality: 'Poor', percentage: poorSleepPercentage, count: poorSleepLogs },
+        { quality: 'Medium', percentage: mediumSleepPercentage, count: mediumSleepLogs },
+        { quality: 'Good', percentage: goodSleepPercentage, count: goodSleepLogs }
+      ];
+  
+      const topSleepQuality = sleepQualityResults.reduce((prev, current) => (prev.count > current.count ? prev : current));
+    //   return `${topSleepQuality.percentage}% of sleep this week is ${topSleepQuality.quality} Quality`;
+    };
+  
     const doc = new jsPDF();
-    doc.text('Monthly Correlation Statistics', 14, 16);
-    doc.autoTable({
-      head: [['Week', 'Mood Statistics', 'Sleep Quality', 'Weekly Comparison']],
-      body: monthlyData.map((weekData, index) => {
-        const weekStart = weeks[index].startOfWeek.format('MMMM D');
-        const weekEnd = weeks[index].endOfWeek.format('D, YYYY');
-        const moodStatistics = weekData.map(result => result.correlationMood ? `${result.correlationMood} mood is (${result.correlationValue}%) linked to ${result.correlationActivity}` : '').join('\n');
-        const sleepQuality = weekData.map(result => result.sleepQualityValue ? `${result.sleepQualityValue}% of sleep this week is ${result.sleepQuality} Quality` : '').join('\n');
-        const weeklyComparison = index > 0 ? `${compareMoods(weekData[0], monthlyData[index - 1][0]).toFixed(2)}%` : 'N/A';
-        return [`${weekStart} - ${weekEnd}`, moodStatistics, sleepQuality, weeklyComparison];
-      })
+    doc.setFontSize(18);
+    doc.text('Monthly Correlation Statistics', 105, 20, { align: 'center' });
+    doc.addImage('images/logo1.png', 'PNG', 160, 10, 30, 30); // Add logo to the upper right side
+  
+    const tableData = monthlyData.map((weekData, index) => {
+      const weekStart = weeks[index].startOfWeek.format('MMMM D');
+      const weekEnd = weeks[index].endOfWeek.format('MMMM D, YYYY');
+      const weekRange = `${weekStart} - ${weekEnd}`;
+  
+      const moodStat = weekData.length > 0 && weekData[0].correlationMood
+        ? `${weekData[0].correlationMood} mood is (${weekData[0].correlationValue}%) linked to ${weekData[0].correlationActivity}`
+        : 'No mood data';
+  
+      const sleepQuality = computeSleepQuality(weekData);
+  
+      const previousWeekData = index > 0 ? monthlyData[index - 1] : null;
+      const weeklyComparison = previousWeekData && weekData.length > 0 && previousWeekData.length > 0
+        ? compareMoods(weekData[0], previousWeekData[0]) > 0
+          ? `Mood improved by ${compareMoods(weekData[0], previousWeekData[0]).toFixed(2)}% since last week`
+          : `Mood worsened by ${Math.abs(compareMoods(weekData[0], previousWeekData[0])).toFixed(2)}% since last week`
+        : 'No comparison data';
+  
+      return [weekRange, moodStat, sleepQuality, weeklyComparison];
     });
+  
+    doc.autoTable({
+      startY: 60,
+      head: [['Week', 'Mood Statistics', 'Sleep Quality', 'Weekly Comparison']],
+      body: tableData,
+      styles: {
+        halign: 'center'
+      },
+      headStyles: {
+        halign: 'center'
+      }
+    });
+  
     doc.save('monthly_correlation_statistics.pdf');
   };
 

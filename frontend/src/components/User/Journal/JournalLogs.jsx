@@ -16,6 +16,9 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
+import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
 
 const JournalLogs = () => {
   const [journalEntries, setJournalEntries] = useState([]);
@@ -24,6 +27,7 @@ const JournalLogs = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [challengesAnchorEl, setChallengesAnchorEl] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -118,6 +122,28 @@ const JournalLogs = () => {
     setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)));
   };
 
+  const handleChallengesClick = (event) => {
+    setChallengesAnchorEl(event.currentTarget);
+  };
+
+  const handleChallengesClose = () => {
+    setChallengesAnchorEl(null);
+  };
+
+  const getWeekStartDate = (date) => {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    return new Date(date.setDate(diff));
+  };
+
+  const weekStartDate = getWeekStartDate(new Date());
+  const completedChallenges = journalEntries.filter(entry => {
+    const entryDate = new Date(entry.date);
+    return entry.challenge && entryDate >= weekStartDate;
+  }).length;
+  const totalChallenges = 7; // Assuming there are 7 daily challenges in a week
+  const progress = (completedChallenges / totalChallenges) * 100;
+
   const formattedDate = currentDate.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -127,17 +153,38 @@ const JournalLogs = () => {
     <div className="bg-[#eef0ee] min-h-screen flex flex-col justify-between">
       <div>
         <nav className="bg-white py-4 shadow-md relative">
-          <div className="container mx-auto flex justify-center items-center">
-            <ChevronLeftIcon className="cursor-pointer mx-2" onClick={handlePrevMonth} />
-            <h1 className="text-xl font-bold">{formattedDate}</h1>
-            <ChevronRightIcon className="cursor-pointer mx-2" onClick={handleNextMonth} />
+          <div className="container mx-auto flex justify-between items-center px-4">
+            <div className="flex items-center">
+              <MilitaryTechIcon
+                className="cursor-pointer"
+                style={{ color: '#6fba94', fontSize: 30 }}
+                onClick={handleChallengesClick}
+              />
+              <Menu
+                anchorEl={challengesAnchorEl}
+                open={Boolean(challengesAnchorEl)}
+                onClose={handleChallengesClose}
+              >
+                <Box sx={{ width: '100%', padding: '10px' }}>
+                  <LinearProgress variant="determinate" value={progress} sx={{ height: 10, borderRadius: 5, backgroundColor: '#e0e0e0', '& .MuiLinearProgress-bar': { backgroundColor: '#6fba94' } }} />
+                </Box>
+                <MenuItem>
+                  {completedChallenges}/{totalChallenges} Days Completed
+                </MenuItem>
+              </Menu>
+            </div>
+            <div className="flex items-center justify-center w-full">
+              <ChevronLeftIcon className="cursor-pointer mx-2" onClick={handlePrevMonth} />
+              <h1 className="text-xl font-bold">{formattedDate}</h1>
+              <ChevronRightIcon className="cursor-pointer mx-2" onClick={handleNextMonth} />
+            </div>
+            <button
+              onClick={handleAddClick}
+              className="absolute top-2 right-4 bg-[#6fba94] text-white rounded-full p-2 shadow-md"
+            >
+              <AddIcon />
+            </button>
           </div>
-          <button
-            onClick={handleAddClick}
-            className="absolute top-2 right-4 bg-[#6fba94] text-white rounded-full p-2 shadow-md"
-          >
-            <AddIcon />
-          </button>
         </nav>
         <div className="relative p-4 mt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -158,7 +205,11 @@ const JournalLogs = () => {
                   })}
                 </div>
                 <div className="mt-2 cursor-pointer" onClick={() => handleJournalClick(entry._id)}>
-                  {entry.content.split(' ').slice(0, 20).join(' ')}...
+                  <h2 className="text-xl font-bold mb-2">{entry.challenge?.title || 'No Challenge'}</h2>
+                  <p className="text-gray-700 mb-2">{entry.challenge?.description || 'No Description'}</p>
+                  {entry.challengeData && Object.values(entry.challengeData).map((text, index) => (
+                    <p key={index} className="text-gray-700">{index + 1}. {text}</p>
+                  ))}
                 </div>
                 <div className="absolute bottom-4 right-4 flex space-x-2">
                   {entry.images.map((image, index) => (
