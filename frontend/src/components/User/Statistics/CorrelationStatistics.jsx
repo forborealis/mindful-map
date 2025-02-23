@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DownloadIcon from '@mui/icons-material/Download';
 import moment from 'moment';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -150,55 +150,81 @@ const CorrelationStatistics = () => {
     const computeSleepQuality = (weekData) => {
       if (!weekData || weekData.length === 0) return 'No sleep data';
   
-      const sleepQualityCount = {
-        'No Sleep': 0,
-        'Poor Sleep': 0,
-        'Medium Sleep': 0,
-        'Good Sleep': 0
-      };
-  
-      weekData.forEach(result => {
-        if (result.sleepQuality && result.sleepQuality in sleepQualityCount) {
-          sleepQualityCount[result.sleepQuality]++;
+      const sleepQualityCount = weekData.reduce((acc, result) => {
+        if (result.sleepQuality) {
+          acc[result.sleepQuality] = (acc[result.sleepQuality] || 0) + 1;
         }
-      });
-  
-      console.log('Sleep Quality Count:', sleepQualityCount);
+        return acc;
+      }, {});
   
       const totalSleepLogs = Object.values(sleepQualityCount).reduce((a, b) => a + b, 0);
       if (totalSleepLogs === 0) return 'No sleep data';
   
-      const poorSleepLogs = sleepQualityCount['No Sleep'] + sleepQualityCount['Poor Sleep'];
-      const mediumSleepLogs = sleepQualityCount['Medium Sleep'];
-      const goodSleepLogs = sleepQualityCount['Good Sleep'];
+      const topSleepQuality = Object.keys(sleepQualityCount).reduce((a, b) => sleepQualityCount[a] > sleepQualityCount[b] ? a : b);
   
-      console.log('Total Sleep Logs:', totalSleepLogs);
-      console.log('Poor Sleep Logs:', poorSleepLogs);
-      console.log('Medium Sleep Logs:', mediumSleepLogs);
-      console.log('Good Sleep Logs:', goodSleepLogs);
-  
-      const poorSleepPercentage = ((poorSleepLogs / totalSleepLogs) * 100).toFixed(2);
-      const mediumSleepPercentage = ((mediumSleepLogs / totalSleepLogs) * 100).toFixed(2);
-      const goodSleepPercentage = ((goodSleepLogs / totalSleepLogs) * 100).toFixed(2);
-  
-      console.log('Poor Sleep Percentage:', poorSleepPercentage);
-      console.log('Medium Sleep Percentage:', mediumSleepPercentage);
-      console.log('Good Sleep Percentage:', goodSleepPercentage);
-  
-      const sleepQualityResults = [
-        { quality: 'Poor', percentage: poorSleepPercentage, count: poorSleepLogs },
-        { quality: 'Medium', percentage: mediumSleepPercentage, count: mediumSleepLogs },
-        { quality: 'Good', percentage: goodSleepPercentage, count: goodSleepLogs }
-      ];
-  
-      const topSleepQuality = sleepQualityResults.reduce((prev, current) => (prev.count > current.count ? prev : current));
-    //   return `${topSleepQuality.percentage}% of sleep this week is ${topSleepQuality.quality} Quality`;
+      return `Most occurring sleep quality this week is ${topSleepQuality}`;
     };
   
     const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text('Monthly Correlation Statistics', 105, 20, { align: 'center' });
-    doc.addImage('images/logo1.png', 'PNG', 160, 10, 30, 30); // Add logo to the upper right side
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const logoWidth = 25;
+    const logoHeight = 25;
+    const lineY = 42;
+  
+    const tupLogo = new Image();
+    const rightLogo = new Image();
+    tupLogo.src = '/images/tup.png';
+    rightLogo.src = '/images/logo.png';
+  
+    await Promise.all([
+      new Promise((resolve, reject) => {
+        tupLogo.onload = resolve;
+        tupLogo.onerror = reject;
+      }),
+      new Promise((resolve, reject) => {
+        rightLogo.onload = resolve;
+        rightLogo.onerror = reject;
+      })
+    ]);
+  
+    doc.addImage(tupLogo, 'PNG', margin, 10, logoWidth, logoHeight);
+  
+    const rightLogoX = pageWidth - margin - logoWidth;
+    doc.addImage(rightLogo, 'PNG', rightLogoX, 10, logoWidth, logoHeight);
+  
+    const textStart = margin + logoWidth + 10;
+    const textWidth = rightLogoX - textStart;
+  
+    // University name
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    const universityName = "TECHNOLOGICAL UNIVERSITY OF THE PHILIPPINES-TAGUIG";
+    const universityX = textStart + (textWidth - doc.getTextWidth(universityName)) / 2 - 5;
+    doc.text(universityName, universityX, 20);
+  
+    // Program name
+    doc.setFontSize(11);
+    const program = "BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY";
+    const programX = textStart + (textWidth - doc.getTextWidth(program)) / 2 - 5;
+    doc.text(program, programX, 27);
+  
+    // Address
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    const address = "Km. 14 East Service Road, Western Bicutan, Taguig City 1630, Metro Manila, Philippines";
+    const addressX = textStart + (textWidth - doc.getTextWidth(address)) / 2 - 5;
+    doc.text(address, addressX, 34);
+  
+    // Horizontal line
+    doc.setLineWidth(0.6);
+    doc.setDrawColor(100, 179, 138);
+    doc.line(35, lineY, pageWidth - 35, lineY);
+  
+    // Add report title
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Monthly Correlation Statistics', margin, lineY + 20);
   
     const tableData = monthlyData.map((weekData, index) => {
       const weekStart = weeks[index].startOfWeek.format('MMMM D');
@@ -222,7 +248,7 @@ const CorrelationStatistics = () => {
     });
   
     doc.autoTable({
-      startY: 60,
+      startY: 80, // Adjusted to bring the table lower on the page
       head: [['Week', 'Mood Statistics', 'Sleep Quality', 'Weekly Comparison']],
       body: tableData,
       styles: {
@@ -239,7 +265,7 @@ const CorrelationStatistics = () => {
   return (
     <div style={{ backgroundColor: '#eef0ee', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
-        <PictureAsPdfIcon className="cursor-pointer" onClick={generateMonthlyReport} style={{ position: 'absolute', right: '10px', top: '10px' }} />
+        <DownloadIcon className="cursor-pointer" onClick={generateMonthlyReport} style={{ position: 'absolute', right: '10px', top: '10px', color: '#6fba94' }} />
         {hasPrevWeek && (
           <ChevronLeftIcon className="cursor-pointer" onClick={handlePrevWeek} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
         )}
