@@ -21,6 +21,11 @@ const challenges = {
       { placeholder: 'Person/Thing 4', state: 'gratitude4' },
       { placeholder: 'Person/Thing 5', state: 'gratitude5' },
     ],
+    recommendations: [
+      'Family', 'Good food', 'A warm blanket', 'An affectionate pet', 'Friends', 'Health', 'Nature', 'A good book',
+      'Sunshine', 'A cozy home', 'Music', 'Laughter', 'Clean water', 'Education', 'A comfortable bed', 'Technology',
+      'Art', 'Freedom', 'Love', 'Opportunities', 'Happiness', 'Peace'
+    ]
   },
   Tuesday: {
     title: 'Self-Love Challenge',
@@ -30,6 +35,11 @@ const challenges = {
       { placeholder: 'Thing 2', state: 'selfLove2' },
       { placeholder: 'Thing 3', state: 'selfLove3' },
     ],
+    recommendations: [
+      'Kindness', 'Creativity', 'Resilience', 'Sense of humor', 'Empathy', 'Intelligence', 'Patience', 'Determination',
+      'Honesty', 'Courage', 'Generosity', 'Adaptability', 'Confidence', 'Optimism', 'Loyalty', 'Humility',
+      'Compassion', 'Curiosity', 'Discipline', 'Positivity'
+    ]
   },
   Wednesday: {
     title: 'Achievement Challenge',
@@ -39,6 +49,12 @@ const challenges = {
       { placeholder: 'Achievement 2', state: 'achievement2' },
       { placeholder: 'Achievement 3', state: 'achievement3' },
     ],
+    recommendations: [
+      'Graduation', 'Job promotion', 'Learning a new skill', 'Helping others', 'Personal growth', 'Fitness goals',
+      'Creative projects', 'Overcoming challenges', 'Travel experiences', 'Building relationships', 'Starting a business',
+      'Volunteering', 'Public speaking', 'Writing a book', 'Completing a marathon', 'Financial independence',
+      'Raising a family', 'Mentoring others', 'Achieving work-life balance', 'Winning an award'
+    ]
   },
   Thursday: {
     title: 'Kindness Challenge',
@@ -48,6 +64,13 @@ const challenges = {
       { placeholder: 'Act of Kindness 2', state: 'kindness2' },
       { placeholder: 'Act of Kindness 3', state: 'kindness3' },
     ],
+    recommendations: [
+      'Helping a neighbor', 'Volunteering', 'Donating to charity', 'Listening to someone', 'Complimenting others',
+      'Sharing a meal', 'Supporting a friend', 'Random acts of kindness', 'Paying it forward', 'Offering a ride',
+      'Babysitting for free', 'Helping with groceries', 'Writing a thank-you note', 'Visiting the elderly',
+      'Cleaning up litter', 'Donating clothes', 'Helping with homework', 'Offering a smile', 'Giving directions',
+      'Planting a tree'
+    ]
   },
   Friday: {
     title: 'Hobby Challenge',
@@ -57,6 +80,11 @@ const challenges = {
       { placeholder: 'Hobby/Activity 2', state: 'hobby2' },
       { placeholder: 'Hobby/Activity 3', state: 'hobby3' },
     ],
+    recommendations: [
+      'Reading', 'Gardening', 'Cooking', 'Painting', 'Hiking', 'Playing an instrument', 'Writing', 'Photography',
+      'Dancing', 'Knitting', 'Fishing', 'Cycling', 'Traveling', 'Bird watching', 'Pottery', 'Scrapbooking',
+      'Woodworking', 'Yoga', 'Gaming', 'Swimming'
+    ]
   },
   Saturday: {
     title: 'Relaxation Challenge',
@@ -66,6 +94,11 @@ const challenges = {
       { placeholder: 'Relaxation Method 2', state: 'relaxation2' },
       { placeholder: 'Relaxation Method 3', state: 'relaxation3' },
     ],
+    recommendations: [
+      'Meditation', 'Reading a book', 'Taking a bath', 'Listening to music', 'Walking in nature', 'Yoga', 'Watching a movie',
+      'Journaling', 'Deep breathing', 'Aromatherapy', 'Stretching', 'Napping', 'Drawing', 'Gardening', 'Cooking',
+      'Spending time with pets', 'Crafting', 'Playing a musical instrument', 'Practicing mindfulness', 'Stargazing'
+    ]
   },
   Sunday: {
     title: 'Reflection Challenge',
@@ -75,6 +108,11 @@ const challenges = {
       { placeholder: 'Lesson 2', state: 'lesson2' },
       { placeholder: 'Lesson 3', state: 'lesson3' },
     ],
+    recommendations: [
+      'Patience', 'Gratitude', 'Self-awareness', 'Empathy', 'Time management', 'Problem-solving', 'Communication',
+      'Adaptability', 'Resilience', 'Forgiveness', 'Mindfulness', 'Teamwork', 'Leadership', 'Conflict resolution',
+      'Critical thinking', 'Decision making', 'Stress management', 'Goal setting', 'Self-discipline', 'Work-life balance'
+    ]
   },
 };
 
@@ -146,6 +184,27 @@ const JournalEntry = () => {
     setChallengeData((prevData) => ({ ...prevData, [field]: value }));
   };
 
+  const handleRecommendationClick = (field, recommendation) => {
+    setChallengeData((prevData) => ({ ...prevData, [field]: recommendation }));
+  };
+
+  const getRecommendations = (field) => {
+    const usedRecommendations = Object.values(challengeData);
+    const availableRecommendations = challenge.recommendations.filter(
+      (rec) => !usedRecommendations.includes(rec)
+    );
+
+    // Ensure each input box has unique recommendations
+    const recommendations = [];
+    for (let i = 0; i < 6; i++) {
+      const randomIndex = Math.floor(Math.random() * availableRecommendations.length);
+      recommendations.push(availableRecommendations[randomIndex]);
+      availableRecommendations.splice(randomIndex, 1);
+    }
+
+    return recommendations;
+  };
+
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -161,7 +220,7 @@ const JournalEntry = () => {
           <div></div> {/* Placeholder for alignment */}
         </div>
       </nav>
-      <div className="flex-grow flex items-center justify-center p-4">
+      <div className="flex-grow flex items-center justify-center p-4 mb-16"> {/* Added margin-bottom */}
         <div className="relative w-full max-w-4xl bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between mb-4">
             <button
@@ -175,13 +234,25 @@ const JournalEntry = () => {
             <h2 className="text-xl font-bold mb-2">{challenge.title}</h2>
             <p className="mb-4">{challenge.description}</p>
             {challenge.fields.map((field) => (
-              <textarea
-                key={field.state}
-                className="w-full p-4 border border-gray-300 rounded-lg mb-4"
-                placeholder={field.placeholder}
-                value={challengeData[field.state] || ''}
-                onChange={(e) => handleChallengeInputChange(field.state, e.target.value)}
-              />
+              <div key={field.state} className="mb-4">
+                <textarea
+                  className="w-full p-4 border border-gray-300 rounded-lg mb-2"
+                  placeholder={field.placeholder}
+                  value={challengeData[field.state] || ''}
+                  onChange={(e) => handleChallengeInputChange(field.state, e.target.value)}
+                />
+                <div className="flex flex-wrap gap-2">
+                  {getRecommendations(field.state).map((recommendation, index) => (
+                    <span
+                      key={index}
+                      className="bg-[#64aa86] text-white px-3 py-1 rounded-full cursor-pointer"
+                      onClick={() => handleRecommendationClick(field.state, recommendation)}
+                    >
+                      {recommendation}
+                    </span>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
           <input
