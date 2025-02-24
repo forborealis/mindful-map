@@ -1,6 +1,6 @@
-# Mood and Activity Tracker  
+# Mindful Map
 
-A mood and activity tracker system that allows users to understand the relationship between their daily moods and the activities they engage in.  
+A system with a mood and activity tracker that allows users to understand the relationship between their daily moods and the activities they engage in.  
 
 ## Key Features  
 - Mood and Activity Tracking  
