@@ -5,6 +5,7 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 
 const songs = [
   { name: 'Boba Date', artist: 'Stream Cafe', file: 'bobadate.mp3' },
@@ -75,6 +76,16 @@ const CalmingMusic = () => {
     audioRef.current.currentTime = (newProgress / 100) * audioRef.current.duration;
   };
 
+  const handleDownload = () => {
+    const currentSong = songs[currentSongIndex];
+    const link = document.createElement('a');
+    link.href = `/music/${currentSong.file}`;
+    link.download = `${currentSong.name}.mp3`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center relative"
@@ -113,7 +124,7 @@ const CalmingMusic = () => {
           </div>
         </div>
         <div className="flex items-center justify-center space-x-2">
-          <VolumeDownIcon style={{ color: 'white' }} />
+          <VolumeDownIcon style={{ color: '#8d58a6' }} />
           <input
             type="range"
             min="0"
@@ -124,7 +135,14 @@ const CalmingMusic = () => {
             className="cursor-pointer"
             style={{ accentColor: 'white' }}
           />
-          <VolumeUpIcon style={{ color: 'white' }} />
+          <VolumeUpIcon style={{ color: '#8d58a6' }} />
+        </div>
+        <div className="flex items-center justify-end mt-4">
+          <DownloadForOfflineIcon
+            className="cursor-pointer"
+            onClick={handleDownload}
+            style={{ fontSize: 30, color: '#8d58a6' }}
+          />
         </div>
       </div>
     </div>
