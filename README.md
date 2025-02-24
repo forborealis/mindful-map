@@ -1,15 +1,17 @@
-A mood and activity tracker system which allows users to understand the relationship between their daily moods and the activities that they do.
+# Mood and Activity Tracker  
 
-Key Features
-• Mood and Activity Tracking
-• Correlation Analysis
-• Predictive Analysis
-• Personalized Recommendations
-• Daily Journal Challenges
-• Community Forum
+A mood and activity tracker system that allows users to understand the relationship between their daily moods and the activities they engage in.  
 
-Developed by
-• Hannah Aurora Busto
-• Aminah Malic
-• Angel Galapon
-• Resty Jr Cailao
+## Key Features  
+- Mood and Activity Tracking  
+- Correlation Analysis  
+- Predictive Analysis  
+- Personalized Recommendations  
+- Daily Journal Challenges  
+- Community Forum  
+
+## Developed by  
+- Hannah Aurora Busto  
+- Aminah Malic  
+- Angel Galapon  
+- Resty Jr Cailao  
