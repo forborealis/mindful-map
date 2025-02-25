@@ -18,8 +18,13 @@ exports.postComment = async (req, res) => {
       return res.status(400).json({ message: 'Invalid prompt ID format' });
     }
 
+    // Check for profanity before saving
     const filter = getFilter();
-    const cleanedContent = filter.clean(content); 
+    if (filter.check(content)) {
+      return res.status(400).json({ 
+        message: 'Your comment contains inappropriate language. Please remove any offensive words before posting.'
+      });
+    }
 
     const prompt = await Prompt.findById(promptId);
     if (!prompt) {
@@ -33,7 +38,7 @@ exports.postComment = async (req, res) => {
 
     const newDiscussion = {
       user: userId,
-      content: cleanedContent,
+      content: content, // Using original content since we've already verified it's clean
       createdAt: new Date(),
     };
 

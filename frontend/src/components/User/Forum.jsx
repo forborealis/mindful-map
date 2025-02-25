@@ -26,6 +26,8 @@ const ForumDiscussion = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
+        
+        // Get user data
         const userResponse = await axios.get("http://localhost:5000/api/user", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -33,46 +35,35 @@ const ForumDiscussion = () => {
         });
         setUser(userResponse.data);
         
+        // Get today's prompt - this call will also handle setting isUsed=true on the backend
+        // if a new prompt is selected from the unused pool
         const promptResponse = await axios.get("http://localhost:5000/api/todays-prompt", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         
-        if (!promptResponse.data) {
-          console.error("No prompt data returned");
-          setError("No prompt available for today. Please try again later.");
-          setLoading(false);
-          return;
-        }
-        
-        setTodaysPrompt(promptResponse.data);
-        
-        // Verify that promptResponse.data._id exists and is valid
-        if (!promptResponse.data._id) {
-          console.error("Prompt response missing _id:", promptResponse.data);
-          setError("Invalid prompt data received. Missing ID.");
-          setLoading(false);
-          return;
-        }
-        
-        // Check if prompt ID is valid MongoDB ObjectId
-        if (!promptResponse.data._id.match(/^[0-9a-fA-F]{24}$/)) {
-          console.error("Invalid prompt ID format:", promptResponse.data._id);
-          setError("Invalid prompt ID format.");
-          setLoading(false);
-          return;
-        }
-        
-        const forumResponse = await axios.get(`http://localhost:5000/api/${promptResponse.data._id}`, {
+        // Check if we have a valid prompt response with an ID
+        if (promptResponse.data && promptResponse.data._id) {
+          setTodaysPrompt(promptResponse.data);
+          
+          // Get comments/discussions for this prompt
+          const forumResponse = await axios.get(`http://localhost:5000/api/${promptResponse.data._id}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
+          });
+          
+          if (forumResponse.data && forumResponse.data.discussions) {
+            setComments(forumResponse.data.discussions);
           }
-        );
-        
-        if (forumResponse.data && forumResponse.data.discussions) {
-          setComments(forumResponse.data.discussions);
+        } else if (promptResponse.data && promptResponse.data.message) {
+          // Handle case where we get a message about no prompts being available
+          setTodaysPrompt(null);
+          console.log(promptResponse.data.message);
+        } else {
+          // Handle any other case where we don't have a valid prompt
+          setTodaysPrompt(null);
         }
         
         // Fetch past forums with comments
@@ -93,11 +84,20 @@ const ForumDiscussion = () => {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setError("Failed to load data. Please try refreshing the page.");
+        
+        // Provide more specific error messages based on the error
+        if (error.response) {
+          setError(`Server error: ${error.response.status} - ${error.response.data.message || 'Unknown error'}`);
+        } else if (error.request) {
+          setError("Network error. Please check your connection and try again.");
+        } else {
+          setError("Failed to load data. Please try refreshing the page.");
+        }
+        
         setLoading(false);
       }
     };
-
+  
     fetchUserAndPrompt();
   }, []);
 
@@ -295,13 +295,14 @@ const ForumDiscussion = () => {
       }}
     >
       {/* Today's Forum */}
-      <Card sx={{ width: "750px", p: 5, borderRadius: 5, boxShadow: 3, mb: 4 }}>
+      {todaysPrompt && (
+      <Card sx={{ width: "900px", p: 5, borderRadius: 5, boxShadow: 3, mb: 4 }}>
         {/* Prompt Header */}
-        <Typography variant="subtitle1" color="success.main" fontWeight="bold" gutterBottom>
+        <Typography variant="subtitle1" color="success.main" gutterBottom>
           TODAY, {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
         </Typography>
         <Typography variant="h5" fontWeight="bold" gutterBottom>
-          {todaysPrompt ? `Today's Prompt: ${todaysPrompt.question}` : "No prompt available"}
+          Today's Prompt: {todaysPrompt.question}
         </Typography>
 
         {/* Comments Section */}
@@ -336,7 +337,7 @@ const ForumDiscussion = () => {
             variant="contained"
             color="primary"
             onClick={handlePostComment}
-            disabled={!newComment.trim() || !todaysPrompt}
+            disabled={!newComment.trim()}
             sx={{
               textTransform: "none",
               borderRadius: 3,
@@ -349,41 +350,49 @@ const ForumDiscussion = () => {
           </Button>
         </Box>
       </Card>
-      
-      {/* Past Forums */}
-      {pastForums.map((forum, index) => (
-        <Card 
-          key={index} 
+    )}
+    
+    {/* Information message when no prompt is available */}
+    {!todaysPrompt && pastForums.length > 0 && (
+      <Alert severity="info" sx={{ width: "900px", mb: 4 }}>
+        No new prompt is available for today. You can view past discussions below.
+      </Alert>
+    )}
+    
+    {/* Past Forums */}
+    {pastForums.map((forum, index) => (
+      <Card 
+        key={index} 
+        sx={{ 
+          width: "900px", 
+          p: 5, 
+          borderRadius: 5, 
+          boxShadow: 3, 
+          mb: 4 
+        }}
+      >
+        {/* Prompt Header */}
+        <Typography variant="subtitle1" color="success.main" gutterBottom>
+          {new Date(forum.prompt.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+        </Typography>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          {forum.prompt?.question || "Past prompt"}
+        </Typography>
+
+        {/* Comments Section */}
+        <Stack 
+          spacing={2} 
+          mt={3} 
           sx={{ 
-            width: "750px", 
-            p: 5, 
-            borderRadius: 5, 
-            boxShadow: 3, 
-            mb: 4 
+            height: "200px",  
+            overflowY: "auto", 
+            pr: 1
           }}
         >
-          {/* Prompt Header */}
-          <Typography variant="subtitle1" color="text.secondary" fontWeight="bold" gutterBottom>
-            {new Date(forum.prompt.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-          </Typography>
-          <Typography variant="h5" fontWeight="bold" gutterBottom>
-            {forum.prompt?.question || "Past prompt"}
-          </Typography>
-
-          {/* Comments Section */}
-          <Stack 
-            spacing={2} 
-            mt={3} 
-            sx={{ 
-              height: "200px",  
-              overflowY: "auto", 
-              pr: 1
-            }}
-          >
-            {renderComments(forum.discussions)}
-          </Stack>
-        </Card>
-      ))}
+          {renderComments(forum.discussions)}
+        </Stack>
+      </Card>
+    ))}
       
       {/* Feedback Snackbar */}
       <Snackbar
