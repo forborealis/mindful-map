@@ -3,6 +3,7 @@ const Prompt = require('../models/Prompt');
 const MoodLog = require('../models/MoodLog');
 const Forum = require('../models/Forum'); // Assuming you have a Forum model
 const jwt = require("jsonwebtoken");
+const mongoose = require('mongoose');
 
 exports.dashboard = (req, res) => {
   res.status(200).json({
@@ -163,6 +164,27 @@ exports.getUsers = async (req, res) => {
     res.json(usersWithStatus);
   } catch (error) {
     res.status(500).json({ message: "Error fetching users", error });
+  }
+};
+
+exports.getUserMoodLogs = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    // Validate that userId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+    
+    // Find mood logs for the specified user
+    const moodLogs = await MoodLog.find({ user: userId })
+      .sort({ date: -1 }) // Sort by date, newest first
+      .select('date mood activities social health sleepQuality');
+    
+    res.json(moodLogs);
+  } catch (error) {
+    console.error("Error fetching user mood logs:", error);
+    res.status(500).json({ message: "Error fetching mood logs", error: error.message });
   }
 };
 
