@@ -4,10 +4,10 @@ import Navbar from './Navbar';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import BlockIcon from '@mui/icons-material/Block';
-import ForumIcon from '@mui/icons-material/Forum'; // Import ForumIcon
-import DownloadIcon from '@mui/icons-material/Download'; // Import DownloadIcon
+import ForumIcon from '@mui/icons-material/Forum';
+import DownloadIcon from '@mui/icons-material/Download';
 import axios from 'axios';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -19,12 +19,13 @@ const Dashboard = () => {
   const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [inactiveUsersCount, setInactiveUsersCount] = useState(0);
   const [dailyEngagementData, setDailyEngagementData] = useState([]);
-  const [weeklyEngagementData, setWeeklyEngagementData] = useState([]); // State for weekly engagement data
+  const [weeklyEngagementData, setWeeklyEngagementData] = useState([]);
+  const [dailyMoodLogsData, setDailyMoodLogsData] = useState([]);
+  const [dailyJournalLogsData, setDailyJournalLogsData] = useState([]);
+  const [moodLogsPage, setMoodLogsPage] = useState(0);
 
   const handleLogout = () => {
-    // Clear the token from local storage
     localStorage.removeItem('token');
-    // Redirect to the login page
     navigate('/signin');
   };
 
@@ -100,11 +101,41 @@ const Dashboard = () => {
       }
     };
 
+    const fetchDailyMoodLogs = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/admin/daily-mood-logs', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setDailyMoodLogsData(response.data);
+      } catch (error) {
+        console.error('Error fetching daily mood logs:', error);
+      }
+    };
+
+    const fetchDailyJournalLogs = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/admin/daily-journal-logs', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setDailyJournalLogsData(response.data);
+      } catch (error) {
+        console.error('Error fetching daily journal logs:', error);
+      }
+    };
+
     fetchMonthlyUsers();
     fetchActiveUsers();
     fetchInactiveUsers();
     fetchDailyEngagement();
     fetchWeeklyEngagement();
+    fetchDailyMoodLogs();
+    fetchDailyJournalLogs();
   }, []);
 
   const barChartData = {
@@ -154,6 +185,60 @@ const Dashboard = () => {
   };
 
   const dailyEngagementChartOptions = {
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            return context.raw;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1, // Ensure only whole numbers are displayed
+        },
+      },
+    },
+  };
+
+  const dailyMoodLogsChartData = {
+    labels: dailyMoodLogsData.slice(moodLogsPage * 10, (moodLogsPage + 1) * 10).map(data => data.date),
+    datasets: [
+      {
+        label: 'Mood Logs',
+        data: dailyMoodLogsData.slice(moodLogsPage * 10, (moodLogsPage + 1) * 10).map(data => data.count),
+        borderColor: '#64aa86',
+        backgroundColor: 'rgba(100, 170, 134, 0.2)',
+        fill: true,
+        tension: 0.4, // Make the line wavy
+      },
+    ],
+  };
+
+  const dailyJournalLogsChartData = {
+    labels: dailyJournalLogsData.map(data => data.date),
+    datasets: [
+      {
+        label: 'Journal Logs',
+        data: dailyJournalLogsData.map(data => data.count),
+        borderColor: '#64aa86',
+        backgroundColor: 'rgba(100, 170, 134, 0.2)',
+        fill: true,
+        tension: 0.4, // Make the line wavy
+      },
+      
+    ],
+    
+  };
+
+  const lineChartOptions = {
     maintainAspectRatio: false,
     plugins: {
       legend: {
@@ -256,7 +341,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#eef0ee]">
+    <div className="flex min-h-screen bg-[#F8FAF9]">
       {/* Sidebar */}
       <div className="w-1/5">
         <Navbar />
@@ -264,29 +349,29 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="flex-grow p-6">
-        <div className="grid grid-cols-4 gap-4"> {/* Reduced gap to make containers closer */}
-          <div className="bg-[#eef0ee] border border-[#6fba94] rounded-lg p-4 flex items-center h-36 w-72">
+        <div className="grid grid-cols-4 gap-4">
+          <div className="bg-[#F8FAF9] border border-[#6fba94] rounded-lg p-4 flex items-center h-36 w-72">
             <ShowChartIcon className="text-[#64aa86] mr-4" style={{ fontSize: '48px' }} />
             <div>
               <h2 className="text-[#292f33] font-bold text-xl">Total Monthly Users</h2>
               <p className="text-[#64aa86] font-bold text-2xl">{monthlyUsers}</p>
             </div>
           </div>
-          <div className="bg-[#eef0ee] border border-[#6fba94] rounded-lg p-4 flex items-center h-36 w-72">
+          <div className="bg-[#F8FAF9] border border-[#6fba94] rounded-lg p-4 flex items-center h-36 w-72">
             <TaskAltIcon className="text-[#64aa86] mr-4" style={{ fontSize: '48px' }} />
             <div>
               <h2 className="text-[#292f33] font-bold text-xl">Active Users</h2>
               <p className="text-[#64aa86] font-bold text-2xl">{activeUsersCount}</p>
             </div>
           </div>
-          <div className="bg-[#eef0ee] border border-[#6fba94] rounded-lg p-4 flex items-center h-36 w-72">
+          <div className="bg-[#F8FAF9] border border-[#6fba94] rounded-lg p-4 flex items-center h-36 w-72">
             <BlockIcon className="text-[#64aa86] mr-4" style={{ fontSize: '48px' }} />
             <div>
               <h2 className="text-[#292f33] font-bold text-xl">Inactive Users</h2>
               <p className="text-[#64aa86] font-bold text-2xl">{inactiveUsersCount}</p>
             </div>
           </div>
-          <div className="bg-[#eef0ee] border border-[#6fba94] rounded-lg p-4 flex items-center h-36 w-72">
+          <div className="bg-[#F8FAF9] border border-[#6fba94] rounded-lg p-4 flex items-center h-36 w-72">
             <ForumIcon className="text-[#64aa86] mr-4" style={{ fontSize: '48px' }} />
             <div>
               <h2 className="text-[#292f33] font-bold text-xl">Weekly Forum Engagement</h2>
@@ -295,38 +380,72 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Chart Containers */}
-        <div className="grid grid-cols-2 gap-4 mt-6"> {/* Reduced gap to make containers closer */}
-          <div id="monthly-users-chart" className="relative bg-white border border-[#6fba94] rounded-lg p-6 max-w-2xl mx-auto">
-            <h2 className="text-[#292f33] font-bold text-xl mb-4">Monthly Users</h2>
-            <div className="absolute top-2 right-2">
-              <DownloadIcon
-                className="text-[#64aa86] cursor-pointer"
-                style={{ fontSize: '20px' }} // Make the icon smaller
-                onClick={() => generatePDF('monthly-users-chart', 'Monthly Users')}
-              />
-            </div>
-            <div className="h-64">
-              <Bar data={barChartData} options={barChartOptions} />
-            </div>
-          </div>
-          <div id="daily-engagement-chart" className="relative bg-white border border-[#6fba94] rounded-lg p-6 max-w-2xl mx-auto">
-            <h2 className="text-[#292f33] font-bold text-xl mb-4">Daily Forum Engagement</h2>
-            <div className="absolute top-2 right-2">
-              <DownloadIcon
-                className="text-[#64aa86] cursor-pointer"
-                style={{ fontSize: '20px' }} // Make the icon smaller
-                onClick={() => generatePDF('daily-engagement-chart', 'Daily Forum Engagement')}
-              />
-            </div>
-            <div className="h-64">
-              <Bar data={dailyEngagementChartData} options={dailyEngagementChartOptions} />
-            </div>
-          </div>
+    {/* Chart Containers */}
+    <div className="grid grid-cols-2 gap-4 mt-6">
+      <div id="monthly-users-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6 max-w-4xl">
+        <h2 className="text-[#292f33] font-bold text-xl mb-4">Monthly Users</h2>
+        <div className="absolute top-2 right-2">
+          <DownloadIcon
+            className="text-[#64aa86] cursor-pointer"
+            style={{ fontSize: '20px' }}
+            onClick={() => generatePDF('monthly-users-chart', 'Monthly Users')}
+          />
+        </div>
+        <div className="h-64">
+          <Bar data={barChartData} options={barChartOptions} />
+        </div>
+      </div>
+      <div id="daily-engagement-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6 max-w-4xl">
+        <h2 className="text-[#292f33] font-bold text-xl mb-4">Daily Forum Engagement</h2>
+        <div className="absolute top-2 right-2">
+          <DownloadIcon
+            className="text-[#64aa86] cursor-pointer"
+            style={{ fontSize: '20px' }}
+            onClick={() => generatePDF('daily-engagement-chart', 'Daily Forum Engagement')}
+          />
+        </div>
+        <div className="h-64">
+          <Bar data={dailyEngagementChartData} options={dailyEngagementChartOptions} />
         </div>
       </div>
     </div>
-  );
-};
+
+    {/* New Chart Containers */}
+    <div className="flex flex-col items-center mt-6">
+      <div id="daily-mood-logs-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6 w-full max-w-6xl">
+        <h2 className="text-[#292f33] font-bold text-xl mb-4">Daily Mood Logs</h2>
+        <div className="absolute top-2 right-2">
+          <DownloadIcon
+            className="text-[#64aa86] cursor-pointer"
+            style={{ fontSize: '20px' }}
+            onClick={() => generatePDF('daily-mood-logs-chart', 'Daily Mood Logs')}
+          />
+        </div>
+        <div className="h-64">
+          <Line data={dailyMoodLogsChartData} options={lineChartOptions} />
+        </div>
+        <div className="flex justify-center mt-2">
+          <button className="text-[#64aa86] mx-2" onClick={() => setMoodLogsPage(moodLogsPage > 0 ? moodLogsPage - 1 : 0)}>&lt;</button>
+          <button className="text-[#64aa86] mx-2" onClick={() => setMoodLogsPage(moodLogsPage < Math.ceil(dailyMoodLogsData.length / 10) - 1 ? moodLogsPage + 1 : moodLogsPage)}>&gt;</button>
+        </div>
+      </div>
+      <div id="daily-journal-logs-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6 w-full max-w-6xl mt-6">
+        <h2 className="text-[#292f33] font-bold text-xl mb-4">Daily Journal Logs</h2>
+        <div className="absolute top-2 right-2">
+          <DownloadIcon
+            className="text-[#64aa86] cursor-pointer"
+            style={{ fontSize: '20px' }}
+            onClick={() => generatePDF('daily-journal-logs-chart', 'Daily Journal Logs')}
+          />
+        </div>
+        <div className="h-64">
+          <Line data={dailyJournalLogsChartData} options={lineChartOptions} />
+        </div>
+      </div>
+    </div>
+          </div>
+        </div>
+      );
+    };
 
 export default Dashboard;

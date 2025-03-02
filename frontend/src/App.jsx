@@ -37,6 +37,7 @@ import axios from 'axios';
 import Dashboard from './components/Admin/Dashboard';
 import UsersTable from './components/Admin/UsersTable';
 import PromptsTable from './components/Admin/PromptsTable';
+import StatisticsTable from './components/Admin/StatisticsTable';
 
 const useAuth = () => {
   const token = localStorage.getItem('token');
@@ -362,6 +363,14 @@ const App = () => {
           element={
             <AdminPrivateRoute>
               <PromptsTable />
+            </AdminPrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/statistics"
+          element={
+            <AdminPrivateRoute>
+              <StatisticsTable />
             </AdminPrivateRoute>
           }
         />

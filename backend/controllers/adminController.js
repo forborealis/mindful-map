@@ -1,7 +1,9 @@
 const User = require('../models/User');
 const Prompt = require('../models/Prompt');
 const MoodLog = require('../models/MoodLog');
-const Forum = require('../models/Forum'); // Assuming you have a Forum model
+const Forum = require('../models/Forum'); 
+const Correlation = require('../models/Correlation'); 
+const Journal = require('../models/Journal');
 const jwt = require("jsonwebtoken");
 const mongoose = require('mongoose');
 
@@ -351,6 +353,60 @@ exports.getWeeklyForumEngagement = async (req, res) => {
     res.status(200).json(weeklyEngagementData);
   } catch (error) {
     console.error('Error fetching weekly forum engagement:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+
+
+exports.getDailyMoodLogs = async (req, res) => {
+  try {
+    const dailyMoodLogs = await MoodLog.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const dailyMoodLogsData = dailyMoodLogs.map(data => ({
+      date: data._id,
+      count: data.count,
+    }));
+
+    res.status(200).json(dailyMoodLogsData);
+  } catch (error) {
+    console.error('Error fetching daily mood logs:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+exports.getDailyJournalLogs = async (req, res) => {
+  try {
+    const dailyJournalLogs = await Journal.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const dailyJournalLogsData = dailyJournalLogs.map(data => ({
+      date: data._id,
+      count: data.count,
+    }));
+
+    res.status(200).json(dailyJournalLogsData);
+  } catch (error) {
+    console.error('Error fetching daily journal logs:', error);
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };

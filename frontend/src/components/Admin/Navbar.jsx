@@ -16,20 +16,23 @@ import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   Forum as ForumIcon,
-  Gavel as GavelIcon,
   Logout as LogoutIcon,
+  BarChart as BarChartIcon, // Import the BarChart icon for Statistics
 } from "@mui/icons-material";
 
 const drawerWidth = 280;
 
 const theme = createTheme({
+  typography: {
+    fontFamily: 'Nunito, sans-serif', // Ensure Nunito font is used
+  },
   palette: {
     primary: {
       main: "#7BC5A5",
       dark: "#6ab394",
     },
     background: {
-      default: "#f8faf9",
+      default: "#fefefe",
     },
   },
 });
@@ -38,7 +41,7 @@ const menuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/admin/dashboard" },
   { text: "Users", icon: <PeopleIcon />, path: "/admin/users" },
   { text: "Forum", icon: <ForumIcon />, path: "/admin/prompts" },
-  { text: "Moderate", icon: <GavelIcon />, path: "/admin/moderate" },
+  // { text: "Statistics", icon: <BarChartIcon />, path: "/admin/statistics" }, // Add the Statistics page
 ];
 
 const Navbar = () => {
@@ -71,10 +74,11 @@ const Navbar = () => {
           }}
         >
           {/* Sidebar Header */}
-          <Box sx={{ p: 3, borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ p: 3, borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", flexDirection: "column", gap: 1 }}>
             <Typography variant="h6" sx={{ color: "#2d3436", fontWeight: 600 }}>
               Mindful Map Admin
             </Typography>
+            <img src="/images/logo.png" alt="Logo" style={{ width: '100px', height: 'auto', marginTop: '10px' }} /> {/* Add logo image */}
           </Box>
 
           {/* Menu Items */}

@@ -10,6 +10,10 @@ router.get('/inactive-users', authMiddleware, adminMiddleware, adminController.g
 router.get('/users', authMiddleware, adminMiddleware, adminController.getUsers);
 router.get('/user/:userId/moodlogs', authMiddleware, adminMiddleware, adminController.getUserMoodLogs);
 
+// router.get('/statistics/', authMiddleware, adminMiddleware, adminController.getStatistics);
+
+router.get('/daily-mood-logs', authMiddleware, adminMiddleware, adminController.getDailyMoodLogs);
+router.get('/daily-journal-logs', authMiddleware, adminMiddleware, adminController.getDailyJournalLogs);
 router.get('/daily-forum-engagement', adminController.getDailyForumEngagement);
 router.get('/weekly-forum-engagement', adminController.getWeeklyForumEngagement);
 
@@ -20,5 +24,6 @@ router.post("/bulk-delete", authMiddleware, adminMiddleware, adminController.bul
 router.get("/prompts",  authMiddleware, adminMiddleware, adminController.getAllPrompts)
 router.post("/add-prompt",  authMiddleware, adminMiddleware, adminController.addPrompt);
 router.delete("/:id",  authMiddleware, adminMiddleware, adminController.deletePrompt);
+
 
 module.exports = router;
