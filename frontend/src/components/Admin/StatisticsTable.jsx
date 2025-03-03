@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, TextField, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Typography, TextField, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Collapse } from '@mui/material';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Navbar from './Navbar';
 
 const StatisticsTable = () => {
   const [statistics, setStatistics] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const [expandedRows, setExpandedRows] = useState({});
 
   useEffect(() => {
     fetchStatistics();
@@ -17,7 +20,7 @@ const StatisticsTable = () => {
   const fetchStatistics = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:5000/api/admin/statistics", {
+      const response = await axios.get("http://localhost:5000/api/admin/correlation-values", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -33,8 +36,18 @@ const StatisticsTable = () => {
     setSearchText(event.target.value);
   };
 
+  const handleRowClick = (rowId, section) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [rowId]: {
+        ...prev[rowId],
+        [section]: !prev[rowId]?.[section],
+      },
+    }));
+  };
+
   const filteredStatistics = statistics.filter((stat) =>
-    stat.email.toLowerCase().includes(searchText.toLowerCase())
+    stat.user.email.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const handleDownloadPDF = () => {
@@ -94,29 +107,113 @@ const StatisticsTable = () => {
 
       let currentY = lineY + 30;
 
-      doc.autoTable({
-        head: [['Email', 'Correlation Values', 'Correlation Moods', 'Correlation Activities', 'Sleep Quality Values', 'Sleep Qualities', 'Date']],
-        body: filteredStatistics.map((stat) => [
-          stat.email,
-          stat.correlationValues.join(', '),
-          stat.correlationMoods.join(', '),
-          stat.correlationActivities.join(', '),
-          stat.sleepQualityValues.join(', '),
-          stat.sleepQualities.join(', '),
-          new Date(stat.createdAt).toLocaleDateString(),
-        ]),
-        startY: currentY,
-        margin: { left: margin, right: margin },
-        styles: {
-          fontSize: 9,
-          cellPadding: 3,
-        },
-        headStyles: {
-          fillColor: [100, 179, 138],
-          textColor: 255,
-          fontSize: 10,
-          fontStyle: 'bold',
-        },
+      filteredStatistics.forEach((stat) => {
+        doc.autoTable({
+          head: [['Email', 'Date', 'Activities', 'Social', 'Sleep Quality', 'Health', 'Recommendations']],
+          body: [[
+            stat.user.email,
+            new Date(stat.createdAt).toLocaleDateString(),
+            '',
+            '',
+            '',
+            stat.correlationResults[3] ? `${stat.correlationResults[3].healthStatus ? stat.correlationResults[3].healthStatus.charAt(0).toUpperCase() + stat.correlationResults[3].healthStatus.slice(1) : ''}` : '',
+            stat.recommendations ? stat.recommendations.map((rec, index) => `${index + 1}. ${rec}`).join('\n') : '',
+          ]],
+          startY: currentY,
+          margin: { left: margin, right: margin },
+          styles: {
+            fontSize: 9,
+            cellPadding: 3,
+          },
+          headStyles: {
+            fillColor: [100, 179, 138],
+            textColor: 255,
+            fontSize: 10,
+            fontStyle: 'bold',
+          },
+        });
+
+        currentY = doc.autoTable.previous.finalY + 10;
+
+        if (expandedRows[stat._id]?.activities) {
+          doc.autoTable({
+            head: [['Value', 'Mood', 'Activity']],
+            body: [
+              [
+                stat.correlationResults[0]?.correlationValue || '',
+                stat.correlationResults[0]?.correlationMood || '',
+                stat.correlationResults[0]?.correlationActivity || '',
+              ],
+            ],
+            startY: currentY,
+            margin: { left: margin, right: margin },
+            styles: {
+              fontSize: 9,
+              cellPadding: 3,
+            },
+            headStyles: {
+              fillColor: [100, 179, 138],
+              textColor: 255,
+              fontSize: 10,
+              fontStyle: 'bold',
+            },
+          });
+
+          currentY = doc.autoTable.previous.finalY + 10;
+        }
+
+        if (expandedRows[stat._id]?.social) {
+          doc.autoTable({
+            head: [['Value', 'Mood', 'Social']],
+            body: [
+              [
+                stat.correlationResults[1]?.correlationValue || '',
+                stat.correlationResults[1]?.correlationMood || '',
+                stat.correlationResults[1]?.correlationSocial || '',
+              ],
+            ],
+            startY: currentY,
+            margin: { left: margin, right: margin },
+            styles: {
+              fontSize: 9,
+              cellPadding: 3,
+            },
+            headStyles: {
+              fillColor: [100, 179, 138],
+              textColor: 255,
+              fontSize: 10,
+              fontStyle: 'bold',
+            },
+          });
+
+          currentY = doc.autoTable.previous.finalY + 10;
+        }
+
+        if (expandedRows[stat._id]?.sleepQuality) {
+          doc.autoTable({
+            head: [['Value', 'Sleep Quality']],
+            body: [
+              [
+                stat.correlationResults[2]?.sleepQualityValue || '',
+                stat.correlationResults[2]?.sleepQuality || '',
+              ],
+            ],
+            startY: currentY,
+            margin: { left: margin, right: margin },
+            styles: {
+              fontSize: 9,
+              cellPadding: 3,
+            },
+            headStyles: {
+              fillColor: [100, 179, 138],
+              textColor: 255,
+              fontSize: 10,
+              fontStyle: 'bold',
+            },
+          });
+
+          currentY = doc.autoTable.previous.finalY + 10;
+        }
       });
 
       doc.save('statistics.pdf');
@@ -178,12 +275,12 @@ const StatisticsTable = () => {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Correlation Values</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Correlation Moods</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Correlation Activities</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Sleep Quality Values</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Sleep Qualities</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Activities</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Social</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Sleep Quality</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Health</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Recommendations</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -195,15 +292,109 @@ const StatisticsTable = () => {
                   </TableRow>
                 ) : (
                   filteredStatistics.map((stat) => (
-                    <TableRow key={stat.id} hover>
-                      <TableCell>{stat.email}</TableCell>
-                      <TableCell>{stat.correlationValues.join(', ')}</TableCell>
-                      <TableCell>{stat.correlationMoods.join(', ')}</TableCell>
-                      <TableCell>{stat.correlationActivities.join(', ')}</TableCell>
-                      <TableCell>{stat.sleepQualityValues.join(', ')}</TableCell>
-                      <TableCell>{stat.sleepQualities.join(', ')}</TableCell>
-                      <TableCell>{new Date(stat.createdAt).toLocaleDateString()}</TableCell>
-                    </TableRow>
+                    <React.Fragment key={stat._id}>
+                      <TableRow hover>
+                        <TableCell>{stat.user.email}</TableCell>
+                        <TableCell>{new Date(stat.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell onClick={() => handleRowClick(stat._id, 'activities')}>
+                          {expandedRows[stat._id]?.activities ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </TableCell>
+                        <TableCell onClick={() => handleRowClick(stat._id, 'social')}>
+                          {expandedRows[stat._id]?.social ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </TableCell>
+                        <TableCell onClick={() => handleRowClick(stat._id, 'sleepQuality')}>
+                          {expandedRows[stat._id]?.sleepQuality ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </TableCell>
+                        <TableCell>
+                          {stat.correlationResults[3] && (
+                            <>
+                              {stat.correlationResults[3].healthStatus ? stat.correlationResults[3].healthStatus.charAt(0).toUpperCase() + stat.correlationResults[3].healthStatus.slice(1) : ''}
+                            </>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {stat.recommendations && stat.recommendations.map((rec, index) => (
+                            <div key={index}>{index + 1}. {rec}</div>
+                          ))}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell colSpan={7} style={{ paddingBottom: 0, paddingTop: 0 }}>
+                          <Collapse in={expandedRows[stat._id]?.activities} timeout="auto" unmountOnExit>
+                            <Box margin={1}>
+                              <Table size="small" aria-label="activities" sx={{ mb: 2 }}>
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Value</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Mood</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Activity</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {stat.correlationResults[0] && (
+                                    <TableRow>
+                                      <TableCell>{stat.correlationResults[0].correlationValue}</TableCell>
+                                      <TableCell>{stat.correlationResults[0].correlationMood}</TableCell>
+                                      <TableCell>{stat.correlationResults[0].correlationActivity}</TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </Box>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell colSpan={7} style={{ paddingBottom: 0, paddingTop: 0 }}>
+                          <Collapse in={expandedRows[stat._id]?.social} timeout="auto" unmountOnExit>
+                            <Box margin={1}>
+                              <Table size="small" aria-label="social" sx={{ mb: 2 }}>
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Value</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Mood</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Social</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {stat.correlationResults[1] && (
+                                    <TableRow>
+                                      <TableCell>{stat.correlationResults[1].correlationValue}</TableCell>
+                                      <TableCell>{stat.correlationResults[1].correlationMood}</TableCell>
+                                      <TableCell>{stat.correlationResults[1].correlationSocial}</TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </Box>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell colSpan={7} style={{ paddingBottom: 0, paddingTop: 0 }}>
+                          <Collapse in={expandedRows[stat._id]?.sleepQuality} timeout="auto" unmountOnExit>
+                            <Box margin={1}>
+                              <Table size="small" aria-label="sleep quality">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Value</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Sleep Quality</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {stat.correlationResults[2] && (
+                                    <TableRow>
+                                      <TableCell>{stat.correlationResults[2].sleepQualityValue}</TableCell>
+                                      <TableCell>{stat.correlationResults[2].sleepQuality}</TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </Box>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+                    </React.Fragment>
                   ))
                 )}
               </TableBody>

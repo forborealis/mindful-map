@@ -2,7 +2,7 @@ const User = require('../models/User');
 const Prompt = require('../models/Prompt');
 const MoodLog = require('../models/MoodLog');
 const Forum = require('../models/Forum'); 
-const Correlation = require('../models/Correlation'); 
+const CorrelationValue = require('../models/CorrelationValue'); 
 const Journal = require('../models/Journal');
 const jwt = require("jsonwebtoken");
 const mongoose = require('mongoose');
@@ -407,6 +407,16 @@ exports.getDailyJournalLogs = async (req, res) => {
     res.status(200).json(dailyJournalLogsData);
   } catch (error) {
     console.error('Error fetching daily journal logs:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+exports.getCorrelationValues = async (req, res) => {
+  try {
+    const correlationValues = await CorrelationValue.find().populate('user', 'name email');
+    res.status(200).json(correlationValues);
+  } catch (error) {
+    console.error('Error fetching correlation values:', error);
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };

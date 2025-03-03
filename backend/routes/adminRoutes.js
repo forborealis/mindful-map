@@ -21,9 +21,11 @@ router.post("/soft-delete", authMiddleware, adminMiddleware, adminController.sof
 router.post("/reactivate", authMiddleware, adminMiddleware, adminController.reactivate);
 router.post("/bulk-delete", authMiddleware, adminMiddleware, adminController.bulkDelete);
 
-router.get("/prompts",  authMiddleware, adminMiddleware, adminController.getAllPrompts)
+router.get("/prompts",  authMiddleware, adminMiddleware, adminController.getAllPrompts);
 router.post("/add-prompt",  authMiddleware, adminMiddleware, adminController.addPrompt);
 router.delete("/:id",  authMiddleware, adminMiddleware, adminController.deletePrompt);
 
+// New route for fetching correlation values
+router.get('/correlation-values', authMiddleware, adminMiddleware, adminController.getCorrelationValues);
 
 module.exports = router;

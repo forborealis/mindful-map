@@ -41,7 +41,7 @@ const menuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/admin/dashboard" },
   { text: "Users", icon: <PeopleIcon />, path: "/admin/users" },
   { text: "Forum", icon: <ForumIcon />, path: "/admin/prompts" },
-  // { text: "Statistics", icon: <BarChartIcon />, path: "/admin/statistics" }, // Add the Statistics page
+  { text: "Statistics", icon: <BarChartIcon />, path: "/admin/statistics" }, // Add the Statistics page
 ];
 
 const Navbar = () => {

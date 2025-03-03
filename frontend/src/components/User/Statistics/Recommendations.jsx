@@ -11,42 +11,51 @@ import { Chart } from 'chart.js';
 const Recommendations = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { correlationData, sleepQualityData } = location.state;
-  const [recommendations, setRecommendations] = useState([]);
+  const { correlationData, sleepQualityData, recommendations: initialRecommendations } = location.state;
+  const [recommendations, setRecommendations] = useState(initialRecommendations || []);
   const [correlatedMood, setCorrelatedMood] = useState('');
 
   useEffect(() => {
     console.log('Correlation Data:', correlationData); // Debugging log
     console.log('Sleep Quality Data:', sleepQualityData); // Debugging log
+    console.log('Initial Recommendations:', initialRecommendations); // Debugging log
 
-    const fetchRecommendations = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('No token found');
-        }
-
-        const response = await axios.post('http://localhost:5000/api/recommendations', { correlationData: [...correlationData, ...sleepQualityData] }, {
-          headers: {
-            Authorization: `Bearer ${token}`
+    if (!initialRecommendations || initialRecommendations.length === 0) {
+      const fetchRecommendations = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            throw new Error('No token found');
           }
-        });
 
-        console.log('Fetched Recommendations:', response.data); // Debugging log
-        setRecommendations(response.data);
+          const response = await axios.post('http://localhost:5000/api/recommendations', { correlationData: [...correlationData, ...sleepQualityData] }, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
 
-        // Extract the correlated mood from the correlation data
-        const moodResult = correlationData.find(result => result.correlationMood);
-        if (moodResult) {
-          setCorrelatedMood(moodResult.correlationMood);
+          console.log('Fetched Recommendations:', response.data); // Debugging log
+          setRecommendations(response.data);
+
+          // Extract the correlated mood from the correlation data
+          const moodResult = correlationData.find(result => result.correlationMood);
+          if (moodResult) {
+            setCorrelatedMood(moodResult.correlationMood);
+          }
+        } catch (error) {
+          console.error('Error fetching recommendations:', error);
         }
-      } catch (error) {
-        console.error('Error fetching recommendations:', error);
-      }
-    };
+      };
 
-    fetchRecommendations();
-  }, [correlationData, sleepQualityData]);
+      fetchRecommendations();
+    } else {
+      // Extract the correlated mood from the correlation data
+      const moodResult = correlationData.find(result => result.correlationMood);
+      if (moodResult) {
+        setCorrelatedMood(moodResult.correlationMood);
+      }
+    }
+  }, [correlationData, sleepQualityData, initialRecommendations]);
 
   const handleBreathingExerciseClick = () => {
     navigate('/breathing-exercise');

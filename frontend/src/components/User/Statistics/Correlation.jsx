@@ -6,12 +6,14 @@ import 'chart.js/auto';
 import { Doughnut } from 'react-chartjs-2';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Chart } from 'chart.js';
+import moment from 'moment';
 
 const Correlation = () => {
   const [correlationData, setCorrelationData] = useState([]);
   const [socialData, setSocialData] = useState([]);
   const [healthStatus, setHealthStatus] = useState(null);
   const [sleepQualityData, setSleepQualityData] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,16 +32,24 @@ const Correlation = () => {
 
         console.log('Fetched data:', response.data); // Debugging line
 
-        // Assuming the response data contains all types of correlation data
-        const activities = response.data.filter(item => item.correlationActivity && !item.correlationSocial);
-        const social = response.data.filter(item => item.correlationSocial);
-        const sleepQuality = response.data.filter(item => item.sleepQuality);
-        const health = response.data.find(item => item.healthStatus);
+        // Check if response.data is an object with the expected structure
+        if (response.data && response.data.correlationResults && response.data.recommendations) {
+          const { correlationResults, recommendations } = response.data;
 
-        setCorrelationData(activities);
-        setSocialData(social);
-        setSleepQualityData(sleepQuality);
-        setHealthStatus(health ? health.healthStatus : null);
+          // Assuming the correlationResults contains all types of correlation data
+          const activities = correlationResults.filter(item => item.correlationActivity && !item.correlationSocial);
+          const social = correlationResults.filter(item => item.correlationSocial);
+          const sleepQuality = correlationResults.filter(item => item.sleepQuality);
+          const health = correlationResults.find(item => item.healthStatus);
+
+          setCorrelationData(activities);
+          setSocialData(social);
+          setSleepQualityData(sleepQuality);
+          setHealthStatus(health ? health.healthStatus : null);
+          setRecommendations(recommendations);
+        } else {
+          console.error('Unexpected data format:', response.data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -48,8 +58,30 @@ const Correlation = () => {
     fetchData();
   }, []);
 
-  const handleNextClick = () => {
-    navigate('/recommendations', { state: { correlationData, socialData, healthStatus, sleepQualityData } });
+  const handleNextClick = async () => {
+    const today = moment().day();
+    if (today === 0) { // 0 represents Sunday
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No token found');
+        }
+
+        const response = await axios.post('http://localhost:5000/api/recommendations', {
+          correlationData
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        console.log('Stored recommendations:', response.data); // Debugging line
+      } catch (error) {
+        console.error('Error storing recommendations:', error);
+      }
+    }
+
+    navigate('/recommendations', { state: { correlationData, socialData, healthStatus, sleepQualityData, recommendations } });
   };
 
   const generatePDF = () => {
@@ -214,7 +246,7 @@ const Correlation = () => {
           <h3 style={{ color: '#3a3939', fontWeight: 'bold', fontSize: '20px' }}>Health</h3>
           {healthStatus ? (
             <p style={{ color: '#89bcbc', fontWeight: 'bold', fontSize: '27px' }}>
-              {healthStatus === 'low' ? 'Health-related activities have been low' : 'Health-related activities are normal'}
+              {healthStatus === 'insufficient' ? 'Health-related activities have been low' : 'Health-related activities are normal'}
             </p>
           ) : (
             <p style={{ color: '#89bcbc', fontWeight: 'bold', fontSize: '20px' }}>No significant health correlations found.</p>

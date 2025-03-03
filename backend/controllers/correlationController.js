@@ -1,6 +1,7 @@
 const moment = require('moment');
 const MoodLog = require('../models/MoodLog');
 const Correlation = require('../models/Correlation');
+const CorrelationValue = require('../models/CorrelationValue');
 
 const recommendationsData = {
   moods: {
@@ -214,8 +215,8 @@ const getWeeklyCorrelationForCorrelation = async (req, res) => {
         moodActivityMap[mood][activity]++;
       });
 
-       // Handle social
-       social.forEach(social => {
+      // Handle social
+      social.forEach(social => {
         if (!moodSocialMap[mood]) {
           moodSocialMap[mood] = {};
         }
@@ -326,17 +327,36 @@ const getWeeklyCorrelationForCorrelation = async (req, res) => {
     });
 
     // Analyze health patterns
-    if (healthCount < 3) {
-      correlationResults.push({
-        healthStatus: 'low'
+    correlationResults.push({
+      healthStatus: healthCount > 3 ? 'normal' : 'insufficient'
+    });
+
+    // Generate recommendations
+    const recommendations = generateRecommendations(correlationResults);
+
+    // Check if today is Sunday and if the correlation results for the current week have already been stored
+    const today = moment().day();
+    if (today === 0) { // 0 represents Sunday
+      const existingCorrelation = await CorrelationValue.findOne({
+        user: req.user.id,
+        createdAt: {
+          $gte: new Date(startOfWeek),
+          $lte: new Date(endOfWeek)
+        }
       });
-    } else {
-      correlationResults.push({
-        healthStatus: 'normal'
-      });
+
+      if (!existingCorrelation) {
+        const correlation = new CorrelationValue({
+          user: req.user.id,
+          correlationResults,
+          recommendations
+        });
+
+        await correlation.save();
+      }
     }
 
-    res.status(200).json(correlationResults);
+    res.status(200).json({ correlationResults, recommendations });
   } catch (error) {
     console.error('Error fetching data:', error);
     res.status(500).json({ message: 'Server error' });
@@ -444,7 +464,7 @@ const getWeeklyCorrelationForStatistics = async (req, res) => {
     // Check if today is Sunday and if the correlation results for the current week have already been stored
     const today = moment().day();
     if (today === 0) { // 0 represents Sunday
-      const existingCorrelation = await Correlation.findOne({
+      const existingCorrelation = await CorrelationValue.findOne({
         user: req.user.id,
         createdAt: {
           $gte: new Date(startOfWeek),
@@ -453,7 +473,7 @@ const getWeeklyCorrelationForStatistics = async (req, res) => {
       });
 
       if (!existingCorrelation) {
-        const correlation = new Correlation({
+        const correlation = new CorrelationValue({
           user: req.user.id,
           correlationResults
         });
