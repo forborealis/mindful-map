@@ -7,7 +7,7 @@ import BlockIcon from '@mui/icons-material/Block';
 import ForumIcon from '@mui/icons-material/Forum';
 import DownloadIcon from '@mui/icons-material/Download';
 import axios from 'axios';
-import { Bar, Line } from 'react-chartjs-2';
+import { Bar, Line, Pie } from 'react-chartjs-2';
 import 'chart.js/auto';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -22,6 +22,9 @@ const Dashboard = () => {
   const [weeklyEngagementData, setWeeklyEngagementData] = useState([]);
   const [dailyMoodLogsData, setDailyMoodLogsData] = useState([]);
   const [dailyJournalLogsData, setDailyJournalLogsData] = useState([]);
+  const [weeklyCorrelationValuesData, setWeeklyCorrelationValuesData] = useState([]);
+  const [weeklyForumPostsData, setWeeklyForumPostsData] = useState([]);
+  const [activeVsInactiveUsersData, setActiveVsInactiveUsersData] = useState({ active: 0, inactive: 0 });
   const [moodLogsPage, setMoodLogsPage] = useState(0);
 
   const handleLogout = () => {
@@ -44,7 +47,7 @@ const Dashboard = () => {
         console.error('Error fetching monthly users:', error);
       }
     };
-
+  
     const fetchActiveUsers = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -58,7 +61,7 @@ const Dashboard = () => {
         console.error('Error fetching active users:', error);
       }
     };
-
+  
     const fetchInactiveUsers = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -72,7 +75,7 @@ const Dashboard = () => {
         console.error('Error fetching inactive users:', error);
       }
     };
-
+  
     const fetchDailyEngagement = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -86,7 +89,7 @@ const Dashboard = () => {
         console.error('Error fetching daily engagement:', error);
       }
     };
-
+  
     const fetchWeeklyEngagement = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -100,7 +103,7 @@ const Dashboard = () => {
         console.error('Error fetching weekly engagement:', error);
       }
     };
-
+  
     const fetchDailyMoodLogs = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -114,7 +117,7 @@ const Dashboard = () => {
         console.error('Error fetching daily mood logs:', error);
       }
     };
-
+  
     const fetchDailyJournalLogs = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -128,7 +131,49 @@ const Dashboard = () => {
         console.error('Error fetching daily journal logs:', error);
       }
     };
-
+  
+    const fetchWeeklyCorrelationValues = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/admin/weekly-correlation-values', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setWeeklyCorrelationValuesData(response.data);
+      } catch (error) {
+        console.error('Error fetching weekly correlation values:', error);
+      }
+    };
+  
+    const fetchWeeklyForumPosts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/admin/weekly-forum-posts', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setWeeklyForumPostsData(response.data);
+      } catch (error) {
+        console.error('Error fetching weekly forum posts:', error);
+      }
+    };
+  
+    const fetchActiveVsInactiveUsers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/admin/active-vs-inactive-users', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setActiveVsInactiveUsersData(response.data);
+      } catch (error) {
+        console.error('Error fetching active vs inactive users:', error);
+      }
+    };
+  
     fetchMonthlyUsers();
     fetchActiveUsers();
     fetchInactiveUsers();
@@ -136,6 +181,9 @@ const Dashboard = () => {
     fetchWeeklyEngagement();
     fetchDailyMoodLogs();
     fetchDailyJournalLogs();
+    fetchWeeklyCorrelationValues();
+    fetchWeeklyForumPosts();
+    fetchActiveVsInactiveUsers();
   }, []);
 
   const barChartData = {
@@ -238,6 +286,20 @@ const Dashboard = () => {
     
   };
 
+  const weeklyCorrelationValuesChartData = {
+    labels: weeklyCorrelationValuesData.map(data => data.week),
+    datasets: [
+      {
+        label: 'Weekly Correlation Values',
+        data: weeklyCorrelationValuesData.map(data => data.count),
+        borderColor: '#64aa86',
+        backgroundColor: 'rgba(100, 170, 134, 0.2)',
+        fill: true,
+        tension: 0.4, // Make the line wavy
+      },
+    ],
+  };
+
   const lineChartOptions = {
     maintainAspectRatio: false,
     plugins: {
@@ -257,6 +319,47 @@ const Dashboard = () => {
         beginAtZero: true,
         ticks: {
           stepSize: 1, // Ensure only whole numbers are displayed
+        },
+      },
+    },
+  };
+
+  const weeklyForumPostsChartData = {
+    labels: weeklyForumPostsData.map(data => data.week),
+    datasets: [
+      {
+        label: 'Forum Posts',
+        data: weeklyForumPostsData.map(data => data.count),
+        borderColor: '#64aa86',
+        backgroundColor: 'rgba(100, 170, 134, 0.2)',
+        fill: true,
+        tension: 0.4, // Make the line wavy
+      },
+    ],
+  };
+  
+  const activeVsInactiveUsersChartData = {
+    labels: ['Active Users', 'Inactive Users'],
+    datasets: [
+      {
+        label: 'Users',
+        data: [activeVsInactiveUsersData.active, activeVsInactiveUsersData.inactive],
+        backgroundColor: ['#64aa86', '#f44336'],
+      },
+    ],
+  };
+  
+  const pieChartOptions = {
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            return context.raw;
+          },
         },
       },
     },
@@ -411,38 +514,79 @@ const Dashboard = () => {
     </div>
 
     {/* New Chart Containers */}
-    <div className="flex flex-col items-center mt-6">
-      <div id="daily-mood-logs-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6 w-full max-w-6xl">
-        <h2 className="text-[#292f33] font-bold text-xl mb-4">Daily Mood Logs</h2>
+  <div className="flex flex-col items-center mt-6">
+    <div className="grid grid-cols-2 gap-4 w-full max-w-6xl">
+      <div id="weekly-forum-posts-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6">
+        <h2 className="text-[#292f33] font-bold text-xl mb-4">Weekly Forum Posts</h2>
         <div className="absolute top-2 right-2">
           <DownloadIcon
             className="text-[#64aa86] cursor-pointer"
             style={{ fontSize: '20px' }}
-            onClick={() => generatePDF('daily-mood-logs-chart', 'Daily Mood Logs')}
+            onClick={() => generatePDF('weekly-forum-posts-chart', 'Weekly Forum Posts')}
           />
         </div>
         <div className="h-64">
-          <Line data={dailyMoodLogsChartData} options={lineChartOptions} />
-        </div>
-        <div className="flex justify-center mt-2">
-          <button className="text-[#64aa86] mx-2" onClick={() => setMoodLogsPage(moodLogsPage > 0 ? moodLogsPage - 1 : 0)}>&lt;</button>
-          <button className="text-[#64aa86] mx-2" onClick={() => setMoodLogsPage(moodLogsPage < Math.ceil(dailyMoodLogsData.length / 10) - 1 ? moodLogsPage + 1 : moodLogsPage)}>&gt;</button>
+          <Line data={weeklyForumPostsChartData} options={lineChartOptions} />
         </div>
       </div>
-      <div id="daily-journal-logs-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6 w-full max-w-6xl mt-6">
-        <h2 className="text-[#292f33] font-bold text-xl mb-4">Daily Journal Logs</h2>
+      <div id="active-vs-inactive-users-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6">
+        <h2 className="text-[#292f33] font-bold text-xl mb-4">Active vs Inactive Users</h2>
         <div className="absolute top-2 right-2">
           <DownloadIcon
             className="text-[#64aa86] cursor-pointer"
             style={{ fontSize: '20px' }}
-            onClick={() => generatePDF('daily-journal-logs-chart', 'Daily Journal Logs')}
+            onClick={() => generatePDF('active-vs-inactive-users-chart', 'Active vs Inactive Users')}
           />
         </div>
         <div className="h-64">
-          <Line data={dailyJournalLogsChartData} options={lineChartOptions} />
+          <Pie data={activeVsInactiveUsersChartData} options={pieChartOptions} />
         </div>
       </div>
     </div>
+    <div id="daily-mood-logs-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6 w-full max-w-6xl mt-6">
+      <h2 className="text-[#292f33] font-bold text-xl mb-4">Daily Mood Logs</h2>
+      <div className="absolute top-2 right-2">
+        <DownloadIcon
+          className="text-[#64aa86] cursor-pointer"
+          style={{ fontSize: '20px' }}
+          onClick={() => generatePDF('daily-mood-logs-chart', 'Daily Mood Logs')}
+        />
+      </div>
+      <div className="h-64">
+        <Line data={dailyMoodLogsChartData} options={lineChartOptions} />
+      </div>
+      <div className="flex justify-center mt-2">
+        <button className="text-[#64aa86] mx-2" onClick={() => setMoodLogsPage(moodLogsPage > 0 ? moodLogsPage - 1 : 0)}>&lt;</button>
+        <button className="text-[#64aa86] mx-2" onClick={() => setMoodLogsPage(moodLogsPage < Math.ceil(dailyMoodLogsData.length / 10) - 1 ? moodLogsPage + 1 : moodLogsPage)}>&gt;</button>
+      </div>
+    </div>
+    <div id="daily-journal-logs-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6 w-full max-w-6xl mt-6">
+      <h2 className="text-[#292f33] font-bold text-xl mb-4">Daily Journal Logs</h2>
+      <div className="absolute top-2 right-2">
+        <DownloadIcon
+          className="text-[#64aa86] cursor-pointer"
+          style={{ fontSize: '20px' }}
+          onClick={() => generatePDF('daily-journal-logs-chart', 'Daily Journal Logs')}
+        />
+      </div>
+      <div className="h-64">
+        <Line data={dailyJournalLogsChartData} options={lineChartOptions} />
+      </div>
+    </div>
+    <div id="weekly-correlation-values-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6 w-full max-w-6xl mt-6">
+      <h2 className="text-[#292f33] font-bold text-xl mb-4">Weekly Correlation Values</h2>
+      <div className="absolute top-2 right-2">
+        <DownloadIcon
+          className="text-[#64aa86] cursor-pointer"
+          style={{ fontSize: '20px' }}
+          onClick={() => generatePDF('weekly-correlation-values-chart', 'Weekly Correlation Values')}
+        />
+      </div>
+      <div className="h-64">
+        <Line data={weeklyCorrelationValuesChartData} options={lineChartOptions} />
+      </div>
+    </div>
+  </div>
           </div>
         </div>
       );

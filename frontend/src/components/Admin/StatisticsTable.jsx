@@ -255,7 +255,7 @@ const StatisticsTable = () => {
             </Typography>
             <Box display="flex" gap={2} alignItems="center">
               <TextField
-                placeholder="Search by email"
+                placeholder="Search..."
                 size="small"
                 value={searchText}
                 onChange={handleSearch}

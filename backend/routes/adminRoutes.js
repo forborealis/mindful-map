@@ -27,5 +27,7 @@ router.delete("/:id",  authMiddleware, adminMiddleware, adminController.deletePr
 
 // New route for fetching correlation values
 router.get('/correlation-values', authMiddleware, adminMiddleware, adminController.getCorrelationValues);
-
+router.get('/weekly-correlation-values', authMiddleware, adminMiddleware, adminController.getWeeklyCorrelationValues);
+router.get('/weekly-forum-posts', authMiddleware, adminMiddleware, adminController.getWeeklyForumPosts);
+router.get('/active-vs-inactive-users', authMiddleware, adminMiddleware, adminController.getActiveVsInactiveUsers);
 module.exports = router;

@@ -6,6 +6,7 @@ const CorrelationValue = require('../models/CorrelationValue');
 const Journal = require('../models/Journal');
 const jwt = require("jsonwebtoken");
 const mongoose = require('mongoose');
+const moment = require('moment');
 
 exports.dashboard = (req, res) => {
   res.status(200).json({
@@ -418,5 +419,109 @@ exports.getCorrelationValues = async (req, res) => {
   } catch (error) {
     console.error('Error fetching correlation values:', error);
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+exports.getWeeklyCorrelationValues = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'No token found' });
+    }
+
+    const weeklyCorrelationValues = await CorrelationValue.aggregate([
+      {
+        $group: {
+          _id: {
+            week: { $week: "$createdAt" },
+            year: { $year: "$createdAt" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { "_id.year": 1, "_id.week": 1 }
+      }
+    ]);
+
+    const formattedData = weeklyCorrelationValues.map(item => {
+      const startOfWeek = moment().year(item._id.year).week(item._id.week).startOf('week').format('MM-DD-YY');
+      const endOfWeek = moment().year(item._id.year).week(item._id.week).endOf('week').format('MM-DD-YY');
+      return {
+        week: `${startOfWeek} to ${endOfWeek}`,
+        count: item.count
+      };
+    });
+    res.status(200).json(formattedData);
+  } catch (error) {
+    console.error('Error fetching weekly correlation values:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getWeeklyForumPosts = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'No token found' });
+    }
+
+    const weeklyForumPosts = await Forum.aggregate([
+      {
+        $group: {
+          _id: {
+            week: { $week: "$createdAt" },
+            year: { $year: "$createdAt" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { "_id.year": 1, "_id.week": 1 }
+      }
+    ]);
+
+    const formattedData = weeklyForumPosts.map(item => {
+      const startOfWeek = moment().year(item._id.year).week(item._id.week).startOf('week').format('MM-DD-YY');
+      const endOfWeek = moment().year(item._id.year).week(item._id.week).endOf('week').format('MM-DD-YY');
+      return {
+        week: `${startOfWeek} to ${endOfWeek}`,
+        count: item.count
+      };
+    });
+    res.status(200).json(formattedData);
+  } catch (error) {
+    console.error('Error fetching weekly forum posts:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getActiveVsInactiveUsers = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'No token found' });
+    }
+
+    const twoWeeksAgo = moment().subtract(2, 'weeks').toDate();
+
+    // Find all users who have mood logs in the past two weeks
+    const activeUsers = await MoodLog.distinct('user', { date: { $gte: twoWeeksAgo } });
+
+    // Find the total number of users
+    const totalUsers = await User.countDocuments();
+
+    // Calculate the number of inactive users
+    const inactiveUsersCount = totalUsers - activeUsers.length;
+
+    const data = {
+      active: activeUsers.length,
+      inactive: inactiveUsersCount
+    };
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error fetching active vs inactive users:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
