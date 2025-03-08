@@ -32,25 +32,26 @@ const UsersTable = () => {
   const [moodLogs, setMoodLogs] = useState({});
   const [loadingMoodLogs, setLoadingMoodLogs] = useState({});
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5000/api/admin/users", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log("API Response:", response.data); 
-        setUsers(response.data);
-        setFilteredUsers(response.data); 
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+   const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:5000/api/admin/users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("API Response:", response.data); 
+      setUsers(response.data);
+      setFilteredUsers(response.data); 
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUsers();
   }, []);
 
@@ -89,42 +90,31 @@ const UsersTable = () => {
   const handleAction = async (userId, action, deactivatedAt) => {
     try {
       const token = localStorage.getItem("token");
-  
-      if (action === "reactivate") {
-        const response = await axios.post(
-          "http://localhost:5000/api/admin/reactivate", 
-          { userId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-  
-        if (response.data.message === "Reactivation is only allowed after 24 hours.") {
-          toast.error("Reactivation is only allowed after 24 hours.");
-          return;
-        }
-  
-        setUsers(users.map(user =>
-          user.id === userId ? { ...user, isDeactivated: false, deactivatedAt: null } : user
-        ));
-  
-        toast.success("User reactivated successfully!");
-        
-      } else if (action === "softDelete") {
+
+      const user = users.find(u => u.id === userId);
+      if (user && (user.isDeactivated || user.pendingDeactivation)) {
+        toast.warning("This user is already pending deactivation or deactivated.");
+        return; // Exit the function early
+      }
+
+      if (action === "softDelete") {
         const response = await axios.post(
           "http://localhost:5000/api/admin/soft-delete", 
           { userId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-  
-        // Update the user with the deactivatedAt from the response
+
         setUsers(users.map(user =>
           user.id === userId ? { 
             ...user, 
             isDeactivated: true, 
-            deactivatedAt: response.data.deactivatedAt // Use the timestamp from backend
+            pendingDeactivation: true,
+            deactivatedAt: response.data.deactivatedAt,
+            deactivateAt: response.data.deactivateAt
           } : user
         ));
   
-        toast.success("User deactivated successfully!");
+        toast.success("User deactivation initiated. Will be completed in 24 hours.");
       }
     } catch (error) {
       console.error(`Error during ${action}:`, error);
@@ -454,15 +444,17 @@ const UsersTable = () => {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => {
-        const { id, isDeactivated, deactivatedAt } = params.row;
+        const { id, isDeactivated, pendingDeactivation, deactivatedAt } = params.row;
         return (
-          <IconButton onClick={() => handleAction(id, isDeactivated ? "reactivate" : "softDelete", deactivatedAt)}>
-            {isDeactivated ? (
-              <RestoreIcon sx={{ color: "#4CAF50" }} />
-            ) : (
+          isDeactivated || pendingDeactivation ? (
+            <IconButton disabled>
+              <DeleteIcon sx={{ color: "#9E9E9E" }} />
+            </IconButton>
+          ) : (
+            <IconButton onClick={() => handleAction(id, "softDelete", deactivatedAt)}>
               <DeleteIcon sx={{ color: "#F44336" }} />
-            )}
-          </IconButton>
+            </IconButton>
+          )
         );
       },
     }
@@ -549,7 +541,7 @@ const UsersTable = () => {
                   <TableCell width="80px" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Avatar</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Name</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Account Status</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Created At</TableCell>
                   <TableCell width="100px" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Actions</TableCell>
                 </TableRow>
@@ -618,13 +610,15 @@ const UsersTable = () => {
                           {user.createdAt ? new Date(user.createdAt).toISOString().slice(0, 10) : "No Date Available"}
                         </TableCell>
                         <TableCell>
-                          <IconButton onClick={() => handleAction(user.id, user.isDeactivated ? "reactivate" : "softDelete", user.deactivatedAt)}>
-                            {user.isDeactivated ? (
-                              <RestoreIcon sx={{ color: "#4CAF50" }} />
-                            ) : (
+                          {user.isDeactivated || user.pendingDeactivation ? (
+                            <IconButton disabled>
+                              <DeleteIcon sx={{ color: "#9E9E9E" }} />
+                            </IconButton>
+                          ) : (
+                            <IconButton onClick={() => handleAction(user.id, "softDelete", user.deactivatedAt)}>
                               <DeleteIcon sx={{ color: "#F44336" }} />
-                            )}
-                          </IconButton>
+                            </IconButton>
+                          )}
                         </TableCell>
                       </TableRow>
                       <TableRow>

@@ -14,6 +14,8 @@ const forumRoutes = require('./routes/forumRoutes');
 
 const app = express();
 
+const { initScheduledTasks } = require('./utils/cronScheduler');
+
 // Middleware
 app.use(bodyParser.json());
 app.use(cors()); 
@@ -27,6 +29,8 @@ app.use('/api', moodPredictionRoutes);
 app.use('/api', correlationRoutes);
 app.use('/api', forumRoutes);
 app.use('/api/admin', adminRoutes);
+
+initScheduledTasks();
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,

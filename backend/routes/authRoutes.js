@@ -21,6 +21,7 @@ router.post('/signup', upload.single('avatar'), signup);
 router.post('/login', login);
 router.get('/me', authMiddleware, getMe); // Protect the /me route with authMiddleware
 router.get('/verify-email', verifyEmail);
+router.get('/request-reactivation', requestReactivation);
 
 router.get('/home', authMiddleware, (req, res) => {
   res.status(200).json({ success: true, message: 'Welcome to the home page!' });

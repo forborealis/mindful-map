@@ -35,6 +35,14 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  pendingDeactivation: {
+    type: Boolean,
+    default: false
+  },
+  deactivateAt: {
+    type: Date,
+    default: null
+  },
   isDeactivated: { 
     type: Boolean, 
     default: false 
@@ -43,6 +51,10 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  hasRequestedReactivation: {
+    type: Boolean,
+    default: false
+  }
 });
 
 // Hash the password before saving the user

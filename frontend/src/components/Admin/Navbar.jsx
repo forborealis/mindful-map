@@ -18,6 +18,7 @@ import {
   Forum as ForumIcon,
   Logout as LogoutIcon,
   BarChart as BarChartIcon, // Import the BarChart icon for Statistics
+  PersonOff as PersonOffIcon,
 } from "@mui/icons-material";
 
 const drawerWidth = 280;
@@ -42,6 +43,7 @@ const menuItems = [
   { text: "Users", icon: <PeopleIcon />, path: "/admin/users" },
   { text: "Forum", icon: <ForumIcon />, path: "/admin/prompts" },
   { text: "Statistics", icon: <BarChartIcon />, path: "/admin/statistics" }, // Add the Statistics page
+  { text: "Inactive Users", icon: <PersonOffIcon />, path: "/admin/inactive" },
 ];
 
 const Navbar = () => {
