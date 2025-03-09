@@ -34,7 +34,7 @@ const AboutUs = () => {
           <h1 className="text-4xl md:text-6xl font-bold text-[#292f33] mb-6 leading-tight">
             We're Here to Help
           </h1>
-          <p className="text-lg text-[#292f33] mb-6">
+          <p className="text-lg text-justify text-[#292f33] mb-6">
             Mindful Map is a daily mood and activity tracking system designed to help you understand the connection between your emotions and daily routines. By logging your moods and activities, you can identify patterns that influence your well-being, empowering you to manage your emotions more effectively. With insightful visualizations and personalized recommendations, Mindful Map encourages self-awareness and emotional balance.
           </p>
           <button
@@ -45,7 +45,7 @@ const AboutUs = () => {
           </button>
         </div>
         <div className={`md:w-1/2 mt-20 md:mt-0 flex justify-center md:justify-end md:pr-28 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
-          <img src="/images/about.gif" alt="About Us" className="w-full h-auto max-w-lg" />
+          <img src="/images/about.png" alt="About Us" className="w-full h-auto max-w-lg" />
         </div>
       </div>
       <div id="vision-mission-section" className={`container mx-auto px-4 flex flex-col md:flex-row items-center justify-center mt-20 transition-opacity duration-1000 ${fadeInVisionMission ? 'opacity-100' : 'opacity-0'}`}>
