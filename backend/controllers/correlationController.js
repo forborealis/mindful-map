@@ -461,26 +461,7 @@ const getWeeklyCorrelationForStatistics = async (req, res) => {
       sleepQuality: topSleepQuality.quality
     });
 
-    // Check if today is Sunday and if the correlation results for the current week have already been stored
-    const today = moment().day();
-    if (today === 0) { // 0 represents Sunday
-      const existingCorrelation = await CorrelationValue.findOne({
-        user: req.user.id,
-        createdAt: {
-          $gte: new Date(startOfWeek),
-          $lte: new Date(endOfWeek)
-        }
-      });
-
-      if (!existingCorrelation) {
-        const correlation = new CorrelationValue({
-          user: req.user.id,
-          correlationResults
-        });
-
-        await correlation.save();
-      }
-    }
+    // Removed code that adds correlation results to CorrelationValue schema
 
     res.status(200).json(correlationResults);
   } catch (error) {
