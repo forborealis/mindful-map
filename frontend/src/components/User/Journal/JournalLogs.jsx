@@ -79,10 +79,10 @@ const JournalLogs = () => {
     setAnchorEl(null);
   };
 
-  const handleEditClick = () => {
-    setAnchorEl(null);
-    navigate(`/edit-journal/${selectedEntry._id}`);
-  };
+  // const handleEditClick = () => {
+  //   setAnchorEl(null);
+  //   navigate(`/edit-journal/${selectedEntry._id}`);
+  // };
 
   const handleDeleteClick = () => {
     setAnchorEl(null);
@@ -150,7 +150,7 @@ const JournalLogs = () => {
   });
 
   return (
-    <div className="bg-[#eef0ee] min-h-screen flex flex-col justify-between">
+    <div className="bg-[#b4ddc8] min-h-screen flex flex-col justify-between">
       <div>
         <nav className="bg-white py-4 shadow-md relative">
           <div className="container mx-auto flex justify-between items-center px-4">
@@ -232,7 +232,7 @@ const JournalLogs = () => {
         open={Boolean(anchorEl)}
         onClose={handleCloseMenu}
       >
-        <MenuItem onClick={handleEditClick}>Edit</MenuItem>
+        {/* <MenuItem onClick={handleEditClick}>Edit</MenuItem> */}
         <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
       </Menu>
       <Dialog

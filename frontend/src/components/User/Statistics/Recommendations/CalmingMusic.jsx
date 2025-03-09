@@ -28,10 +28,12 @@ const CalmingMusic = () => {
       setProgress((audio.currentTime / audio.duration) * 100 || 0);
     };
     audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('ended', handleNext); // Add event listener for 'ended' event
     return () => {
       audio.removeEventListener('timeupdate', updateProgress);
+      audio.removeEventListener('ended', handleNext); // Remove event listener for 'ended' event
     };
-  }, []);
+  }, [currentSongIndex]);
 
   const handlePlayPause = () => {
     if (isPlaying) {

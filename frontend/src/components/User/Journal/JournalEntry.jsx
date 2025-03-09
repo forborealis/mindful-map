@@ -212,7 +212,7 @@ const JournalEntry = () => {
   });
 
   return (
-    <div className="bg-[#eef0ee] min-h-screen flex flex-col justify-between">
+    <div className="bg-[#b4ddc8] min-h-screen flex flex-col justify-between">
       <nav className="bg-white py-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center px-4">
           <ArrowBackIcon className="cursor-pointer" onClick={handleBackClick} />

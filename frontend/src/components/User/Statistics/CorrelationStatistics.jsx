@@ -263,7 +263,7 @@ const CorrelationStatistics = () => {
   };
 
   return (
-    <div style={{ backgroundColor: '#eef0ee', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ backgroundColor: '#b4ddc8', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', width: '90%', maxWidth: '800px', textAlign: 'center', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
         <DownloadIcon className="cursor-pointer" onClick={generateMonthlyReport} style={{ position: 'absolute', right: '10px', top: '10px', color: '#6fba94' }} />
         {hasPrevWeek && (

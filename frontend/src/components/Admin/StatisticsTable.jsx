@@ -222,6 +222,8 @@ const StatisticsTable = () => {
     });
   };
 
+  const cellStyle = { fontFamily: 'Nunito' };
+
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#F8FAF9" }}>
       <Box sx={{ width: 240, flexShrink: 0 }}>
@@ -250,7 +252,7 @@ const StatisticsTable = () => {
           }}
         >
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h5" sx={{ fontWeight: "bold", color: "#333" }}>
+            <Typography variant="h5" sx={{ fontWeight: "bold", color: "#333", fontFamily: 'Nunito' }}>
               Statistics
             </Typography>
             <Box display="flex" gap={2} alignItems="center">
@@ -263,6 +265,10 @@ const StatisticsTable = () => {
                   width: 280,
                   bgcolor: "#F5F5F5",
                   borderRadius: 1,
+                  fontFamily: 'Nunito'
+                }}
+                InputProps={{
+                  style: { fontFamily: 'Nunito' }, // Added fontFamily
                 }}
               />
               <IconButton onClick={handleDownloadPDF} sx={{ color: "#1976D2" }}>
@@ -274,13 +280,13 @@ const StatisticsTable = () => {
             <Table aria-label="statistics table">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Activities</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Social</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Sleep Quality</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Health</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Recommendations</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50', fontFamily: 'Nunito' }}>Email</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50', fontFamily: 'Nunito' }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50', fontFamily: 'Nunito' }}>Activities</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50', fontFamily: 'Nunito' }}>Social</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50', fontFamily: 'Nunito' }}>Sleep Quality</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50', fontFamily: 'Nunito' }}>Health</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50', fontFamily: 'Nunito' }}>Recommendations</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -294,25 +300,25 @@ const StatisticsTable = () => {
                   filteredStatistics.map((stat) => (
                     <React.Fragment key={stat._id}>
                       <TableRow hover>
-                        <TableCell>{stat.user.email}</TableCell>
-                        <TableCell>{new Date(stat.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell onClick={() => handleRowClick(stat._id, 'activities')}>
+                        <TableCell sx={cellStyle}>{stat.user.email}</TableCell>
+                        <TableCell sx={cellStyle}>{new Date(stat.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell sx={cellStyle} onClick={() => handleRowClick(stat._id, 'activities')}>
                           {expandedRows[stat._id]?.activities ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </TableCell>
-                        <TableCell onClick={() => handleRowClick(stat._id, 'social')}>
+                        <TableCell sx={cellStyle} onClick={() => handleRowClick(stat._id, 'social')}>
                           {expandedRows[stat._id]?.social ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </TableCell>
-                        <TableCell onClick={() => handleRowClick(stat._id, 'sleepQuality')}>
+                        <TableCell sx={cellStyle} onClick={() => handleRowClick(stat._id, 'sleepQuality')}>
                           {expandedRows[stat._id]?.sleepQuality ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={cellStyle}>
                           {stat.correlationResults[3] && (
                             <>
                               {stat.correlationResults[3].healthStatus ? stat.correlationResults[3].healthStatus.charAt(0).toUpperCase() + stat.correlationResults[3].healthStatus.slice(1) : ''}
                             </>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={cellStyle}>
                           {stat.recommendations && stat.recommendations.map((rec, index) => (
                             <div key={index}>{index + 1}. {rec}</div>
                           ))}
@@ -325,17 +331,17 @@ const StatisticsTable = () => {
                               <Table size="small" aria-label="activities" sx={{ mb: 2 }}>
                                 <TableHead>
                                   <TableRow>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Value</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Mood</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Activity</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' , fontFamily: 'Nunito'}}>Value</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50', fontFamily: 'Nunito' }}>Mood</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50', fontFamily: 'Nunito' }}>Activity</TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>
                                   {stat.correlationResults[0] && (
                                     <TableRow>
-                                      <TableCell>{stat.correlationResults[0].correlationValue}</TableCell>
-                                      <TableCell>{stat.correlationResults[0].correlationMood}</TableCell>
-                                      <TableCell>{stat.correlationResults[0].correlationActivity}</TableCell>
+                                      <TableCell sx={cellStyle}>{stat.correlationResults[0].correlationValue}</TableCell>
+                                      <TableCell sx={cellStyle}>{stat.correlationResults[0].correlationMood}</TableCell>
+                                      <TableCell sx={cellStyle}>{stat.correlationResults[0].correlationActivity}</TableCell>
                                     </TableRow>
                                   )}
                                 </TableBody>
@@ -359,9 +365,9 @@ const StatisticsTable = () => {
                                 <TableBody>
                                   {stat.correlationResults[1] && (
                                     <TableRow>
-                                      <TableCell>{stat.correlationResults[1].correlationValue}</TableCell>
-                                      <TableCell>{stat.correlationResults[1].correlationMood}</TableCell>
-                                      <TableCell>{stat.correlationResults[1].correlationSocial}</TableCell>
+                                      <TableCell sx={cellStyle}>{stat.correlationResults[1].correlationValue}</TableCell>
+                                      <TableCell sx={cellStyle}>{stat.correlationResults[1].correlationMood}</TableCell>
+                                      <TableCell sx={cellStyle}>{stat.correlationResults[1].correlationSocial}</TableCell>
                                     </TableRow>
                                   )}
                                 </TableBody>
@@ -384,8 +390,8 @@ const StatisticsTable = () => {
                                 <TableBody>
                                   {stat.correlationResults[2] && (
                                     <TableRow>
-                                      <TableCell>{stat.correlationResults[2].sleepQualityValue}</TableCell>
-                                      <TableCell>{stat.correlationResults[2].sleepQuality}</TableCell>
+                                      <TableCell sx={cellStyle}>{stat.correlationResults[2].sleepQualityValue}</TableCell>
+                                      <TableCell sx={cellStyle}>{stat.correlationResults[2].sleepQuality}</TableCell>
                                     </TableRow>
                                   )}
                                 </TableBody>

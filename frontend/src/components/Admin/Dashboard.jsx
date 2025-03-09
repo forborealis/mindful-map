@@ -456,7 +456,7 @@ const Dashboard = () => {
           <div className="bg-[#F8FAF9] border border-[#6fba94] rounded-lg p-4 flex items-center h-36 w-72">
             <ShowChartIcon className="text-[#64aa86] mr-4" style={{ fontSize: '48px' }} />
             <div>
-              <h2 className="text-[#292f33] font-bold text-xl">Total Monthly Users</h2>
+              <h2 className="text-[#292f33] font-bold text-xl">Total Users</h2>
               <p className="text-[#64aa86] font-bold text-2xl">{monthlyUsers}</p>
             </div>
           </div>
@@ -530,7 +530,7 @@ const Dashboard = () => {
         </div>
       </div>
       <div id="active-vs-inactive-users-chart" className="relative bg-transparent border border-[#6fba94] rounded-lg p-6">
-        <h2 className="text-[#292f33] font-bold text-xl mb-4">Active vs Inactive Users</h2>
+        <h2 className="text-[#292f33] font-bold text-xl mb-4">Active and Inactive Users</h2>
         <div className="absolute top-2 right-2">
           <DownloadIcon
             className="text-[#64aa86] cursor-pointer"

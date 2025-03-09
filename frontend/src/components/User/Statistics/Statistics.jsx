@@ -407,7 +407,7 @@ const Statistics = () => {
   }));
 
   return (
-    <div style={{ backgroundColor: '#eef0ee', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
+    <div style={{ backgroundColor: '#b4ddc8', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
       <div ref={pdfIconRef} style={{ position: 'absolute', top: '20px', right: '20px', cursor: 'pointer' }} onClick={handleDownloadPDF}>
         <DownloadIcon style={{ color: '#6fba94', fontSize: 24,  }} />
       </div>

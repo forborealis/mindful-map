@@ -290,7 +290,7 @@ const ForumDiscussion = () => {
         flexDirection: "column",
         alignItems: "center",
         minHeight: "100vh",
-        bgcolor: "#f5f5f5",
+        bgcolor: "#b4ddc8",
         p: 3,
       }}
     >
