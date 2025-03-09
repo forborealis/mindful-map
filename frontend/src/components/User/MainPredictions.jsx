@@ -80,7 +80,7 @@ const MainPredictions = () => {
         <div className="md:w-1/2 md:pl-8 text-left">
           <h1 className="text-5xl font-bold text-[#3a3939] mb-4">Mood and Activity Predictions</h1>
           <p className="text-xl text-[#191919] mb-2">How does this work?</p>
-          <p className="text-mg text-[#191919] mb-8">
+          <p className="text-mg text-justify text-[#191919] mb-8">
             The system analyzes the moods that have been previously logged as well as their related activities, creating weekly and daily predictions based on the most occurring moods and activities. This feature helps the users understand their past logs, allowing them to see the mood they may have for the following days and what may influence these moods.
           </p>
 
