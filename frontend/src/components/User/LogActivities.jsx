@@ -79,37 +79,37 @@ const LogActivities = ({ formData, setFormData }) => {
   };
 
   const activities = [
-    { name: 'Studying', icon: '/images/studying.svg' },
-    { name: 'Exam', icon: '/images/exam.svg' },
-    { name: 'Work', icon: '/images/work.svg' },
-    { name: 'Reading', icon: '/images/reading.svg' },
-    { name: 'Gaming', icon: '/images/gaming.svg' },
-    { name: 'Music', icon: '/images/music.svg' },
-    { name: 'Movie', icon: '/images/movie.svg' },
-    { name: 'Drinking', icon: '/images/drinking.svg' },
-    { name: 'Relax', icon: '/images/relax.svg' },
+    { name: 'Studying', icon: '/images/studying.gif' },
+    { name: 'Exam', icon: '/images/exam.gif' },
+    { name: 'Work', icon: '/images/work.gif' },
+    { name: 'Reading', icon: '/images/reading.gif' },
+    { name: 'Gaming', icon: '/images/gaming.gif' },
+    { name: 'Music', icon: '/images/music.gif' },
+    { name: 'Movie', icon: '/images/movie.gif' },
+    { name: 'Drinking', icon: '/images/drinking.gif' },
+    { name: 'Relax', icon: '/images/relax.gif' },
   ];
 
   const social = [
-    { name: 'Family', icon: '/images/family.svg' },
-    { name: 'Friends', icon: '/images/friends.svg' },
-    { name: 'Relationship', icon: '/images/relationship.svg' },
-    { name: 'Colleagues', icon: '/images/colleagues.svg' },
-    { name: 'Pets', icon: '/images/pets.svg' },
+    { name: 'Family', icon: '/images/family.gif' },
+    { name: 'Friends', icon: '/images/friends.gif' },
+    { name: 'Relationship', icon: '/images/relationship.gif' },
+    { name: 'Colleagues', icon: '/images/colleagues.gif' },
+    { name: 'Pets', icon: '/images/pets.gif' },
   ];
 
   const health = [
-    { name: 'Exercise', icon: '/images/exercise.svg' },
-    { name: 'Walk', icon: '/images/walk.svg' },
-    { name: 'Run', icon: '/images/run.svg' },
-    { name: 'Eat Healthy', icon: '/images/eat healthy.svg' },
+    { name: 'Exercise', icon: '/images/exercise.gif' },
+    { name: 'Walk', icon: '/images/walk.gif' },
+    { name: 'Run', icon: '/images/run.gif' },
+    { name: 'Eat Healthy', icon: '/images/eat healthy.gif' },
   ];
 
   const sleepQuality = [
-    { name: 'No Sleep', icon: '/images/no-sleep.svg' },
-    { name: 'Poor Sleep', icon: '/images/poor-sleep.svg' },
-    { name: 'Medium Sleep', icon: '/images/medium-sleep.svg' },
-    { name: 'Good Sleep', icon: '/images/good-sleep.svg' },
+    { name: 'No Sleep', icon: '/images/no-sleep.gif' },
+    { name: 'Poor Sleep', icon: '/images/poor-sleep.gif' },
+    { name: 'Medium Sleep', icon: '/images/medium-sleep.gif' },
+    { name: 'Good Sleep', icon: '/images/good-sleep.gif' },
   ];
 
   const renderItems = (items, type) => (
@@ -129,7 +129,7 @@ const LogActivities = ({ formData, setFormData }) => {
             <img
               src={item.icon}
               alt={item.name}
-              className={`w-10 h-10 mx-auto mb-2 ${
+              className={`w-24 h-24 mx-auto mb-2 ${
                 isSelected ? 'opacity-60' : ''
               }`}
             />

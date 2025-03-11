@@ -344,12 +344,12 @@ const Statistics = () => {
     });
   };
   const moodIcons = {
-    relaxed: '/images/relaxed.svg',
-    happy: '/images/happy.svg',
-    fine: '/images/fine.svg',
-    anxious: '/images/anxious.svg',
-    sad: '/images/sad.svg',
-    angry: '/images/angry.svg'
+    relaxed: '/images/relaxed.gif',
+    happy: '/images/happy.gif',
+    fine: '/images/fine.gif',
+    anxious: '/images/anxious.gif',
+    sad: '/images/sad.gif',
+    angry: '/images/angry.gif'
   };
 
   const sortedMoods = Object.keys(moodCounts).sort((a, b) => moodCounts[b] - moodCounts[a]);

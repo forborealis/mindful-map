@@ -66,12 +66,12 @@ const MoodLog = ({ setFormData }) => {
   const time = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const moods = [
-    { name: 'Relaxed', icon: '/images/relaxed.svg' },
-    { name: 'Happy', icon: '/images/happy.svg' },
-    { name: 'Fine', icon: '/images/fine.svg' },
-    { name: 'Anxious', icon: '/images/anxious.svg' },
-    { name: 'Sad', icon: '/images/sad.svg' },
-    { name: 'Angry', icon: '/images/angry.svg' },
+    { name: 'Relaxed', icon: '/images/relaxed.gif' },
+    { name: 'Happy', icon: '/images/happy.gif' },
+    { name: 'Fine', icon: '/images/fine.gif' },
+    { name: 'Anxious', icon: '/images/anxious.gif' },
+    { name: 'Sad', icon: '/images/sad.gif' },
+    { name: 'Angry', icon: '/images/angry.gif' },
   ];
 
   return (

@@ -75,7 +75,7 @@ const MainPredictions = () => {
       <ToastContainer />
       <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-5xl p-8 bg-white rounded-lg shadow-lg mt-10">
         <div className={`transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'} md:w-1/2`}>
-          <img src="/images/predictive.png" alt="Predictive" className="w-full h-auto mb-8 md:mb-0" />
+          <img src="/images/predictive.gif" alt="Predictive" className="w-full h-auto mb-8 md:mb-0" />
         </div>
         <div className="md:w-1/2 md:pl-8 text-left">
           <h1 className="text-5xl font-bold text-[#3a3939] mb-4">Mood and Activity Predictions</h1>

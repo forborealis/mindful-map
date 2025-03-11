@@ -127,9 +127,9 @@ const CalendarLog = () => {
                         </button>
                     ) : mood === 'gray' ? null : (
                       <img
-                        src={`/images/${mood.toLowerCase()}.svg`}
+                        src={`/images/${mood.toLowerCase()}.gif`}
                         alt={mood}
-                        className="w-20 h-20 object-cover bg-transparent rounded-full"
+                        className="w-16 h-16 object-cover bg-transparent rounded-full"
                       />
                     )}
                   </div>

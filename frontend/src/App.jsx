@@ -25,7 +25,7 @@ import MainPredictions from './components/User/MainPredictions';
 import Recommendations from './components/User/Statistics/Recommendations';
 import BreathingExercise from './components/User/Statistics/Recommendations/BreathingExercise';
 import Pomodoro from './components/User/Statistics/Recommendations/Pomodoro';
-import BubblePopGame from './components/User/Statistics/Recommendations/BubblePopGame';
+import Affirmation from './components/User/Statistics/Recommendations/Affirmation';
 import ListTask from './components/User/Statistics/Recommendations/ListTask';
 import CalmingMusic from './components/User/Statistics/Recommendations/CalmingMusic';
 import Activities from './components/User/Activities';
@@ -310,10 +310,10 @@ const App = () => {
           }
         />
          <Route
-          path="/bubblepop-game"
+          path="/affirmation"
           element={
             <UserPrivateRoute>
-              <BubblePopGame />
+              <Affirmation />
             </UserPrivateRoute>
           }
         />

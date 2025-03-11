@@ -180,7 +180,7 @@ const MoodEntries = () => {
                 return (
                   <div key={moodLog._id} className="bg-white w-full max-w-4xl p-6 rounded-lg shadow-md mb-6">
                     <div className="flex items-start mb-4">
-                      <img src={`/images/${mood.toLowerCase()}.svg`} alt={mood} className="w-16 h-16 mr-4 rounded-full" />
+                      <img src={`/images/${mood.toLowerCase()}.gif`} alt={mood} className="w-20 h-20 mr-4 rounded-full" />
                       <div>
                         <p className="text-sm text-[#b1b1b1]">{day}, {formattedDate}</p>
                         <p className="text-lg font-semibold">{mood}</p>
@@ -194,7 +194,7 @@ const MoodEntries = () => {
                           <div className="flex flex-wrap">
                             {activities.map((activity) => (
                               <div key={activity} className="flex items-center mr-4 mb-2">
-                                <img src={`/images/${activity.toLowerCase()}.svg`} alt={activity} className="w-8 h-8 mr-2" />
+                                <img src={`/images/${activity.toLowerCase()}.gif`} alt={activity} className="w-12 h-12 mr-2" />
                                 <p className="font-bold text-[#b1b1b1]">{activity}</p>
                               </div>
                             ))}
@@ -207,7 +207,7 @@ const MoodEntries = () => {
                           <div className="flex flex-wrap">
                             {social.map((socialItem) => (
                               <div key={socialItem} className="flex items-center mr-4 mb-2">
-                                <img src={`/images/${socialItem.toLowerCase()}.svg`} alt={socialItem} className="w-8 h-8 mr-2" />
+                                <img src={`/images/${socialItem.toLowerCase()}.gif`} alt={socialItem} className="w-12 h-12 mr-2" />
                                 <p className="font-bold text-[#b1b1b1]">{socialItem}</p>
                               </div>
                             ))}
@@ -220,7 +220,7 @@ const MoodEntries = () => {
                           <div className="flex flex-wrap">
                             {health.map((healthItem) => (
                               <div key={healthItem} className="flex items-center mr-4 mb-2">
-                                <img src={`/images/${healthItem.toLowerCase()}.svg`} alt={healthItem} className="w-8 h-8 mr-2" />
+                                <img src={`/images/${healthItem.toLowerCase()}.gif`} alt={healthItem} className="w-12 h-12 mr-2" />
                                 <p className="font-bold text-[#b1b1b1]">{healthItem}</p>
                               </div>
                             ))}
@@ -231,7 +231,7 @@ const MoodEntries = () => {
                         <div>
                           <h3 className="text-lg font-semibold mb-2">Sleep Quality</h3>
                           <div className="flex items-center">
-                            <img src={`/images/${sleepQuality.toLowerCase().replace(' ', '-')}.svg`} alt={sleepQuality} className="w-8 h-8 mr-2" />
+                            <img src={`/images/${sleepQuality.toLowerCase().replace(' ', '-')}.gif`} alt={sleepQuality} className="w-12 h-12 mr-2" />
                             <p className="font-bold text-[#b1b1b1]">{sleepQuality}</p>
                           </div>
                         </div>
