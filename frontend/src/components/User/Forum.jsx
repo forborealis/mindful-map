@@ -1,9 +1,37 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { formatDistanceToNowStrict } from 'date-fns';
-import {Box, Card, Typography, Avatar, Stack, Paper, TextField, Button, 
-        Alert, Snackbar, IconButton, Menu, MenuItem } from "@mui/material";
-import { AccessTime, MoreVert } from "@mui/icons-material";
+import { 
+  Box, 
+  Card, 
+  Typography, 
+  Avatar, 
+  Stack, 
+  Paper, 
+  TextField, 
+  Button, 
+  Alert, 
+  Snackbar, 
+  IconButton, 
+  Menu, 
+  MenuItem,
+  Chip,
+  Divider,
+  CircularProgress,
+  Fade,
+  Tooltip,
+  useMediaQuery,
+  useTheme
+} from "@mui/material";
+import { 
+  AccessTime, 
+  MoreVert, 
+  ForumOutlined, 
+  CalendarToday,
+  SentimentSatisfiedAlt
+} from "@mui/icons-material";
+import BottomNav from "../BottomNav";
+import { motion } from "framer-motion";
 
 const ForumDiscussion = () => {
   const [todaysPrompt, setTodaysPrompt] = useState(null);
@@ -15,11 +43,20 @@ const ForumDiscussion = () => {
   const [error, setError] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedComment, setSelectedComment] = useState(null);
+  const [value, setValue] = useState('forum');
+  const [showEmojis, setShowEmojis] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'info'
   });
+  
+  // Common emojis
+  const commonEmojis = ['😊', '💭', '👍', '🙌', '💪', '🧘', '🌱', '💯', '❤️', '✨'];
+  
+  // Responsive design
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   useEffect(() => {
     const fetchUserAndPrompt = async () => {
@@ -35,8 +72,7 @@ const ForumDiscussion = () => {
         });
         setUser(userResponse.data);
         
-        // Get today's prompt - this call will also handle setting isUsed=true on the backend
-        // if a new prompt is selected from the unused pool
+        // Get today's prompt
         const promptResponse = await axios.get("http://localhost:5000/api/todays-prompt", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -179,7 +215,7 @@ const ForumDiscussion = () => {
   };
 
   const getAvatarColor = (name) => {
-    const colors = ["primary.main", "secondary.main", "success.main", "warning.main", "info.main"];
+    const colors = ["#6fba94", "#88c4a2", "#a4ceb1", "#c0d8c0", "#dcead0"];
     const nameHash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[nameHash % colors.length];
   };
@@ -188,65 +224,112 @@ const ForumDiscussion = () => {
     setSnackbar({...snackbar, open: false});
   };
 
+  const insertEmoji = (emoji) => {
+    setNewComment(prev => prev + emoji);
+    setShowEmojis(false);
+  };
+
   // Function to render comments for a forum
   const renderComments = (discussionComments) => {
     return discussionComments.length > 0 ? (
       discussionComments.map((comment, index) => (
-        <Box key={index} sx={{ display: "flex", alignItems: "flex-start", position: "relative" }}>
-          <Avatar 
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.05, duration: 0.3 }}
+        >
+          <Box 
             sx={{ 
-              bgcolor: comment.user && comment.user.avatar 
-                ? null 
-                : getAvatarColor(comment.user?.name || "User"), 
-              mr: 2,
-              mt: 1.5
-            }}
-            src={comment.user?.avatar || null}
-          >
-            {comment.user?.name ? comment.user.name[0] : "U"}
-          </Avatar>
-          <Paper
-            elevation={0}
-            sx={{
-              p: 1,
-              pl: 3,
-              borderRadius: 5,
-              bgcolor: "#f0f0f0",
-              width: "80%"
+              display: "flex", 
+              alignItems: "flex-start", 
+              position: "relative",
+              mb: 2
             }}
           >
-            <Typography fontWeight="bold" sx={{ fontSize: "0.9rem" }}>
-              {comment.user?.name || "Anonymous User"}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
-              <AccessTime sx={{ fontSize: "0.9rem", mr: 0.5 }} />
-              {formatDistanceToNowStrict(new Date(comment.createdAt), { addSuffix: true })}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ fontSize: "0.9rem" }}>
-              {comment.content}
-            </Typography>
-          </Paper>
-  
-          {/* Show delete menu only for user's own comments */}
-          {user && comment.user?._id === user._id && (
-            <>
-              <IconButton
-                sx={{ position: "absolute", right: 10, top: 5 }}
-                onClick={(event) => handleMenuOpen(event, comment._id)}
+            <Avatar 
+              sx={{ 
+                bgcolor: comment.user && comment.user.avatar 
+                  ? null 
+                  : getAvatarColor(comment.user?.name || "User"), 
+                mr: 2,
+                mt: 1.5,
+                color: "white"
+              }}
+              src={comment.user?.avatar || null}
+            >
+              {comment.user?.name ? comment.user.name[0].toUpperCase() : "U"}
+            </Avatar>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                pl: 3,
+                borderRadius: 3,
+                bgcolor: "#f8f8f8",
+                width: "80%",
+                position: "relative",
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  left: -8,
+                  top: 15,
+                  width: 0,
+                  height: 0,
+                  borderTop: '8px solid transparent',
+                  borderBottom: '8px solid transparent',
+                  borderRight: '8px solid #f8f8f8',
+                }
+              }}
+            >
+              <Typography fontWeight="bold" sx={{ fontSize: "0.95rem" }}>
+                {comment.user?.name || "Anonymous User"}
+              </Typography>
+              <Typography 
+                variant="caption" 
+                color="text.secondary" 
+                display="flex" 
+                alignItems="center" 
+                gutterBottom
+                sx={{ mb: 1 }}
               >
-                <MoreVert />
-              </IconButton>
-              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-                <MenuItem onClick={handleDeleteComment}>Delete</MenuItem>
-              </Menu>
-            </>
-          )}
-        </Box>
+                <AccessTime sx={{ fontSize: "0.9rem", mr: 0.5, opacity: 0.6 }} />
+                {formatDistanceToNowStrict(new Date(comment.createdAt), { addSuffix: true })}
+              </Typography>
+              <Typography variant="body1" sx={{ fontSize: "0.95rem", lineHeight: 1.5 }}>
+                {comment.content}
+              </Typography>
+            </Paper>
+    
+            {/* Show delete menu only for user's own comments */}
+            {user && comment.user?._id === user._id && (
+              <>
+                <IconButton
+                  size="small"
+                  sx={{ position: "absolute", right: 10, top: 5 }}
+                  onClick={(event) => handleMenuOpen(event, comment._id)}
+                >
+                  <MoreVert fontSize="small" />
+                </IconButton>
+                <Menu 
+                  anchorEl={anchorEl} 
+                  open={Boolean(anchorEl) && selectedComment === comment._id} 
+                  onClose={handleMenuClose}
+                >
+                  <MenuItem onClick={handleDeleteComment}>Delete</MenuItem>
+                </Menu>
+              </>
+            )}
+          </Box>
+        </motion.div>
       ))
     ) : (
-      <Typography color="text.secondary" align="center" py={4}>
-        No comments yet.
-      </Typography>
+      <Box sx={{ py: 4, textAlign: "center" }}>
+        <ForumOutlined sx={{ fontSize: 40, color: "#6fba94", opacity: 0.4, mb: 2 }} />
+        <Typography color="text.secondary">
+          No comments yet. Be the first to share your thoughts!
+        </Typography>
+      </Box>
     );
   };
 
@@ -255,12 +338,17 @@ const ForumDiscussion = () => {
       <Box
         sx={{
           display: "flex",
+          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
           minHeight: "100vh",
+          bgcolor: "#b4ddc8",
         }}
       >
-        <Typography>Loading discussion...</Typography>
+        <CircularProgress sx={{ color: "#4e8067", mb: 2 }} />
+        <Typography fontWeight="medium" color="#4e8067">
+          Loading discussion...
+        </Typography>
       </Box>
     );
   }
@@ -273,6 +361,7 @@ const ForumDiscussion = () => {
           justifyContent: "center",
           alignItems: "center",
           minHeight: "100vh",
+          bgcolor: "#b4ddc8",
           p: 3,
         }}
       >
@@ -290,121 +379,342 @@ const ForumDiscussion = () => {
         flexDirection: "column",
         alignItems: "center",
         minHeight: "100vh",
-        bgcolor: "#b4ddc8",
-        p: 3,
+        bgcolor: "#b4ddc8", 
+        pb: 10, // Space for bottom nav
       }}
     >
-      {/* Today's Forum */}
-      {todaysPrompt && (
-      <Card sx={{ width: "900px", p: 5, borderRadius: 5, boxShadow: 3, mb: 4 }}>
-        {/* Prompt Header */}
-        <Typography variant="subtitle1" color="success.main" gutterBottom>
-          TODAY, {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-        </Typography>
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Today's Prompt: {todaysPrompt.question}
-        </Typography>
-
-        {/* Comments Section */}
-        <Stack 
-          spacing={2} 
-          mt={3} 
-          sx={{ 
-            height: "200px",  
-            overflowY: "auto", 
-            pr: 1
-          }}
-        >
-          {renderComments(comments)}
-        </Stack>
-
-        {/* Comment Input Section */}
-        <Box sx={{ display: "flex", alignItems: "center", mt: 4 }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            size="medium"
-            placeholder="Write a comment..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            sx={{
-              bgcolor: "white",
-              borderRadius: 3,
-              mr: 2,
-            }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handlePostComment}
-            disabled={!newComment.trim()}
-            sx={{
-              textTransform: "none",
-              borderRadius: 3,
-              px: 3,
-              py: 1,
-              fontWeight: "bold",
-            }}
-          >
-            Post
-          </Button>
-        </Box>
-      </Card>
-    )}
-    
-    {/* Information message when no prompt is available */}
-    {!todaysPrompt && pastForums.length > 0 && (
-      <Alert severity="info" sx={{ width: "900px", mb: 4 }}>
-        No new prompt is available for today. You can view past discussions below.
-      </Alert>
-    )}
-    
-    {/* Past Forums */}
-    {pastForums.map((forum, index) => (
-      <Card 
-        key={index} 
-        sx={{ 
-          width: "900px", 
-          p: 5, 
-          borderRadius: 5, 
-          boxShadow: 3, 
-          mb: 4 
+      {/* Header */}
+      <Box
+        sx={{
+          width: "100%",
+          backgroundColor: "white",
+          p: 2,
+          mb: 3,
+          boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
+          display: "flex",
+          justifyContent: "center"
         }}
       >
-        {/* Prompt Header */}
-        <Typography variant="subtitle1" color="success.main" gutterBottom>
-          {new Date(forum.prompt.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-        </Typography>
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          {forum.prompt?.question || "Past prompt"}
-        </Typography>
-
-        {/* Comments Section */}
-        <Stack 
-          spacing={2} 
-          mt={3} 
+        <Typography 
+          variant="h5" 
+          fontWeight="bold" 
           sx={{ 
-            height: "200px",  
-            overflowY: "auto", 
-            pr: 1
+            color: "#4e8067",
+            display: "flex",
+            alignItems: "center"
           }}
         >
-          {renderComments(forum.discussions)}
-        </Stack>
-      </Card>
-    ))}
+          <ForumOutlined sx={{ mr: 1 }} /> 
+          Community Discussion
+        </Typography>
+      </Box>
+      
+      <Box 
+        sx={{ 
+          width: "100%", 
+          maxWidth: isMobile ? "95%" : "750px", 
+          px: 2 
+        }}
+      >
+        {/* Today's Forum */}
+        {todaysPrompt && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card 
+              sx={{ 
+                p: 3, 
+                borderRadius: 4, 
+                boxShadow: 2, 
+                mb: 4,
+                border: "1px solid rgba(0,0,0,0.05)"
+              }}
+            >
+              {/* Prompt Header */}
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                <Chip
+                  icon={<CalendarToday fontSize="small" />}
+                  label={`TODAY, ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}`}
+                  size="small"
+                  sx={{ 
+                    bgcolor: "#e9f5ef", 
+                    color: "#4e8067", 
+                    fontWeight: 500, 
+                    mb: 1,
+                    px: 1
+                  }}
+                />
+                
+                <Chip
+                  label={`${comments.length} ${comments.length === 1 ? 'comment' : 'comments'}`}
+                  size="small"
+                  sx={{ 
+                    bgcolor: "#f0f0f0", 
+                    fontWeight: 500, 
+                    mb: 1
+                  }}
+                />
+              </Box>
+              
+              <Typography 
+                variant="h5" 
+                fontWeight="bold" 
+                gutterBottom
+                sx={{ 
+                  color: "#2d5340",
+                  mb: 2,
+                  fontSize: isMobile ? "1.2rem" : "1.5rem" 
+                }}
+              >
+                {todaysPrompt.question}
+              </Typography>
+
+              <Divider sx={{ my: 2, borderColor: "rgba(0,0,0,0.08)" }} />
+
+              {/* Comments Section */}
+              <Box 
+                sx={{ 
+                  maxHeight: "350px",  
+                  overflowY: "auto", 
+                  pr: 1,
+                  pb: 2,
+                  // Scrollbar styling
+                  "&::-webkit-scrollbar": {
+                    width: "6px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    borderRadius: "10px",
+                    backgroundColor: "#f1f1f1"
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    borderRadius: "10px",
+                    backgroundColor: "#c1c1c1"
+                  }
+                }}
+              >
+                <Stack spacing={0.5}>
+                  {renderComments(comments)}
+                </Stack>
+              </Box>
+
+              {/* Comment Input Section */}
+              <Box sx={{ mt: 2, position: "relative" }}>
+                <TextField
+                  fullWidth
+                  multiline
+                  maxRows={3}
+                  variant="outlined"
+                  size="medium"
+                  placeholder="Share your thoughts on today's prompt..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 3,
+                      backgroundColor: "#f8f8f8"
+                    }
+                  }}
+                />
+                
+                <Box sx={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "center", 
+                  mt: 2 
+                }}>
+                  <Tooltip title="Add emoji">
+                    <IconButton 
+                      onClick={() => setShowEmojis(!showEmojis)} 
+                      size="small" 
+                      sx={{ color: "#6fba94" }}
+                    >
+                      <SentimentSatisfiedAlt />
+                    </IconButton>
+                  </Tooltip>
+                  
+                  <Button
+                    variant="contained"
+                    onClick={handlePostComment}
+                    disabled={!newComment.trim()}
+                    sx={{
+                      textTransform: "none",
+                      borderRadius: 3,
+                      px: 3,
+                      py: 1,
+                      fontWeight: "bold",
+                      bgcolor: "#6fba94",
+                      "&:hover": {
+                        bgcolor: "#4e8067"
+                      }
+                    }}
+                  >
+                    Post Comment
+                  </Button>
+                </Box>
+                
+                {/* Emoji picker */}
+                <Fade in={showEmojis}>
+                  <Paper 
+                    elevation={3}
+                    sx={{
+                      display: showEmojis ? 'flex' : 'none',
+                      position: 'absolute',
+                      bottom: 60,
+                      left: 0,
+                      zIndex: 10,
+                      p: 1,
+                      borderRadius: 2,
+                      flexWrap: 'wrap',
+                      width: 'auto',
+                      maxWidth: '280px'
+                    }}
+                  >
+                    {commonEmojis.map(emoji => (
+                      <IconButton
+                        key={emoji}
+                        size="small"
+                        onClick={() => insertEmoji(emoji)}
+                        sx={{ 
+                          m: 0.5,
+                          fontSize: '1.2rem'
+                        }}
+                      >
+                        {emoji}
+                      </IconButton>
+                    ))}
+                  </Paper>
+                </Fade>
+              </Box>
+            </Card>
+          </motion.div>
+        )}
+      
+        {/* Information message when no prompt is available */}
+        {!todaysPrompt && pastForums.length > 0 && (
+          <Alert 
+            severity="info" 
+            variant="outlined"
+            sx={{ 
+              width: "100%", 
+              mb: 4,
+              borderRadius: 2
+            }}
+          >
+            No new prompt is available for today. You can view past discussions below.
+          </Alert>
+        )}
+      
+        {/* Past Forums */}
+        {pastForums.map((forum, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
+          >
+            <Card 
+              sx={{ 
+                p: 3, 
+                borderRadius: 4, 
+                boxShadow: 1, 
+                mb: 4,
+                border: "1px solid rgba(0,0,0,0.05)",
+                bgcolor: "#fcfcfc"
+              }}
+            >
+              {/* Prompt Header */}
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                <Chip
+                  icon={<CalendarToday fontSize="small" />}
+                  label={new Date(forum.prompt.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                  size="small"
+                  sx={{ 
+                    bgcolor: "#eaf0ec", 
+                    color: "#6fba94", 
+                    fontWeight: 500, 
+                    mb: 1,
+                    px: 1
+                  }}
+                />
+                
+                <Chip
+                  label={`${forum.discussions?.length || 0} ${forum.discussions?.length === 1 ? 'comment' : 'comments'}`}
+                  size="small"
+                  sx={{ 
+                    bgcolor: "#f0f0f0", 
+                    fontWeight: 500, 
+                    mb: 1
+                  }}
+                />
+              </Box>
+              
+              <Typography 
+                variant="h5" 
+                fontWeight="bold" 
+                sx={{ 
+                  color: "#2d5340",
+                  mb: 2,
+                  fontSize: isMobile ? "1.2rem" : "1.5rem" 
+                }}
+              >
+                {forum.prompt?.question || "Past prompt"}
+              </Typography>
+
+              <Divider sx={{ my: 2, borderColor: "rgba(0,0,0,0.08)" }} />
+
+              {/* Comments Section */}
+              <Box 
+                sx={{ 
+                  maxHeight: "300px",  
+                  overflowY: "auto", 
+                  pr: 1,
+                  // Scrollbar styling
+                  "&::-webkit-scrollbar": {
+                    width: "6px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    borderRadius: "10px",
+                    backgroundColor: "#f1f1f1"
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    borderRadius: "10px",
+                    backgroundColor: "#c1c1c1"
+                  }
+                }}
+              >
+                <Stack spacing={0.5}>
+                  {renderComments(forum.discussions || [])}
+                </Stack>
+              </Box>
+            </Card>
+          </motion.div>
+        ))}
+      </Box>
       
       {/* Feedback Snackbar */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={5000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ mb: 7 }} // Leave space for bottom nav
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity} 
+          variant="filled"
+          sx={{ 
+            width: '100%',
+            borderRadius: 2
+          }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
+      
+      <BottomNav value={value} setValue={setValue} />
     </Box>
   );
 };
