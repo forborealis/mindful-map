@@ -4,49 +4,40 @@ import BottomNav from '../BottomNav';
 import { motion } from 'framer-motion';
 
 // Material UI Icons and Components
-import SpaIcon from '@mui/icons-material/Spa';
-import TimerIcon from '@mui/icons-material/Timer';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 
-const ActivityCard = ({ icon, title, description, image, onClick, color }) => {
+const ActivityCard = ({ title, description, image, onClick, color }) => {
   return (
     <motion.div
       whileHover={{ scale: 1.02, boxShadow: '0 15px 30px -10px rgba(0, 0, 0, 0.1), 0 15px 15px -10px rgba(0, 0, 0, 0.04)' }}
       whileTap={{ scale: 0.98 }}
-      className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-[360px]"
+      className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-[480px]" // Increased height further
       onClick={onClick}
     >
-      <div className="relative h-48">
+      <div className="relative h-64"> {/* Increased image container height */}
         <img src={image} alt={title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-        
-        <div 
-          className="absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
-          style={{ backgroundColor: color }}
-        >
-          {icon}
-        </div>
         
         <div className="absolute bottom-0 left-0 p-5 w-full">
           <h3 className="font-bold text-white text-xl drop-shadow-md">{title}</h3>
         </div>
       </div>
       
-      <div className="p-5 flex-1 flex flex-col justify-between border-t border-gray-50">
-        <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
-        <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end">
+      <div className="p-6 flex-1 flex flex-col justify-between border-t border-gray-50">
+        <p className="text-gray-600 text-base leading-relaxed">
+          {description}
+        </p>
+        <div className="mt-5 pt-4 border-t border-gray-100 flex justify-end">
           <div 
-            className="flex items-center text-sm font-medium transition-all hover:opacity-80"
+            className="flex items-center text-base font-medium transition-all hover:opacity-80"
             style={{ color: color }}
           >
             Try now 
-            <ArrowForwardIcon style={{ fontSize: 18, marginLeft: 4 }} />
+            <ArrowForwardIcon style={{ fontSize: 20, marginLeft: 6 }} />
           </div>
         </div>
       </div>
@@ -93,7 +84,6 @@ const Activities = () => {
       description: 'Reduce stress and anxiety with guided breathing techniques. Practice mindful breathing for improved relaxation and mental clarity.',
       image: '/images/breathingexercise.gif',
       color: '#64aa86',
-      icon: <SpaIcon className="text-white" style={{ fontSize: 24 }} />,
       onClick: () => navigate('/breathing-exercise')
     },
     {
@@ -102,7 +92,6 @@ const Activities = () => {
       description: 'Boost productivity with timed work and break intervals. An effective method to maintain focus and prevent burnout.',
       image: '/images/pomodoro.gif',
       color: '#5a9edb', 
-      icon: <TimerIcon className="text-white" style={{ fontSize: 24 }} />,
       onClick: () => navigate('/pomodoro')
     },
     {
@@ -111,7 +100,6 @@ const Activities = () => {
       description: 'Build confidence and positive mindset through affirmations. Transform negative thoughts with powerful positive statements.',
       image: '/images/affirmation.gif',
       color: '#9c75d5',
-      icon: <AutoAwesomeIcon className="text-white" style={{ fontSize: 24 }} />,
       onClick: () => navigate('/affirmation')
     },
     {
@@ -120,7 +108,6 @@ const Activities = () => {
       description: 'Relax with soothing melodies and nature sounds. Curated audio tracks designed to reduce anxiety and promote peaceful states of mind.',
       image: '/images/relaxingmusic.gif',
       color: '#d57583',
-      icon: <MusicNoteIcon className="text-white" style={{ fontSize: 24 }} />,
       onClick: () => navigate('/calming-music')
     }
   ];
@@ -156,16 +143,15 @@ const Activities = () => {
       <div className="absolute top-80 left-0 w-32 h-32 rounded-full bg-[#5a9edb]/5 blur-2xl"></div>
       <div className="absolute bottom-60 right-10 w-32 h-32 rounded-full bg-[#9c75d5]/5 blur-2xl"></div>
       
-      {/* Refined header with card-like appearance */}
-      <motion.div 
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mx-6 mt-10 mb-8 bg-white rounded-xl p-6 shadow-md border border-gray-50"
-      >
-        <h1 className="text-3xl font-bold text-[#2d5f5d]">Mindfulness Activities</h1>
-        <p className="text-[#5e8a87] mt-2 max-w-lg">Discover curated activities designed to enhance your mental wellbeing and cultivate a mindful presence in everyday life.</p>
-      </motion.div>
+      {/* Full-width colored header container - Updated color to #89bcbc */}
+      <div className="w-full bg-[#89bcbc] py-12 mb-8 shadow-md">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <h1 className="text-4xl font-bold text-white mb-3">Mindfulness Activities</h1>
+          <p className="text-white text-opacity-90 max-w-2xl mx-auto text-lg">
+            Discover curated activities designed to enhance your mental wellbeing and cultivate a mindful presence in everyday life.
+          </p>
+        </div>
+      </div>
 
       {/* Activity Cards - with increased height */}
       <div className="px-6 pb-10">
@@ -179,7 +165,6 @@ const Activities = () => {
               className="h-full"
             >
               <ActivityCard
-                icon={activity.icon}
                 title={activity.title}
                 description={activity.description}
                 image={activity.image}
@@ -191,7 +176,7 @@ const Activities = () => {
         </div>
       </div>
       
-      {/* Elegant Quote - refined look */}
+      {/* Mental Health Quote */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -201,9 +186,9 @@ const Activities = () => {
         <div className="bg-white rounded-xl p-8 shadow-md text-center relative border border-gray-50">
           <FormatQuoteIcon style={{ color: '#9c75d520', fontSize: 48, position: 'absolute', top: 16, left: 16 }} />
           <p className="text-[#2d5f5d] italic text-xl px-8 font-light">
-            "The present moment is the only time over which we have dominion."
+            "Mental health is not a destination, but a process. It's about how you drive, not where you're going."
           </p>
-          <p className="text-[#5e8a87] text-sm mt-3">— Thích Nhất Hạnh</p>
+          <p className="text-[#5e8a87] text-sm mt-3">— Noam Shpancer</p>
         </div>
       </motion.div>
 
