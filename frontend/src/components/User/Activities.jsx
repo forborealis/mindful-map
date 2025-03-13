@@ -95,6 +95,14 @@ const Activities = () => {
       onClick: () => navigate('/pomodoro')
     },
     {
+      id: 'meditation',
+      title: 'Guided Meditation',
+      description: 'Experience deep relaxation with guided beach-setting meditation. Let the soothing sounds of waves wash away stress and restore inner calm.',
+      image: '/images/meditation.gif',
+      color: '#e3a857',
+      onClick: () => navigate('/meditation')
+    },
+    {
       id: 'affirmation',
       title: 'Daily Affirmations',
       description: 'Build confidence and positive mindset through affirmations. Transform negative thoughts with powerful positive statements.',
@@ -155,7 +163,7 @@ const Activities = () => {
 
       {/* Activity Cards - with increased height */}
       <div className="px-6 pb-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {activities.map((activity, index) => (
             <motion.div
               key={activity.id}
