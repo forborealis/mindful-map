@@ -29,6 +29,7 @@ import Affirmation from './components/User/Statistics/Recommendations/Affirmatio
 import ListTask from './components/User/Statistics/Recommendations/ListTask';
 import CalmingMusic from './components/User/Statistics/Recommendations/CalmingMusic';
 import Activities from './components/User/Activities';
+import Meditation from './components/User/Statistics/Recommendations/Meditation';
 import ForumDiscussion from './components/User/Forum';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -322,6 +323,14 @@ const App = () => {
           element={
             <UserPrivateRoute>
               <CalmingMusic />
+            </UserPrivateRoute>
+          }
+        />
+         <Route
+          path="/meditation"
+          element={
+            <UserPrivateRoute>
+              <Meditation />
             </UserPrivateRoute>
           }
         />
