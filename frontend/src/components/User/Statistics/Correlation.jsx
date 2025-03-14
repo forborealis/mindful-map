@@ -543,7 +543,7 @@ const Correlation = () => {
           <div className="bg-gray-50 px-6 py-4 flex flex-col md:flex-row justify-between items-center">
             <div className="text-center md:text-left mb-4 md:mb-0">
               <p className="text-gray-600 text-sm">
-                View personalized recommendations based on these insights.
+                View personalized recommendations.
               </p>
             </div>
             

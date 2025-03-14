@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Replace react-icons with Material UI icons
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
@@ -10,6 +10,8 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 import Fab from '@mui/material/Fab';
 import Zoom from '@mui/material/Zoom';
 
@@ -20,6 +22,7 @@ const AboutUs = () => {
   const [fadeInMission, setFadeInMission] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const statsRef = useRef(null);
   
@@ -114,6 +117,7 @@ const AboutUs = () => {
     if (section) {
       section.scrollIntoView({ behavior: 'smooth' });
     }
+    setMobileMenuOpen(false);
   };
   
   const scrollToTop = () => {
@@ -125,31 +129,31 @@ const AboutUs = () => {
       name: "Hannah Aurora Busto",
       role: "Fullstack Developer",
       image: "/images/member1.png",
-      social: { linkedin: "#", github: "#", twitter: "#" }
+      social: { linkedin: "#", github: "https://github.com/forborealis" }
     },
     {
       name: "Aminah Malic",
       role: "Fullstack Developer",
       image: "/images/member3.png",
-      social: { linkedin: "#", github: "#", twitter: "#" }
+      social: { linkedin: "#", github: "https://github.com/Minazuna" }
     },
     {
       name: "Prof. Pops Madriaga",
       role: "Project Adviser",
       image: "/images/maampops.png",
-      social: { linkedin: "#", github: "#", twitter: "#" }
+      social: { linkedin: "#", github: "#" }
     },
     {
       name: "Angel Galapon",
-      role: "Member",
+      role: "Developer",
       image: "/images/member2.png",
-      social: { linkedin: "#", github: "#", twitter: "#" }
+      social: { linkedin: "#", github: "https://github.com/endyelg" }
     },
     {
       name: "Resty Jr Cailao",
-      role: "Member",
+      role: "Developer",
       image: "/images/member4.png",
-      social: { linkedin: "#", github: "#", twitter: "#" }
+      social: { linkedin: "#", github: "#" }
     }
   ];
   
@@ -169,51 +173,103 @@ const AboutUs = () => {
             backgroundColor: '#64aa86',
             '&:hover': {
               backgroundColor: '#4a8a68',
-            }
+            },
+            zIndex: 40,
           }}
         >
           <ArrowUpwardIcon />
         </Fab>
       </Zoom>
       
-      {/* Navigation */}
-      <nav className="w-full bg-[#eef0ee] py-4 shadow-md fixed top-0 z-50">
-        <div className="container mx-auto flex justify-between items-center px-4">
-          <h1 
-            className="text-[#64aa86] text-2xl font-bold cursor-pointer flex items-center"
-            onClick={() => navigate('/')}
-          >
-            <motion.span whileHover={{ scale: 1.1 }}>Mindful Map</motion.span>
-          </h1>
-          <div className="flex space-x-6">
-            <span 
-              className={`text-[#64aa86] cursor-pointer transition-all duration-300 hover:text-[#4a8a68] ${activeSection === 'vision-section' ? 'font-bold border-b-2 border-[#64aa86]' : ''}`}
-              onClick={() => scrollToSection('vision-section')}
+      {/* Navigation Bar - Similar to Landing Page */}
+      <nav className="w-full bg-white/80 backdrop-blur-md fixed top-0 z-50 shadow-sm px-6 py-4">
+        <div className="container mx-auto flex justify-between items-center">
+          <h1 className="text-[#4a8063] text-2xl font-bold">Mindful Map</h1>
+          
+                {/* Desktop Navigation */}
+      <div className="hidden md:flex items-center space-x-6">
+        {/* Section links for current page */}
+        <a 
+          href="#vision-section" 
+          onClick={(e) => {e.preventDefault(); scrollToSection('vision-section');}}
+          className="text-[#4a8063] font-semibold hover:text-[#64aa86] transition-colors"
+        >
+          Vision
+        </a>
+        <a 
+          href="#mission-section" 
+          onClick={(e) => {e.preventDefault(); scrollToSection('mission-section');}}
+          className="text-[#4a8063] font-semibold hover:text-[#64aa86] transition-colors"
+        >
+          Mission
+        </a>
+        <a 
+          href="#team-section" 
+          onClick={(e) => {e.preventDefault(); scrollToSection('team-section');}}
+          className="text-[#4a8063] font-semibold hover:text-[#64aa86] transition-colors"
+        >
+          Team
+        </a>
+        
+        <Link to="/signup" className="bg-[#4a8063] text-white px-6 py-2 rounded-full shadow-md hover:bg-[#3d6952] transition-colors">
+          Sign Up
+        </Link>
+      </div>
+          
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-[#4a8063] focus:outline-none"
             >
-              Vision
-            </span>
-            <span 
-              className={`text-[#64aa86] cursor-pointer transition-all duration-300 hover:text-[#4a8a68] ${activeSection === 'mission-section' ? 'font-bold border-b-2 border-[#64aa86]' : ''}`}
-              onClick={() => scrollToSection('mission-section')}
-            >
-              Mission
-            </span>
-            <span 
-              className={`text-[#64aa86] cursor-pointer transition-all duration-300 hover:text-[#4a8a68] ${activeSection === 'team-section' ? 'font-bold border-b-2 border-[#64aa86]' : ''}`}
-              onClick={() => scrollToSection('team-section')}
-            >
-              The Team
-            </span>
-            <motion.span 
-              className="bg-[#64aa86] text-white px-4 py-1 rounded-full cursor-pointer hover:bg-[#4a8a68]"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/signup')}
-            >
-              Sign Up
-            </motion.span>
+              {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+            </button>
           </div>
         </div>
+        
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-white absolute left-0 right-0 shadow-lg py-4 px-6 z-50"
+          >
+            <div className="flex flex-col space-y-4">
+              <Link to="/" className="text-[#4a8063] font-semibold py-2 hover:bg-[#eef6f1] px-3 rounded-lg">Home</Link>
+              <Link to="/about" className="text-[#4a8063] font-semibold py-2 hover:bg-[#eef6f1] px-3 rounded-lg">About</Link>
+              <Link to="/features" className="text-[#4a8063] font-semibold py-2 hover:bg-[#eef6f1] px-3 rounded-lg">Features</Link>
+              
+              <div className="pt-2 border-t border-gray-100">
+                <span 
+                  className="text-[#4a8063] font-semibold py-2 hover:bg-[#eef6f1] px-3 rounded-lg block"
+                  onClick={() => scrollToSection('vision-section')}
+                >
+                  Vision
+                </span>
+                <span 
+                  className="text-[#4a8063] font-semibold py-2 hover:bg-[#eef6f1] px-3 rounded-lg block"
+                  onClick={() => scrollToSection('mission-section')}
+                >
+                  Mission
+                </span>
+                <span 
+                  className="text-[#4a8063] font-semibold py-2 hover:bg-[#eef6f1] px-3 rounded-lg block"
+                  onClick={() => scrollToSection('team-section')}
+                >
+                  The Team
+                </span>
+              </div>
+              
+              <div className="flex flex-col space-y-2 pt-2">
+                <Link to="/signup" className="bg-[#4a8063] text-white px-6 py-3 rounded-full text-center shadow-md hover:bg-[#3d6952]">
+                  Sign Up
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </nav>
       
       {/* Hero Section */}
@@ -366,7 +422,6 @@ const AboutUs = () => {
           <GroupsIcon sx={{ fontSize: 40, color: '#64aa86', marginRight: 2 }} />
           <h2 className="text-4xl md:text-5xl font-bold text-[#292f33] relative">
             Our Team
-            <span className="absolute -bottom-2 left-0 w-1/3 h-1 bg-[#64aa86]"></span>
           </h2>
         </div>
 
@@ -393,9 +448,6 @@ const AboutUs = () => {
                 <h3 className="text-xl font-bold text-[#292f33] mb-1">{member.name}</h3>
                 <p className="text-[#64aa86] font-medium mb-4">{member.role}</p>
                 <div className="flex justify-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <a href={member.social.linkedin} className="text-gray-600 hover:text-[#0077B5]">
-                    <LinkedInIcon />
-                  </a>
                   <a href={member.social.github} className="text-gray-600 hover:text-[#333]">
                     <GitHubIcon />
                   </a>
@@ -419,10 +471,46 @@ const AboutUs = () => {
         </motion.div>
       </div>
       
-      {/* Footer */}
-      <div className="w-full bg-[#292f33] text-white py-6 text-center">
-        <p>© {new Date().getFullYear()} Mindful Map. All rights reserved.</p>
-      </div>
+      {/* Footer - Similar to Landing Page */}
+      <footer className="w-full bg-[#292f33] text-white/80 py-12">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between">
+            <div className="mb-8 md:mb-0">
+              <h3 className="text-2xl font-bold text-white mb-4">Mindful Map</h3>
+              <p className="max-w-xs">
+                Helping you track, understand, and improve your mental wellbeing through data-driven insights.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-4">Links</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/" className="hover:text-white transition-colors">Home</Link></li>
+                  <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+                  <li><Link to="/features" className="hover:text-white transition-colors">Features</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-4">Account</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/signin" className="hover:text-white transition-colors">Log In</Link></li>
+                  <li><Link to="/signup" className="hover:text-white transition-colors">Sign Up</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-4">Legal</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                  <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-white/20 mt-8 pt-8 text-center">
+            <p>© {new Date().getFullYear()} Mindful Map. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

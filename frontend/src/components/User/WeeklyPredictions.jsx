@@ -34,12 +34,35 @@ const WeeklyPredictions = () => {
   ];
 
   const currentDay = new Date().toLocaleString('en-us', { weekday: 'long' });
-  const today = new Date();
-  const formattedDate = today.toLocaleDateString('en-US', { 
-    month: 'long', 
-    day: 'numeric',
-    year: 'numeric'
-  });
+  
+  // Get first and last day of current week
+  const getWeekDateRange = () => {
+    const today = new Date();
+    const currentDayOfWeek = today.getDay(); // 0 is Sunday, 1 is Monday...
+    
+    // Calculate the Monday (first day of week)
+    const firstDay = new Date(today);
+    const daysFromMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1; // Adjust to make Monday first day
+    firstDay.setDate(today.getDate() - daysFromMonday);
+    
+    // Calculate the Sunday (last day of week)
+    const lastDay = new Date(firstDay);
+    lastDay.setDate(firstDay.getDate() + 6);
+    
+    // Format dates
+    const formatOptions = { month: 'long', day: 'numeric' };
+    const firstDayFormatted = firstDay.toLocaleDateString('en-US', formatOptions);
+    
+    // Add year only to the last day to avoid redundancy
+    const lastDayFormatted = lastDay.toLocaleDateString('en-US', {
+      ...formatOptions,
+      year: 'numeric'
+    });
+    
+    return `${firstDayFormatted} - ${lastDayFormatted}`;
+  };
+  
+  const weekDateRange = getWeekDateRange();
 
   const formatActivities = (activities) => {
     if (!activities || activities.length === 0) return "";
@@ -166,7 +189,7 @@ const WeeklyPredictions = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-10"
         >
-          {/* Date above header */}
+          {/* Updated date range display */}
           <Box 
             sx={{
               display: 'inline-flex',
@@ -179,7 +202,7 @@ const WeeklyPredictions = () => {
               mb: 2
             }}
           >
-            <TodayIcon sx={{ color: '#64aa86', mr: 1 }} />
+            <CalendarMonthIcon sx={{ color: '#64aa86', mr: 1 }} />
             <Typography 
               variant="body1" 
               sx={{ 
@@ -188,7 +211,7 @@ const WeeklyPredictions = () => {
                 color: '#64aa86'
               }}
             >
-              {formattedDate}
+              {weekDateRange}
             </Typography>
           </Box>
         </motion.div>
