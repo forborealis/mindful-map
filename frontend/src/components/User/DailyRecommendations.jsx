@@ -1,104 +1,386 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
-const recommendations = {
-  angry: [
-    "Take deep breaths and count to ten.",
-    "Go for a walk to clear your mind.",
-    "Listen to calming music.",
-    "Practice mindfulness meditation.",
-    "Write down your thoughts in a journal.",
-    "Engage in a physical activity like running or yoga.",
-    "Talk to a friend or family member.",
-    "Try a relaxation technique like progressive muscle relaxation.",
-    "Take a break and do something you enjoy.",
-    "Practice gratitude by listing things you're thankful for.",
-    "Use a stress ball or other stress-relief tool.",
-    "Read a book or watch a movie.",
-    "Spend time in nature.",
-    "Do a creative activity like drawing or painting.",
-    "Practice positive self-talk."
-  ],
-  sad: [
-    "Reach out to a friend or family member.",
-    "Engage in a hobby you enjoy.",
-    "Take a walk outside and get some fresh air.",
-    "Listen to uplifting music.",
-    "Watch a funny movie or TV show.",
-    "Write down your feelings in a journal.",
-    "Practice mindfulness meditation.",
-    "Do a physical activity like exercise or yoga.",
-    "Spend time with a pet.",
-    "Try a new activity or learn something new.",
-    "Practice gratitude by listing things you're thankful for.",
-    "Read a book or listen to an audiobook.",
-    "Do a creative activity like drawing or painting.",
-    "Cook or bake something you enjoy.",
-    "Practice positive self-talk."
-  ],
-  anxious: [
-    "Practice deep breathing exercises.",
-    "Try mindfulness meditation.",
-    "Engage in a physical activity like running or yoga.",
-    "Write down your worries in a journal.",
-    "Listen to calming music.",
-    "Take a break and do something you enjoy.",
-    "Talk to a friend or family member.",
-    "Practice progressive muscle relaxation.",
-    "Spend time in nature.",
-    "Use a stress ball or other stress-relief tool.",
-    "Read a book or watch a movie.",
-    "Practice gratitude by listing things you're thankful for.",
-    "Do a creative activity like drawing or painting.",
-    "Try a relaxation technique like guided imagery.",
-    "Practice positive self-talk."
-  ]
-};
+// Material UI imports
+import { 
+  Card, 
+  Typography, 
+  Box,
+  Container,
+  IconButton,
+  Paper
+} from '@mui/material';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 const DailyRecommendations = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const mood = location.state?.mood;
 
-  const [selectedRecommendations, setSelectedRecommendations] = useState([]);
-
+  const validMoods = ['angry', 'anxious', 'sad'];
+  
   useEffect(() => {
-    if (mood && recommendations[mood]) {
-      const randomRecommendations = recommendations[mood]
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 3);
-      setSelectedRecommendations(randomRecommendations);
+    // If no mood is provided or it's not in our valid list, redirect to home
+    if (!mood || !validMoods.includes(mood)) {
+      navigate('/dashboard');
     }
-  }, [mood]);
+  }, [mood, navigate]);
 
   const handleNext = () => {
     navigate('/mood-entries');
   };
 
+  const buttonVariants = {
+    initial: { 
+      opacity: 0, 
+      y: 20 
+    },
+    animate: (custom) => ({ 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        delay: custom * 0.2,
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }),
+    hover: { 
+      scale: 1.03,
+      boxShadow: "0px 8px 20px rgba(100, 170, 134, 0.4)",
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    },
+    tap: { 
+      scale: 0.97
+    }
+  };
+
+  const getMoodColor = () => {
+    switch(mood) {
+      case 'angry': return '#ff6b6b';
+      case 'anxious': return '#ffd166';
+      case 'sad': return '#6b95ff';
+      default: return '#64aa86';
+    }
+  };
+
+  const buttonData = [
+    {
+      id: 1,
+      title: "Meditation",
+      description: "Find peace with guided meditation sessions",
+      image: "/images/meditation.gif",
+      path: "/meditation",
+      color: "#9c89f2"
+    },
+    {
+      id: 2,
+      title: "Breathing Exercise",
+      description: "Relax with deep breathing techniques",
+      image: "/images/breathingexercise.gif",
+      path: "/breathing-exercise",
+      color: "#64aa86"
+    },
+    {
+      id: 3,
+      title: "Calming Music",
+      description: "Soothe your mind with relaxing melodies",
+      image: "/images/relaxingmusic.gif",
+      path: "/calming-music",
+      color: "#64b5db"
+    }
+  ];
+
+  const moodColor = getMoodColor();
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#67b88f] via-[#93c4ab] to-[#fdffff]">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-[#3a3939]">
-          Since you're feeling {mood} today...
-        </h1>
-        <p className="text-lg text-[#3a3939] mt-2">
-          Follow these recommendations to help improve your mood:
-        </p>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+      className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#67b88f] via-[#93c4ab] to-[#fdffff] py-12 px-4 font-nunito"
+    >
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <motion.div 
+          className="absolute w-64 h-64 rounded-full bg-white opacity-20"
+          initial={{ x: -100, y: -50 }}
+          animate={{ x: -80, y: -30 }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
+          }}
+          style={{ top: '10%', left: '5%' }}
+        />
+        <motion.div 
+          className="absolute w-48 h-48 rounded-full bg-white opacity-15"
+          initial={{ x: 100, y: 50 }}
+          animate={{ x: 80, y: 30 }}
+          transition={{ 
+            duration: 7,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut",
+            delay: 0.5
+          }}
+          style={{ top: '50%', right: '5%' }}
+        />
+        <motion.div 
+          className="absolute w-32 h-32 rounded-full bg-white opacity-10"
+          initial={{ x: -50, y: 30 }}
+          animate={{ x: -30, y: 50 }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut",
+            delay: 1
+          }}
+          style={{ bottom: '15%', left: '15%' }}
+        />
       </div>
-      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-2xl">
-        {selectedRecommendations.map((rec, index) => (
-          <p key={index} className="text-lg text-[#3a3939] mb-4">
-            {rec}
-          </p>
-        ))}
-      </div>
-      <button
-        onClick={handleNext}
-        className="mt-8 bg-[#6fba94] text-white font-bold py-2 px-10 rounded-full hover:bg-[#5aa88f] absolute bottom-10 right-10"
-      >
-        Next
-      </button>
-    </div>
+
+      <Container maxWidth="sm" className="relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
+          className="relative text-center mb-12"
+        >
+          <Box 
+            sx={{
+              position: 'relative',
+              mb: 2,
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                background: `${moodColor}20`,
+                top: '-30px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: -1
+              }
+            }}
+          >
+            <Paper
+              elevation={0}
+              sx={{
+                bgcolor: 'transparent',
+                mb: 1,
+                border: `2px solid ${moodColor}`,
+                borderRadius: '30px',
+                py: 1,
+                px: 4,
+                display: 'inline-block'
+              }}
+            >
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 600,
+                  color: moodColor
+                }}
+              >
+                Feeling {mood && mood.toLowerCase()}
+              </Typography>
+            </Paper>
+          </Box>
+
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            sx={{ 
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 800, 
+              color: '#3a3939', 
+              mb: 1,
+            }}
+          >
+            Recommendations
+          </Typography>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontFamily: 'Nunito, sans-serif',
+              color: '#3a3939', 
+              opacity: 0.9,
+              maxWidth: '80%',
+              margin: '0 auto'
+            }}
+          >
+            Try these activities to help improve your mood
+          </Typography>
+          
+          <motion.div 
+            className="absolute -bottom-6 left-1/2 transform -translate-x-1/2"
+            animate={{ y: [0, -5, 0] }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Box sx={{ 
+              width: '40px', 
+              height: '4px', 
+              borderRadius: '2px',
+              background: moodColor,
+              opacity: 0.7
+            }} />
+          </motion.div>
+        </motion.div>
+
+        <Box sx={{ mb: 6 }}>
+          {buttonData.map((button, index) => (
+            <motion.div
+              key={button.id}
+              variants={buttonVariants}
+              initial="initial"
+              animate="animate"
+              whileHover="hover"
+              whileTap="tap"
+              custom={index}
+              onClick={() => navigate(button.path)}
+              style={{ marginBottom: '20px' }}
+            >
+              <Card
+                sx={{
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  background: 'rgba(255,255,255,0.9)',
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.5)',
+                  transition: 'all 0.3s ease',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '4px',
+                    height: '100%',
+                    backgroundColor: button.color,
+                  }
+                }}
+              >
+                <Box sx={{ display: 'flex', flexDirection: {xs: 'column', sm: 'row'}, alignItems: 'center' }}>
+                  <Box 
+                    sx={{ 
+                      width: {xs: '100%', sm: '110px'},
+                      height: {xs: '120px', sm: '120px'},
+                      overflow: 'hidden',
+                      borderRight: {xs: 'none', sm: `1px solid ${button.color}30`},
+                      borderBottom: {xs: `1px solid ${button.color}30`, sm: 'none'},
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      p: 2
+                    }}
+                  >
+                    <Box 
+                      sx={{ 
+                        position: 'absolute', 
+                        top: 0, 
+                        left: 0, 
+                        width: '100%', 
+                        height: '100%',
+                        background: `${button.color}10`,
+                        zIndex: 0 
+                      }} 
+                    />
+                    <img 
+                      src={button.image} 
+                      alt={button.title} 
+                      style={{ 
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '8px',
+                        position: 'relative',
+                        zIndex: 1
+                      }} 
+                    />
+                  </Box>
+
+                  <Box sx={{ 
+                    flexGrow: 1, 
+                    p: 3, 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center'
+                  }}>
+                    <Box>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontFamily: 'Nunito, sans-serif',
+                          fontWeight: 700, 
+                          color: '#3a3939',
+                          mb: 0.5
+                        }}
+                      >
+                        {button.title}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: 'Nunito, sans-serif',
+                          color: '#666'
+                        }}
+                      >
+                        {button.description}
+                      </Typography>
+                    </Box>
+                    <IconButton 
+                      sx={{ 
+                        backgroundColor: `${button.color}20`,
+                        color: button.color,
+                        '&:hover': {
+                          backgroundColor: button.color,
+                          color: 'white'
+                        },
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <ArrowForwardIosIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </Box>
+              </Card>
+            </motion.div>
+          ))}
+        </Box>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className="flex justify-center sm:justify-end"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05, backgroundColor: '#5aa88f' }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleNext}
+            className="bg-[#6fba94] text-white font-bold py-3 px-8 rounded-full shadow-md hover:bg-[#5aa88f] transition-colors duration-300 font-nunito"
+          >
+            Continue to Log
+          </motion.button>
+        </motion.div>
+      </Container>
+    </motion.div>
   );
 };
 
