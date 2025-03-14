@@ -21,7 +21,10 @@ import {
   Fade,
   Tooltip,
   useMediaQuery,
-  useTheme
+  useTheme,
+  CssBaseline,
+  ThemeProvider,
+  createTheme
 } from "@mui/material";
 import { 
   AccessTime, 
@@ -32,6 +35,31 @@ import {
 } from "@mui/icons-material";
 import BottomNav from "../BottomNav";
 import { motion } from "framer-motion";
+
+// Create a custom theme with Nunito font
+const theme = createTheme({
+  typography: {
+    fontFamily: '"Nunito", "Roboto", "Helvetica", "Arial", sans-serif',
+    h5: {
+      fontFamily: '"Nunito", "Roboto", "Helvetica", "Arial", sans-serif',
+      fontWeight: 700,
+    },
+    body1: {
+      fontFamily: '"Nunito", "Roboto", "Helvetica", "Arial", sans-serif',
+    },
+    button: {
+      fontFamily: '"Nunito", "Roboto", "Helvetica", "Arial", sans-serif',
+      fontWeight: 600,
+    },
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: `
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap');
+      `,
+    },
+  },
+});
 
 const ForumDiscussion = () => {
   const [todaysPrompt, setTodaysPrompt] = useState(null);
@@ -55,8 +83,8 @@ const ForumDiscussion = () => {
   const commonEmojis = ['😊', '💭', '👍', '🙌', '💪', '🧘', '🌱', '💯', '❤️', '✨'];
   
   // Responsive design
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   
   useEffect(() => {
     const fetchUserAndPrompt = async () => {
@@ -335,387 +363,415 @@ const ForumDiscussion = () => {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
-          bgcolor: "#b4ddc8",
-        }}
-      >
-        <CircularProgress sx={{ color: "#4e8067", mb: 2 }} />
-        <Typography fontWeight="medium" color="#4e8067">
-          Loading discussion...
-        </Typography>
-      </Box>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
+            bgcolor: "#b4ddc8",
+            fontFamily: "Nunito, sans-serif",
+          }}
+        >
+          <CircularProgress sx={{ color: "#4e8067", mb: 2 }} />
+          <Typography fontWeight="medium" color="#4e8067">
+            Loading discussion...
+          </Typography>
+        </Box>
+      </ThemeProvider>
     );
   }
 
   if (error) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
-          bgcolor: "#b4ddc8",
-          p: 3,
-        }}
-      >
-        <Alert severity="error" sx={{ width: "100%", maxWidth: "650px" }}>
-          {error}
-        </Alert>
-      </Box>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
+            bgcolor: "#b4ddc8",
+            p: 3,
+            fontFamily: "Nunito, sans-serif",
+          }}
+        >
+          <Alert severity="error" sx={{ width: "100%", maxWidth: "650px" }}>
+            {error}
+          </Alert>
+        </Box>
+      </ThemeProvider>
     );
   }
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        minHeight: "100vh",
-        bgcolor: "#b4ddc8", 
-        pb: 10, // Space for bottom nav
-      }}
-    >
-      {/* Header */}
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Box
         sx={{
-          width: "100%",
-          backgroundColor: "white",
-          p: 2,
-          mb: 3,
-          boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
           display: "flex",
-          justifyContent: "center"
+          flexDirection: "column",
+          alignItems: "center",
+          minHeight: "100vh",
+          bgcolor: "#b4ddc8", 
+          pb: 10, // Space for bottom nav
+          fontFamily: "Nunito, sans-serif",
         }}
       >
-        <Typography 
-          variant="h5" 
-          fontWeight="bold" 
-          sx={{ 
-            color: "#4e8067",
+        {/* Header */}
+        <Box
+          sx={{
+            width: "100%",
+            backgroundColor: "white",
+            p: 2,
+            mb: 3,
+            boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
             display: "flex",
-            alignItems: "center"
+            justifyContent: "center"
           }}
         >
-          <ForumOutlined sx={{ mr: 1 }} /> 
-          Community Discussion
-        </Typography>
-      </Box>
-      
-      <Box 
-        sx={{ 
-          width: "100%", 
-          maxWidth: isMobile ? "95%" : "750px", 
-          px: 2 
-        }}
-      >
-        {/* Today's Forum */}
-        {todaysPrompt && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card 
-              sx={{ 
-                p: 3, 
-                borderRadius: 4, 
-                boxShadow: 2, 
-                mb: 4,
-                border: "1px solid rgba(0,0,0,0.05)"
-              }}
-            >
-              {/* Prompt Header */}
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                <Chip
-                  icon={<CalendarToday fontSize="small" />}
-                  label={`TODAY, ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}`}
-                  size="small"
-                  sx={{ 
-                    bgcolor: "#e9f5ef", 
-                    color: "#4e8067", 
-                    fontWeight: 500, 
-                    mb: 1,
-                    px: 1
-                  }}
-                />
-                
-                <Chip
-                  label={`${comments.length} ${comments.length === 1 ? 'comment' : 'comments'}`}
-                  size="small"
-                  sx={{ 
-                    bgcolor: "#f0f0f0", 
-                    fontWeight: 500, 
-                    mb: 1
-                  }}
-                />
-              </Box>
-              
-              <Typography 
-                variant="h5" 
-                fontWeight="bold" 
-                gutterBottom
-                sx={{ 
-                  color: "#2d5340",
-                  mb: 2,
-                  fontSize: isMobile ? "1.2rem" : "1.5rem" 
-                }}
-              >
-                {todaysPrompt.question}
-              </Typography>
-
-              <Divider sx={{ my: 2, borderColor: "rgba(0,0,0,0.08)" }} />
-
-              {/* Comments Section */}
-              <Box 
-                sx={{ 
-                  maxHeight: "350px",  
-                  overflowY: "auto", 
-                  pr: 1,
-                  pb: 2,
-                  // Scrollbar styling
-                  "&::-webkit-scrollbar": {
-                    width: "6px",
-                  },
-                  "&::-webkit-scrollbar-track": {
-                    borderRadius: "10px",
-                    backgroundColor: "#f1f1f1"
-                  },
-                  "&::-webkit-scrollbar-thumb": {
-                    borderRadius: "10px",
-                    backgroundColor: "#c1c1c1"
-                  }
-                }}
-              >
-                <Stack spacing={0.5}>
-                  {renderComments(comments)}
-                </Stack>
-              </Box>
-
-              {/* Comment Input Section */}
-              <Box sx={{ mt: 2, position: "relative" }}>
-                <TextField
-                  fullWidth
-                  multiline
-                  maxRows={3}
-                  variant="outlined"
-                  size="medium"
-                  placeholder="Share your thoughts on today's prompt..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      backgroundColor: "#f8f8f8"
-                    }
-                  }}
-                />
-                
-                <Box sx={{ 
-                  display: "flex", 
-                  justifyContent: "space-between", 
-                  alignItems: "center", 
-                  mt: 2 
-                }}>
-                  <Tooltip title="Add emoji">
-                    <IconButton 
-                      onClick={() => setShowEmojis(!showEmojis)} 
-                      size="small" 
-                      sx={{ color: "#6fba94" }}
-                    >
-                      <SentimentSatisfiedAlt />
-                    </IconButton>
-                  </Tooltip>
-                  
-                  <Button
-                    variant="contained"
-                    onClick={handlePostComment}
-                    disabled={!newComment.trim()}
-                    sx={{
-                      textTransform: "none",
-                      borderRadius: 3,
-                      px: 3,
-                      py: 1,
-                      fontWeight: "bold",
-                      bgcolor: "#6fba94",
-                      "&:hover": {
-                        bgcolor: "#4e8067"
-                      }
-                    }}
-                  >
-                    Post Comment
-                  </Button>
-                </Box>
-                
-                {/* Emoji picker */}
-                <Fade in={showEmojis}>
-                  <Paper 
-                    elevation={3}
-                    sx={{
-                      display: showEmojis ? 'flex' : 'none',
-                      position: 'absolute',
-                      bottom: 60,
-                      left: 0,
-                      zIndex: 10,
-                      p: 1,
-                      borderRadius: 2,
-                      flexWrap: 'wrap',
-                      width: 'auto',
-                      maxWidth: '280px'
-                    }}
-                  >
-                    {commonEmojis.map(emoji => (
-                      <IconButton
-                        key={emoji}
-                        size="small"
-                        onClick={() => insertEmoji(emoji)}
-                        sx={{ 
-                          m: 0.5,
-                          fontSize: '1.2rem'
-                        }}
-                      >
-                        {emoji}
-                      </IconButton>
-                    ))}
-                  </Paper>
-                </Fade>
-              </Box>
-            </Card>
-          </motion.div>
-        )}
-      
-        {/* Information message when no prompt is available */}
-        {!todaysPrompt && pastForums.length > 0 && (
-          <Alert 
-            severity="info" 
-            variant="outlined"
+          <Typography 
+            variant="h5" 
+            fontWeight="bold" 
             sx={{ 
-              width: "100%", 
-              mb: 4,
-              borderRadius: 2
+              color: "#4e8067",
+              display: "flex",
+              alignItems: "center",
+              fontFamily: "Nunito, sans-serif",
             }}
           >
-            No new prompt is available for today. You can view past discussions below.
-          </Alert>
-        )}
-      
-        {/* Past Forums */}
-        {pastForums.map((forum, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
-          >
-            <Card 
-              sx={{ 
-                p: 3, 
-                borderRadius: 4, 
-                boxShadow: 1, 
-                mb: 4,
-                border: "1px solid rgba(0,0,0,0.05)",
-                bgcolor: "#fcfcfc"
-              }}
-            >
-              {/* Prompt Header */}
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                <Chip
-                  icon={<CalendarToday fontSize="small" />}
-                  label={new Date(forum.prompt.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                  size="small"
-                  sx={{ 
-                    bgcolor: "#eaf0ec", 
-                    color: "#6fba94", 
-                    fontWeight: 500, 
-                    mb: 1,
-                    px: 1
-                  }}
-                />
-                
-                <Chip
-                  label={`${forum.discussions?.length || 0} ${forum.discussions?.length === 1 ? 'comment' : 'comments'}`}
-                  size="small"
-                  sx={{ 
-                    bgcolor: "#f0f0f0", 
-                    fontWeight: 500, 
-                    mb: 1
-                  }}
-                />
-              </Box>
-              
-              <Typography 
-                variant="h5" 
-                fontWeight="bold" 
-                sx={{ 
-                  color: "#2d5340",
-                  mb: 2,
-                  fontSize: isMobile ? "1.2rem" : "1.5rem" 
-                }}
-              >
-                {forum.prompt?.question || "Past prompt"}
-              </Typography>
-
-              <Divider sx={{ my: 2, borderColor: "rgba(0,0,0,0.08)" }} />
-
-              {/* Comments Section */}
-              <Box 
-                sx={{ 
-                  maxHeight: "300px",  
-                  overflowY: "auto", 
-                  pr: 1,
-                  // Scrollbar styling
-                  "&::-webkit-scrollbar": {
-                    width: "6px",
-                  },
-                  "&::-webkit-scrollbar-track": {
-                    borderRadius: "10px",
-                    backgroundColor: "#f1f1f1"
-                  },
-                  "&::-webkit-scrollbar-thumb": {
-                    borderRadius: "10px",
-                    backgroundColor: "#c1c1c1"
-                  }
-                }}
-              >
-                <Stack spacing={0.5}>
-                  {renderComments(forum.discussions || [])}
-                </Stack>
-              </Box>
-            </Card>
-          </motion.div>
-        ))}
-      </Box>
-      
-      {/* Feedback Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={5000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        sx={{ mb: 7 }} // Leave space for bottom nav
-      >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity={snackbar.severity} 
-          variant="filled"
+            <ForumOutlined sx={{ mr: 1 }} /> 
+            Community Discussion
+          </Typography>
+        </Box>
+        
+        <Box 
           sx={{ 
-            width: '100%',
-            borderRadius: 2
+            width: "100%", 
+            maxWidth: isMobile ? "95%" : "750px", 
+            px: 2 
           }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-      
-      <BottomNav value={value} setValue={setValue} />
-    </Box>
+          {/* Today's Forum */}
+          {todaysPrompt && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card 
+                sx={{ 
+                  p: 3, 
+                  borderRadius: 4, 
+                  boxShadow: 2, 
+                  mb: 4,
+                  border: "1px solid rgba(0,0,0,0.05)"
+                }}
+              >
+                {/* Prompt Header */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                  <Chip
+                    icon={<CalendarToday fontSize="small" />}
+                    label={`TODAY, ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}`}
+                    size="small"
+                    sx={{ 
+                      bgcolor: "#e9f5ef", 
+                      color: "#4e8067", 
+                      fontWeight: 500, 
+                      mb: 1,
+                      px: 1,
+                      fontFamily: "Nunito, sans-serif",
+                    }}
+                  />
+                  
+                  <Chip
+                    label={`${comments.length} ${comments.length === 1 ? 'comment' : 'comments'}`}
+                    size="small"
+                    sx={{ 
+                      bgcolor: "#f0f0f0", 
+                      fontWeight: 500, 
+                      mb: 1,
+                      fontFamily: "Nunito, sans-serif",
+                    }}
+                  />
+                </Box>
+                
+                <Typography 
+                  variant="h5" 
+                  fontWeight="bold" 
+                  gutterBottom
+                  sx={{ 
+                    color: "#2d5340",
+                    mb: 2,
+                    fontSize: isMobile ? "1.2rem" : "1.5rem",
+                    fontFamily: "Nunito, sans-serif",
+                  }}
+                >
+                  {todaysPrompt.question}
+                </Typography>
+
+                <Divider sx={{ my: 2, borderColor: "rgba(0,0,0,0.08)" }} />
+
+                {/* Comments Section */}
+                <Box 
+                  sx={{ 
+                    maxHeight: "350px",  
+                    overflowY: "auto", 
+                    pr: 1,
+                    pb: 2,
+                    // Scrollbar styling
+                    "&::-webkit-scrollbar": {
+                      width: "6px",
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      borderRadius: "10px",
+                      backgroundColor: "#f1f1f1"
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      borderRadius: "10px",
+                      backgroundColor: "#c1c1c1"
+                    }
+                  }}
+                >
+                  <Stack spacing={0.5}>
+                    {renderComments(comments)}
+                  </Stack>
+                </Box>
+
+                {/* Comment Input Section */}
+                <Box sx={{ mt: 2, position: "relative" }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    maxRows={3}
+                    variant="outlined"
+                    size="medium"
+                    placeholder="Share your thoughts on today's prompt..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 3,
+                        backgroundColor: "#f8f8f8",
+                        fontFamily: "Nunito, sans-serif",
+                      },
+                      "& .MuiInputBase-input": {
+                        fontFamily: "Nunito, sans-serif",
+                      }
+                    }}
+                  />
+                  
+                  <Box sx={{ 
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    alignItems: "center", 
+                    mt: 2 
+                  }}>
+                    <Tooltip title="Add emoji">
+                      <IconButton 
+                        onClick={() => setShowEmojis(!showEmojis)} 
+                        size="small" 
+                        sx={{ color: "#6fba94" }}
+                      >
+                        <SentimentSatisfiedAlt />
+                      </IconButton>
+                    </Tooltip>
+                    
+                    <Button
+                      variant="contained"
+                      onClick={handlePostComment}
+                      disabled={!newComment.trim()}
+                      sx={{
+                        textTransform: "none",
+                        borderRadius: 3,
+                        px: 3,
+                        py: 1,
+                        fontWeight: "bold",
+                        bgcolor: "#6fba94",
+                        fontFamily: "Nunito, sans-serif",
+                        "&:hover": {
+                          bgcolor: "#4e8067"
+                        }
+                      }}
+                    >
+                      Post Comment
+                    </Button>
+                  </Box>
+                  
+                  {/* Emoji picker */}
+                  <Fade in={showEmojis}>
+                    <Paper 
+                      elevation={3}
+                      sx={{
+                        display: showEmojis ? 'flex' : 'none',
+                        position: 'absolute',
+                        bottom: 60,
+                        left: 0,
+                        zIndex: 10,
+                        p: 1,
+                        borderRadius: 2,
+                        flexWrap: 'wrap',
+                        width: 'auto',
+                        maxWidth: '280px'
+                      }}
+                    >
+                      {commonEmojis.map(emoji => (
+                        <IconButton
+                          key={emoji}
+                          size="small"
+                          onClick={() => insertEmoji(emoji)}
+                          sx={{ 
+                            m: 0.5,
+                            fontSize: '1.2rem'
+                          }}
+                        >
+                          {emoji}
+                        </IconButton>
+                      ))}
+                    </Paper>
+                  </Fade>
+                </Box>
+              </Card>
+            </motion.div>
+          )}
+        
+          {/* Information message when no prompt is available */}
+          {!todaysPrompt && pastForums.length > 0 && (
+            <Alert 
+              severity="info" 
+              variant="outlined"
+              sx={{ 
+                width: "100%", 
+                mb: 4,
+                borderRadius: 2,
+                "& .MuiAlert-message": {
+                  fontFamily: "Nunito, sans-serif",
+                }
+              }}
+            >
+              No new prompt is available for today. You can view past discussions below.
+            </Alert>
+          )}
+        
+          {/* Past Forums */}
+          {pastForums.map((forum, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
+            >
+              <Card 
+                sx={{ 
+                  p: 3, 
+                  borderRadius: 4, 
+                  boxShadow: 1, 
+                  mb: 4,
+                  border: "1px solid rgba(0,0,0,0.05)",
+                  bgcolor: "#fcfcfc"
+                }}
+              >
+                {/* Prompt Header */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                  <Chip
+                    icon={<CalendarToday fontSize="small" />}
+                    label={new Date(forum.prompt.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                    size="small"
+                    sx={{ 
+                      bgcolor: "#eaf0ec", 
+                      color: "#6fba94", 
+                      fontWeight: 500, 
+                      mb: 1,
+                      px: 1,
+                      fontFamily: "Nunito, sans-serif",
+                    }}
+                  />
+                  
+                  <Chip
+                    label={`${forum.discussions?.length || 0} ${forum.discussions?.length === 1 ? 'comment' : 'comments'}`}
+                    size="small"
+                    sx={{ 
+                      bgcolor: "#f0f0f0", 
+                      fontWeight: 500, 
+                      mb: 1,
+                      fontFamily: "Nunito, sans-serif",
+                    }}
+                  />
+                </Box>
+                
+                <Typography 
+                  variant="h5" 
+                  fontWeight="bold" 
+                  sx={{ 
+                    color: "#2d5340",
+                    mb: 2,
+                    fontSize: isMobile ? "1.2rem" : "1.5rem",
+                    fontFamily: "Nunito, sans-serif",
+                  }}
+                >
+                  {forum.prompt?.question || "Past prompt"}
+                </Typography>
+
+                <Divider sx={{ my: 2, borderColor: "rgba(0,0,0,0.08)" }} />
+
+                {/* Comments Section */}
+                <Box 
+                  sx={{ 
+                    maxHeight: "300px",  
+                    overflowY: "auto", 
+                    pr: 1,
+                    // Scrollbar styling
+                    "&::-webkit-scrollbar": {
+                      width: "6px",
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      borderRadius: "10px",
+                      backgroundColor: "#f1f1f1"
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      borderRadius: "10px",
+                      backgroundColor: "#c1c1c1"
+                    }
+                  }}
+                >
+                  <Stack spacing={0.5}>
+                    {renderComments(forum.discussions || [])}
+                  </Stack>
+                </Box>
+              </Card>
+            </motion.div>
+          ))}
+        </Box>
+        
+        {/* Feedback Snackbar */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={5000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          sx={{ mb: 7 }} // Leave space for bottom nav
+        >
+          <Alert 
+            onClose={handleCloseSnackbar} 
+            severity={snackbar.severity} 
+            variant="filled"
+            sx={{ 
+              width: '100%',
+              borderRadius: 2,
+              fontFamily: "Nunito, sans-serif",
+            }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+        
+        <BottomNav value={value} setValue={setValue} />
+      </Box>
+    </ThemeProvider>
   );
 };
 

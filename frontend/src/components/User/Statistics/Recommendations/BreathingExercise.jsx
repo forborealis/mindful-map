@@ -189,28 +189,24 @@ const BreathingExercise = () => {
               Hold
             </p>
 
-            {/* Animated indicator for current position */}
-            <div className={`absolute w-4 h-4 rounded-full transition-all duration-300 shadow-lg`}
-                 style={{ 
-                   backgroundColor: techniqueColor,
-                   top: dotPosition.top,
-                   left: dotPosition.left,
-                   transform: 'translate(-50%, -50%)'
-                 }}>
-            </div>
+     {/* Animated indicator for current position */}
+<div className={`absolute w-4 h-4 rounded-full transition-all duration-700 shadow-lg`}
+     style={{ 
+       backgroundColor: techniqueColor,
+       top: currentPhaseIndex === 0 ? '0%' : 
+            currentPhaseIndex === 1 ? '50%' :
+            currentPhaseIndex === 2 ? '100%' : '50%',
+       left: currentPhaseIndex === 0 ? '50%' : 
+             currentPhaseIndex === 1 ? '100%' :
+             currentPhaseIndex === 2 ? '50%' : '0%',
+       transform: 'translate(-50%, -50%)'
+     }}>
+</div>
               
             {/* Counter - showing only the number */}
             <div className="bg-white bg-opacity-90 px-6 py-4 rounded-full shadow-md">
               <p className="text-5xl font-bold" style={{ color: techniqueColor }}>{count}</p>
             </div>
-
-            {/* Technique info button inside the box */}
-            <button 
-              onClick={() => setShowTechniqueInfo(!showTechniqueInfo)} 
-              className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
-            >
-              <span className="text-gray-600 text-xs font-bold">?</span>
-            </button>
           </div>
         </div>
       );
@@ -402,12 +398,7 @@ const BreathingExercise = () => {
       {/* Header */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-white">Breathing Exercises</h1>
-        <button 
-          onClick={() => setShowInfo(!showInfo)} 
-          className="text-white hover:text-yellow-200 transition-colors"
-        >
-          <InfoOutlinedIcon style={{ fontSize: 28 }} />
-        </button>
+        {/* Removed the InfoOutlinedIcon button here */}
       </div>
       
       {/* Exercise selector */}
@@ -420,7 +411,7 @@ const BreathingExercise = () => {
               selectedTechnique.id === technique.id 
                 ? 'bg-white shadow-lg transform scale-105' 
                 : 'bg-white bg-opacity-50 hover:bg-opacity-70'
-            }`}
+            } relative`}
           >
             <h3 className="font-bold text-left" 
                 style={{ color: selectedTechnique.id === technique.id ? technique.color : '#506c8a' }}>
@@ -433,7 +424,21 @@ const BreathingExercise = () => {
       </div>
       
       {/* Current exercise */}
-      <div className="w-full max-w-4xl bg-white p-6 rounded-xl shadow-lg mb-8">
+      <div className="w-full max-w-4xl bg-white p-6 rounded-xl shadow-lg mb-8 relative">
+        {/* Info icon moved to bottom-left of main exercise container */}
+        <InfoOutlinedIcon 
+          onClick={() => setShowInfo(!showInfo)}
+          style={{ 
+            position: 'absolute', 
+            bottom: '16px', 
+            left: '16px', 
+            fontSize: 22, 
+            color: selectedTechnique.color,
+            opacity: 0.7,
+            cursor: 'pointer'
+          }} 
+        />
+        
         <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
           <div>
             <p className="text-[#b1b1b1] text-sm">Current Exercise</p>
@@ -547,10 +552,10 @@ const BreathingExercise = () => {
             <h3 className="font-bold mb-2 text-[#3c4f61]">Controls:</h3>
             <ul className="list-disc pl-5 text-gray-700">
               <li className="mb-1">Select any breathing technique from the top menu</li>
+              <li className="mb-1">Click on the info icon in the lower left corner for more information</li>
               <li className="mb-1">Follow the visual guide and countdown timer</li>
               <li className="mb-1">Use the Pause/Resume button to control the exercise</li>
               <li className="mb-1">Adjust or mute the background audio if needed</li>
-              <li className="mb-1">Click the question mark icon inside visualizations for technique-specific guidance</li>
             </ul>
           </div>
           
