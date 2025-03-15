@@ -1,0 +1,22 @@
+{
+    "version": 2,
+    "builds": [
+      { "src": "frontend/**/*", "use": "@vercel/static" },
+      { "src": "backend/api/*.js", "use": "@vercel/node" }
+    ],
+    "routes": [
+      { "src": "/api/(.*)", "dest": "/backend/api/$1" },
+      { "src": "/(.*)", "dest": "/frontend/$1" }
+    ],
+    "functions": {
+      "backend/api/*.js": {
+        "memory": 1024,
+        "maxDuration": 10
+      }
+    },
+    "build": {
+      "env": {
+        "PYTHON_VERSION": "3.9"
+      }
+    }
+  }
