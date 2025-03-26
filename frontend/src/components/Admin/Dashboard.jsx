@@ -372,10 +372,19 @@ const Dashboard = () => {
       const pdf = new jsPDF('p', 'mm', 'a4');
       
       const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
       const logoWidth = 25; 
       const logoHeight = 25;
       const margin = 15;
       const lineY = 42;  // Adjusted line position
+      
+      // Add background aesthetic elements
+      pdf.setFillColor(240, 247, 244); // Light green tint
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+      
+      // Add a white card for the content
+      pdf.setFillColor(255, 255, 255);
+      pdf.roundedRect(10, 5, pageWidth - 20, pageHeight - 10, 5, 5, 'F');
       
       const tupLogo = new Image();
       const rightLogo = new Image();
@@ -420,21 +429,82 @@ const Dashboard = () => {
         const addressX = textStart + (textWidth - pdf.getTextWidth(address)) / 2 - 5;
         pdf.text(address, addressX, 34);
         
-        // Horizontal line
-        pdf.setLineWidth(0.6);
+        // Horizontal line with gradient effect
+        const lineGradient = pdf.setLineDash([1, 1]);
+        pdf.setLineWidth(0.8);
         pdf.setDrawColor(100, 179, 138);  
         pdf.line(35, lineY, pageWidth - 35, lineY);
         
-        // Add report title
-        pdf.setFontSize(14);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(title, margin, lineY + 20);
+        // Reset line dash
+        pdf.setLineDash([]);
         
-        // Add chart inside a transparent container with a thin black outline
-        pdf.setDrawColor(0, 0, 0);
+        // Add report title - REMOVED CONTAINER, JUST SIMPLE TEXT
+        pdf.setFontSize(16);
+        pdf.setTextColor(60, 107, 82); // Darker green for the title
+        pdf.setFont('helvetica', 'bold');
+        const titleX = margin;
+        pdf.text(title, titleX, lineY + 20);
+        
+        // Create nice container box for chart
+        pdf.setFillColor(255, 255, 255); // White background
+        pdf.setDrawColor(100, 179, 138);
         pdf.setLineWidth(0.5);
-        pdf.rect(30, 70, 150, 80); // Draw the rectangle
-        pdf.addImage(imgData, 'PNG', 35, 75, 140, 70); // Centered and lower, smaller width
+        pdf.roundedRect(25, 65, 160, 90, 3, 3, 'FD'); // Fill and Draw
+        
+        // Add chart image
+        pdf.addImage(imgData, 'PNG', 35, 70, 140, 80); // Adjusted size for better proportions
+        
+        // Generate summary text based on chart type
+        let summaryText = generateSummaryText(chartId);
+        
+        // Add decorative element for summary section
+        pdf.setFillColor(240, 247, 244); // Light green background
+        pdf.roundedRect(margin, 160, pageWidth - (margin * 2), 90, 3, 3, 'F');
+        
+        // Add summary heading - REMOVED CIRCLE ICON
+        pdf.setFontSize(14); // Larger heading
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(60, 107, 82); // Darker green
+        pdf.text("Summary", margin, 166);
+        
+        // Add horizontal divider under heading
+        pdf.setLineWidth(0.3);
+        pdf.setDrawColor(100, 179, 138, 0.5);
+        pdf.line(margin, 170, pageWidth - margin, 170);
+        
+        // Add summary text with justified alignment and larger font
+        pdf.setFontSize(12); // Increased font size from 10 to 12
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(50, 50, 50); // Dark gray for better readability
+        
+        // Split text into lines that fit the page width
+        const maxWidth = pageWidth - (2 * margin) - 10; // Reduced width for margins
+        const splitText = pdf.splitTextToSize(summaryText, maxWidth);
+        
+        // Set text alignment to justified
+        for (let i = 0; i < splitText.length; i++) {
+          // Text position with some padding from the left
+          const textY = 178 + (i * 7); // Increased line height for better readability
+          pdf.text(splitText[i], margin + 5, textY, { align: 'justify' });
+        }
+        
+        // Add footer with branding
+        pdf.setFillColor(240, 247, 244);
+        pdf.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+        
+        // Add date generated
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'italic');
+        pdf.setTextColor(100, 100, 100);
+        const today = new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+        pdf.text(`Generated on: ${today}`, margin, pageHeight - 7);
+        
+        // Add page number
+        pdf.text(`Mindful Map Analytics • Page 1/1`, pageWidth - margin - 40, pageHeight - 7);
         
         pdf.save(`${title}.pdf`);
       }).catch(error => {
@@ -442,7 +512,88 @@ const Dashboard = () => {
       });
     });
   };
-
+  
+  // Helper function to generate summary text based on chart type
+  const generateSummaryText = (chartId) => {
+    switch (chartId) {
+      case 'monthly-users-chart':
+        const totalMonthlyUsers = monthlyUsers;
+        const highestMonth = monthlyUserData.reduce((max, data) => data.count > max.count ? data : max, { count: 0 }).month || 'N/A';
+        const averageMonthlyUsers = monthlyUserData.length > 0 ? 
+          (monthlyUserData.reduce((sum, data) => sum + data.count, 0) / monthlyUserData.length).toFixed(2) : 0;
+        
+        return `The total number of registered users across all months is ${totalMonthlyUsers}. The highest number of registrations occurred in ${highestMonth}. The average number of users registered per month is ${averageMonthlyUsers}. This data helps track user growth trends over time and identify seasonal patterns in user registration.`;
+      
+      case 'daily-engagement-chart':
+        const totalDailyEngagement = dailyEngagementData.reduce((sum, data) => sum + data.count, 0);
+        const avgDailyEngagement = dailyEngagementData.length > 0 ?
+          (totalDailyEngagement / dailyEngagementData.length).toFixed(2) : 0;
+        const highestEngagementDay = dailyEngagementData.reduce((max, data) => data.count > max.count ? data : max, { count: 0 }).date || 'N/A';
+        
+        return `Forum engagement over the displayed period totals ${totalDailyEngagement} interactions. The highest engagement occurred on ${highestEngagementDay}. Average daily engagement rate is ${avgDailyEngagement} interactions per day. This metric helps measure community activity and identify patterns in user participation.`;
+      
+      case 'weekly-forum-posts-chart':
+        const totalWeeklyPosts = weeklyForumPostsData.reduce((sum, data) => sum + data.count, 0);
+        const avgWeeklyPosts = weeklyForumPostsData.length > 0 ?
+          (totalWeeklyPosts / weeklyForumPostsData.length).toFixed(2) : 0;
+        const trend = getWeeklyTrend(weeklyForumPostsData);
+        
+        return `There have been ${totalWeeklyPosts} forum posts over the displayed weeks, with an average of ${avgWeeklyPosts} posts per week. The trend is ${trend}. Weekly forum posts are a key indicator of community engagement and content generation by users.`;
+      
+      case 'active-vs-inactive-users-chart':
+        const active = activeVsInactiveUsersData.active || 0;
+        const inactive = activeVsInactiveUsersData.inactive || 0;
+        const total = active + inactive;
+        const activePercentage = total > 0 ? ((active / total) * 100).toFixed(2) : 0;
+        
+        return `Currently, there are ${active} active users and ${inactive} inactive users on the platform. Active users represent ${activePercentage}% of the total user base. This ratio is important for understanding user retention and engagement levels across the platform.`;
+      
+      case 'daily-mood-logs-chart':
+        const totalMoodLogs = dailyMoodLogsData.reduce((sum, data) => sum + data.count, 0);
+        const avgMoodLogs = dailyMoodLogsData.length > 0 ?
+          (totalMoodLogs / dailyMoodLogsData.length).toFixed(2) : 0;
+        const highestMoodLogDay = dailyMoodLogsData.reduce((max, data) => data.count > max.count ? data : max, { count: 0 }).date || 'N/A';
+        
+        return `Users have recorded a total of ${totalMoodLogs} mood entries across the displayed period. The average is ${avgMoodLogs} mood logs per day, with the highest activity on ${highestMoodLogDay}. This data shows how frequently users are tracking their emotional states.`;
+      
+      case 'daily-journal-logs-chart':
+        const totalJournalLogs = dailyJournalLogsData.reduce((sum, data) => sum + data.count, 0);
+        const avgJournalLogs = dailyJournalLogsData.length > 0 ?
+          (totalJournalLogs / dailyJournalLogsData.length).toFixed(2) : 0;
+        const highestJournalLogDay = dailyJournalLogsData.reduce((max, data) => data.count > max.count ? data : max, { count: 0 }).date || 'N/A';
+        
+        return `Users have created a total of ${totalJournalLogs} journal entries during this period. Daily journaling averages ${avgJournalLogs} entries per day, with peak activity occurring on ${highestJournalLogDay}. Journal logs represent deeper user engagement with the reflection process.`;
+      
+      case 'weekly-correlation-values-chart':
+        const avgCorrelationValue = weeklyCorrelationValuesData.length > 0 ?
+          (weeklyCorrelationValuesData.reduce((sum, data) => sum + data.count, 0) / weeklyCorrelationValuesData.length).toFixed(2) : 0;
+        const correlationTrend = getWeeklyTrend(weeklyCorrelationValuesData);
+        
+        return `The average correlation value across all weeks is ${avgCorrelationValue}, with a ${correlationTrend} trend. Correlation values measure the strength of relationship between user activities and mood states. Higher values indicate stronger connections between activities and emotional outcomes.`;
+      
+      default:
+        return "This chart summarizes the data collected within the Mindful Map application. Please refer to the visual representation above for specific data points and trends.";
+    }
+  };
+  
+  // Helper function to determine the trend in weekly data
+  const getWeeklyTrend = (data) => {
+    if (data.length < 2) return "stable";
+    
+    // Calculate if trend is increasing, decreasing or stable
+    const firstValues = data.slice(0, Math.ceil(data.length/2));
+    const secondValues = data.slice(-Math.ceil(data.length/2));
+    
+    const firstAvg = firstValues.reduce((sum, item) => sum + item.count, 0) / firstValues.length;
+    const secondAvg = secondValues.reduce((sum, item) => sum + item.count, 0) / secondValues.length;
+    
+    const difference = secondAvg - firstAvg;
+    
+    if (difference > 0.1) return "increasing";
+    if (difference < -0.1) return "decreasing";
+    return "stable";
+  };
+  
   return (
     <div className="flex min-h-screen bg-[#F8FAF9]">
       {/* Sidebar */}

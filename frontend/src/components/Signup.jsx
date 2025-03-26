@@ -5,12 +5,17 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 
 const Signup = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    gender: 'Rather not say',
     password: '',
     avatar: null,
   });
@@ -30,6 +35,7 @@ const Signup = () => {
     const data = new FormData();
     data.append('name', formData.name);
     data.append('email', formData.email);
+    data.append('gender', formData.gender);
     data.append('password', formData.password);
     if (formData.avatar) {
       data.append('avatar', formData.avatar);
@@ -80,6 +86,66 @@ const Signup = () => {
             className="w-full p-3 mb-4 rounded-full bg-[#eef0ee] border-2 border-[#6fba94] outline-none focus:border-[#6fba94]"
             onChange={handleChange}
           />
+          
+                {/* Gender Selection Dropdown */}
+        <div className="w-full mb-4">
+          <FormControl fullWidth variant="outlined" sx={{ 
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '9999px',
+              backgroundColor: '#eef0ee',
+              fontFamily: 'Nunito, sans-serif',
+              '& fieldset': {
+                borderColor: '#6fba94',
+                borderWidth: '2px',
+              },
+              '&:hover fieldset': {
+                borderColor: '#6fba94',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#6fba94',
+              },
+            },
+            '& .MuiSelect-select': {
+              fontFamily: 'Nunito, sans-serif',
+            },
+            '& .MuiMenuItem-root': {
+              fontFamily: 'Nunito, sans-serif',
+            }
+          }}>
+            <Select
+              id="gender"
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              displayEmpty
+              renderValue={(selected) => selected}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    fontFamily: 'Nunito, sans-serif',
+                    '& .MuiMenuItem-root': {
+                      fontFamily: 'Nunito, sans-serif',
+                    },
+                    '& .MuiMenuItem-root:hover': {
+                      backgroundColor: 'rgba(111, 186, 148, 0.1)',
+                    },
+                    '& .MuiMenuItem-root.Mui-selected': {
+                      backgroundColor: 'rgba(111, 186, 148, 0.2)',
+                      fontFamily: 'Nunito, sans-serif',
+                    },
+                    '& .MuiMenuItem-root.Mui-selected:hover': {
+                      backgroundColor: 'rgba(111, 186, 148, 0.3)',
+                    },
+                  },
+                },
+              }}
+            >
+              <MenuItem value="Male">Male</MenuItem>
+              <MenuItem value="Female">Female</MenuItem>
+              <MenuItem value="Rather not say">Rather not say</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
           <input
             type="email"
             name="email"
@@ -113,6 +179,9 @@ const Signup = () => {
               className="hidden"
               onChange={handleChange}
             />
+            {formData.avatar && (
+              <p className="mt-2 text-sm text-gray-600">File selected: {formData.avatar.name}</p>
+            )}
           </div>
           {error && <p className="text-red-500 mb-4">{error}</p>}
           <button
