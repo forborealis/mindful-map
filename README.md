@@ -18,17 +18,18 @@ A system with a mood and activity tracker that allows users to understand the re
 
 
 ## Setup
-root folder:
-python -m venv venv
-venv\Scripts\Activate
-pip install pandas numpy pymongo scikit-learn 
 
-- backend
-cd backend
-npm i
-change .env.example to .env and put credentials for mondogb and mailtrap
+## root folder
+- python -m venv venv
+- venv\Scripts\Activate
+- pip install pandas numpy pymongo scikit-learn 
 
-- frontend
-cd frontend
-npm i
+## backend
+- cd backend
+- npm i
+- change .env.example to .env and put credentials for mondogb and mailtrap
+
+## frontend
+- cd frontend
+- npm i
 
