@@ -28,6 +28,7 @@ A system with a mood and activity tracker that allows users to understand the re
 - cd backend
 - npm i
 - change .env.example to .env and put credentials for mondogb and mailtrap
+- change firebaseServiceAccountKey.json.example to firebaseServiceAccountKey.json and put firebase service account key of your project
 
 ## frontend
 - cd frontend
