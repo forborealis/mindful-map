@@ -15,3 +15,18 @@ A system with a mood and activity tracker that allows users to understand the re
 - Aminah Malic  
 - Angel Galapon  
 - Resty Jr Cailao  
+
+
+## Setup
+root folder:
+python -m venv venv
+venv\Scripts\Activate
+pip install pandas numpy pymongo scikit-learn 
+
+- cd backend
+- npm i
+- change .env.example to .env and put credentials for mondogb and mailtrap
+
+- cd frontend
+- npm i
+
